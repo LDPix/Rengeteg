@@ -1,0 +1,56 @@
+[gd_scene format=3 uid="uid://bnsvmg2h53oa3"]
+
+[ext_resource type="Script" uid="uid://c2fiojkipmduv" path="res://scripts/overworld.gd" id="1_4pr86"]
+[ext_resource type="Script" uid="uid://6gjx11ugitgy" path="res://scripts/player.gd" id="2_nnm8u"]
+[ext_resource type="Texture2D" uid="uid://ue4isewogm7d" path="res://assets/Simple_Stick_Figure.svg.png" id="3_4511m"]
+[ext_resource type="PackedScene" uid="uid://jxmtx570vejj" path="res://scenes/overworld/ResourceNode.tscn" id="4_3le6w"]
+[ext_resource type="Texture2D" uid="uid://dj2jg3kul5emc" path="res://assets/campfire.jpeg" id="5_nnm8u"]
+
+[sub_resource type="RectangleShape2D" id="RectangleShape2D_rfscu"]
+size = Vector2(32, 32)
+
+[node name="Overworld" type="Node2D" unique_id=599782371]
+script = ExtResource("1_4pr86")
+
+[node name="Ground" type="TileMapLayer" parent="." unique_id=1771152025]
+
+[node name="Player" type="CharacterBody2D" parent="." unique_id=1825255429]
+script = ExtResource("2_nnm8u")
+
+[node name="Camera2D" type="Camera2D" parent="Player" unique_id=1947226070]
+
+[node name="Sprite2D" type="Sprite2D" parent="Player" unique_id=1187972793]
+scale = Vector2(0.05, 0.05)
+texture = ExtResource("3_4511m")
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="Player" unique_id=2131887107]
+shape = SubResource("RectangleShape2D_rfscu")
+
+[node name="ResourceNode" parent="." unique_id=608633595 instance=ExtResource("4_3le6w")]
+position = Vector2(-696, 525)
+
+[node name="ResourceNode2" parent="." unique_id=563615695 instance=ExtResource("4_3le6w")]
+position = Vector2(-1728, -387)
+
+[node name="ResourceNode3" parent="." unique_id=1219138171 instance=ExtResource("4_3le6w")]
+position = Vector2(-2000, 1149)
+
+[node name="ResourceNode4" parent="." unique_id=2031456251 instance=ExtResource("4_3le6w")]
+position = Vector2(-57, 57)
+
+[node name="ResourceNode5" parent="." unique_id=1641618061 instance=ExtResource("4_3le6w")]
+position = Vector2(-357, -51)
+
+[node name="ResourceNode6" parent="." unique_id=1045457397 instance=ExtResource("4_3le6w")]
+position = Vector2(-709, 161)
+
+[node name="ResourceNode7" parent="." unique_id=2023093212 instance=ExtResource("4_3le6w")]
+position = Vector2(-1025, -95)
+
+[node name="ResourceNode8" parent="." unique_id=609392822 instance=ExtResource("4_3le6w")]
+position = Vector2(-1565, -163)
+
+[node name="Campfire" type="Sprite2D" parent="." unique_id=624157667]
+position = Vector2(125.00001, -1.000001)
+scale = Vector2(0.2, 0.2)
+texture = ExtResource("5_nnm8u")

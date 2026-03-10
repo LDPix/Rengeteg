@@ -1,0 +1,22 @@
+[gd_scene format=3 uid="uid://jxmtx570vejj"]
+
+[ext_resource type="Script" uid="uid://b1tmx283fu03d" path="res://scripts/resource_node.gd" id="1_g7qsf"]
+[ext_resource type="Texture2D" uid="uid://i6wjxa6delp6" path="res://assets/stones-in-pixel-art-style-vector.jpg" id="1_vssi5"]
+
+[sub_resource type="RectangleShape2D" id="RectangleShape2D_g7qsf"]
+size = Vector2(32, 32)
+
+[node name="ResourceNode" type="Area2D" unique_id=608633595]
+script = ExtResource("1_g7qsf")
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="." unique_id=750007097]
+shape = SubResource("RectangleShape2D_g7qsf")
+
+[node name="Sprite2D" type="Sprite2D" parent="." unique_id=284830429]
+scale = Vector2(0.1, 0.1)
+texture = ExtResource("1_vssi5")
+
+[node name="HintLabel" type="Label" parent="." unique_id=262441697]
+offset_right = 40.0
+offset_bottom = 23.0
+text = "E"

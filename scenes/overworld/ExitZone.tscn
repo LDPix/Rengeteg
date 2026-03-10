@@ -1,0 +1,16 @@
+[gd_scene format=3 uid="uid://ctx7oixaduacu"]
+
+[ext_resource type="Texture2D" uid="uid://dj2jg3kul5emc" path="res://assets/campfire.jpeg" id="1_7m17w"]
+[ext_resource type="Script" uid="uid://cyoau5kxtnhqu" path="res://scripts/exit_zone.gd" id="1_cqq7c"]
+
+[sub_resource type="RectangleShape2D" id="RectangleShape2D_cqq7c"]
+size = Vector2(32, 32)
+
+[node name="ExitZone" type="Area2D" unique_id=831641097]
+script = ExtResource("1_cqq7c")
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="." unique_id=1515791222]
+shape = SubResource("RectangleShape2D_cqq7c")
+
+[node name="Sprite2D" type="Sprite2D" parent="." unique_id=1663271596]
+texture = ExtResource("1_7m17w")
