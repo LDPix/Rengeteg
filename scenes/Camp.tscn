@@ -1,7 +1,56 @@
-[gd_scene format=3 uid="uid://decvxq5jq76ih"]
+[gd_scene load_steps=7 format=3]
 
-[ext_resource type="Script" uid="uid://4rqbk8kriva1" path="res://scripts/camp.gd" id="1"]
-[ext_resource type="Theme" uid="uid://6ikl4e3dr7fi" path="res://ui/theme.tres" id="2"]
+[ext_resource type="Script" path="res://scripts/camp.gd" id="1_script"]
+[ext_resource type="Theme" path="res://ui/theme.tres" id="2_theme"]
+[ext_resource type="PackedScene" path="res://scenes/ui/PrimaryActionButton.tscn" id="3_primary"]
+
+[sub_resource type="StyleBoxFlat" id="1_outline_button"]
+bg_color = Color(1, 1, 1, 1)
+border_color = Color(0.298039, 0.686275, 0.313726, 0.28)
+border_width_left = 1
+border_width_top = 1
+border_width_right = 1
+border_width_bottom = 1
+corner_radius_top_left = 14
+corner_radius_top_right = 14
+corner_radius_bottom_right = 14
+corner_radius_bottom_left = 14
+content_margin_left = 18.0
+content_margin_top = 13.0
+content_margin_right = 18.0
+content_margin_bottom = 13.0
+
+[sub_resource type="StyleBoxFlat" id="2_outline_button_hover"]
+bg_color = Color(0.972549, 0.988235, 0.972549, 1)
+border_color = Color(0.298039, 0.686275, 0.313726, 0.35)
+border_width_left = 1
+border_width_top = 1
+border_width_right = 1
+border_width_bottom = 1
+corner_radius_top_left = 14
+corner_radius_top_right = 14
+corner_radius_bottom_right = 14
+corner_radius_bottom_left = 14
+content_margin_left = 18.0
+content_margin_top = 13.0
+content_margin_right = 18.0
+content_margin_bottom = 13.0
+
+[sub_resource type="StyleBoxFlat" id="3_outline_button_pressed"]
+bg_color = Color(0.952941, 0.980392, 0.956863, 1)
+border_color = Color(0.298039, 0.686275, 0.313726, 0.42)
+border_width_left = 1
+border_width_top = 1
+border_width_right = 1
+border_width_bottom = 1
+corner_radius_top_left = 14
+corner_radius_top_right = 14
+corner_radius_bottom_right = 14
+corner_radius_bottom_left = 14
+content_margin_left = 18.0
+content_margin_top = 13.0
+content_margin_right = 18.0
+content_margin_bottom = 13.0
 
 [node name="Camp" type="Control"]
 anchors_preset = 15
@@ -9,8 +58,8 @@ anchor_right = 1.0
 anchor_bottom = 1.0
 grow_horizontal = 2
 grow_vertical = 2
-theme = ExtResource("2")
-script = ExtResource("1")
+theme = ExtResource("2_theme")
+script = ExtResource("1_script")
 
 [node name="Background" type="ColorRect" parent="."]
 anchors_preset = 15
@@ -18,86 +67,170 @@ anchor_right = 1.0
 anchor_bottom = 1.0
 grow_horizontal = 2
 grow_vertical = 2
-color = Color(0.960784, 0.960784, 0.960784, 1) # #F5F5F5
+color = Color(0.960784, 0.960784, 0.960784, 1)
 
-[node name="TopBar" type="HBoxContainer" parent="."]
-anchors_preset = 1
-anchor_right = 1.0
-offset_left = 24.0
-offset_top = 16.0
-offset_right = -24.0
-
-[node name="AreaLabel" type="Label" parent="TopBar"]
-size_flags_horizontal = 3
-text = "Verdant Wilds"
-theme_override_font_sizes/font_size = 14
-
-[node name="ResourceSummary" type="Label" parent="TopBar"]
-size_flags_horizontal = 3
-horizontal_alignment = 2
-text = "Core 0 • Herb 0 • Wood 0 • Stone 0"
-theme_override_font_sizes/font_size = 14
-
-[node name="Panel" type="PanelContainer" parent="."]
+[node name="Panel" type="MarginContainer" parent="."]
 anchors_preset = 15
 anchor_right = 1.0
 anchor_bottom = 1.0
 grow_horizontal = 2
 grow_vertical = 2
+theme_override_constants/margin_left = 48
+theme_override_constants/margin_top = 48
+theme_override_constants/margin_right = 48
+theme_override_constants/margin_bottom = 40
 
-[node name="VBoxContainer" type="VBoxContainer" parent="Panel"]
-anchors_preset = 15
-anchor_right = 1.0
-anchor_bottom = 1.0
-grow_horizontal = 2
-grow_vertical = 2
-offset_left = 32.0
-offset_top = 72.0
-offset_right = -32.0
-offset_bottom = -32.0
+[node name="CenterRow" type="HBoxContainer" parent="Panel"]
+size_flags_horizontal = 3
+size_flags_vertical = 3
+
+[node name="LeftSpacer" type="Control" parent="Panel/CenterRow"]
+size_flags_horizontal = 3
+
+[node name="VBoxContainer" type="VBoxContainer" parent="Panel/CenterRow"]
+custom_minimum_size = Vector2(760, 0)
+theme_override_constants/separation = 24
+
+[node name="Header" type="VBoxContainer" parent="Panel/CenterRow/VBoxContainer"]
 theme_override_constants/separation = 12
 
-[node name="TitleLabel" type="Label" parent="Panel/VBoxContainer"]
-text = "Camp"
-theme_override_font_sizes/font_size = 24
+[node name="TitleLabel" type="Label" parent="Panel/CenterRow/VBoxContainer/Header"]
+text = "CAMP"
+theme_override_font_sizes/font_size = 40
 
-[node name="PartyLabel" type="Label" parent="Panel/VBoxContainer"]
-text = "Team: (empty)"
-
-[node name="MatsLabel" type="Label" parent="Panel/VBoxContainer"]
-text = "Materials: Core 0 | Herb 0 | Wood 0 | Stone 0 | Species 0"
-theme_override_font_sizes/font_size = 14
-
-[node name="HSeparator" type="HSeparator" parent="Panel/VBoxContainer"]
-
-[node name="MapLabel" type="Label" parent="Panel/VBoxContainer"]
-text = "Map"
+[node name="SubtitleLabel" type="Label" parent="Panel/CenterRow/VBoxContainer/Header"]
+text = "Rest, heal, and prepare your team"
 theme_override_font_sizes/font_size = 18
+theme_override_colors/font_color = Color(0.380392, 0.380392, 0.380392, 1)
 
-[node name="MapList" type="VBoxContainer" parent="Panel/VBoxContainer"]
-size_flags_vertical = 3
-theme_override_constants/separation = 8
+[node name="TeamCard" type="PanelContainer" parent="Panel/CenterRow/VBoxContainer"]
 
-[node name="VentureButton" type="Button" parent="Panel/VBoxContainer"]
+[node name="Padding" type="MarginContainer" parent="Panel/CenterRow/VBoxContainer/TeamCard"]
+theme_override_constants/margin_left = 16
+theme_override_constants/margin_top = 16
+theme_override_constants/margin_right = 16
+theme_override_constants/margin_bottom = 16
+
+[node name="Content" type="VBoxContainer" parent="Panel/CenterRow/VBoxContainer/TeamCard/Padding"]
+theme_override_constants/separation = 16
+
+[node name="YourTeamTitle" type="Label" parent="Panel/CenterRow/VBoxContainer/TeamCard/Padding/Content"]
+text = "Your Team"
+theme_override_font_sizes/font_size = 28
+
+[node name="CreatureChips" type="HBoxContainer" parent="Panel/CenterRow/VBoxContainer/TeamCard/Padding/Content"]
+theme_override_constants/separation = 12
+
+[node name="PartyLabel" type="Label" parent="Panel/CenterRow/VBoxContainer/TeamCard/Padding/Content"]
+visible = false
+theme_override_font_sizes/font_size = 14
+theme_override_colors/font_color = Color(0.380392, 0.380392, 0.380392, 1)
+
+[node name="MapCard" type="PanelContainer" parent="Panel/CenterRow/VBoxContainer"]
+
+[node name="Padding" type="MarginContainer" parent="Panel/CenterRow/VBoxContainer/MapCard"]
+theme_override_constants/margin_left = 16
+theme_override_constants/margin_top = 16
+theme_override_constants/margin_right = 16
+theme_override_constants/margin_bottom = 16
+
+[node name="Content" type="VBoxContainer" parent="Panel/CenterRow/VBoxContainer/MapCard/Padding"]
+theme_override_constants/separation = 16
+
+[node name="ChooseMapTitle" type="Label" parent="Panel/CenterRow/VBoxContainer/MapCard/Padding/Content"]
+text = "Choose Map"
+theme_override_font_sizes/font_size = 28
+
+[node name="MapLabel" type="Label" parent="Panel/CenterRow/VBoxContainer/MapCard/Padding/Content"]
+theme_override_font_sizes/font_size = 14
+theme_override_colors/font_color = Color(0.380392, 0.380392, 0.380392, 1)
+
+[node name="MapList" type="HBoxContainer" parent="Panel/CenterRow/VBoxContainer/MapCard/Padding/Content"]
+theme_override_constants/separation = 12
+
+[node name="UpgradesCard" type="PanelContainer" parent="Panel/CenterRow/VBoxContainer"]
+
+[node name="Padding" type="MarginContainer" parent="Panel/CenterRow/VBoxContainer/UpgradesCard"]
+theme_override_constants/margin_left = 16
+theme_override_constants/margin_top = 16
+theme_override_constants/margin_right = 16
+theme_override_constants/margin_bottom = 16
+
+[node name="Content" type="VBoxContainer" parent="Panel/CenterRow/VBoxContainer/UpgradesCard/Padding"]
+theme_override_constants/separation = 16
+
+[node name="UpgradesTitle" type="Label" parent="Panel/CenterRow/VBoxContainer/UpgradesCard/Padding/Content"]
+text = "Upgrades"
+theme_override_font_sizes/font_size = 28
+
+[node name="MatsLabel" type="Label" parent="Panel/CenterRow/VBoxContainer/UpgradesCard/Padding/Content"]
+theme_override_font_sizes/font_size = 14
+theme_override_colors/font_color = Color(0.380392, 0.380392, 0.380392, 1)
+
+[node name="UpgradeButtons" type="HBoxContainer" parent="Panel/CenterRow/VBoxContainer/UpgradesCard/Padding/Content"]
+theme_override_constants/separation = 12
+
+[node name="HpButton" type="Button" parent="Panel/CenterRow/VBoxContainer/UpgradesCard/Padding/Content/UpgradeButtons"]
 size_flags_horizontal = 3
-text = "Venture"
+custom_minimum_size = Vector2(0, 48)
+theme_override_styles/normal = SubResource("1_outline_button")
+theme_override_styles/hover = SubResource("2_outline_button_hover")
+theme_override_styles/pressed = SubResource("3_outline_button_pressed")
+theme_override_styles/focus = SubResource("2_outline_button_hover")
+theme_override_colors/font_color = Color(0.298039, 0.686275, 0.313726, 1)
+theme_override_colors/font_hover_color = Color(0.298039, 0.686275, 0.313726, 1)
+theme_override_colors/font_pressed_color = Color(0.298039, 0.686275, 0.313726, 1)
+theme_override_font_sizes/font_size = 16
+text = "+HP"
 
-[node name="HSeparator2" type="HSeparator" parent="Panel/VBoxContainer"]
-
-[node name="HpButton" type="Button" parent="Panel/VBoxContainer"]
+[node name="AtkButton" type="Button" parent="Panel/CenterRow/VBoxContainer/UpgradesCard/Padding/Content/UpgradeButtons"]
 size_flags_horizontal = 3
-text = "Upgrade HP (+5) — 3 Core Shards + 2 Herb"
+custom_minimum_size = Vector2(0, 48)
+theme_override_styles/normal = SubResource("1_outline_button")
+theme_override_styles/hover = SubResource("2_outline_button_hover")
+theme_override_styles/pressed = SubResource("3_outline_button_pressed")
+theme_override_styles/focus = SubResource("2_outline_button_hover")
+theme_override_colors/font_color = Color(0.298039, 0.686275, 0.313726, 1)
+theme_override_colors/font_hover_color = Color(0.298039, 0.686275, 0.313726, 1)
+theme_override_colors/font_pressed_color = Color(0.298039, 0.686275, 0.313726, 1)
+theme_override_font_sizes/font_size = 16
+text = "+ATK"
 
-[node name="AtkButton" type="Button" parent="Panel/VBoxContainer"]
+[node name="DefButton" type="Button" parent="Panel/CenterRow/VBoxContainer/UpgradesCard/Padding/Content/UpgradeButtons"]
 size_flags_horizontal = 3
-text = "Upgrade ATK (+1) — 3 Core Shards + 2 Wood"
+custom_minimum_size = Vector2(0, 48)
+theme_override_styles/normal = SubResource("1_outline_button")
+theme_override_styles/hover = SubResource("2_outline_button_hover")
+theme_override_styles/pressed = SubResource("3_outline_button_pressed")
+theme_override_styles/focus = SubResource("2_outline_button_hover")
+theme_override_colors/font_color = Color(0.298039, 0.686275, 0.313726, 1)
+theme_override_colors/font_hover_color = Color(0.298039, 0.686275, 0.313726, 1)
+theme_override_colors/font_pressed_color = Color(0.298039, 0.686275, 0.313726, 1)
+theme_override_font_sizes/font_size = 16
+text = "+DEF"
 
-[node name="DefButton" type="Button" parent="Panel/VBoxContainer"]
+[node name="PrimaryAction" type="HBoxContainer" parent="Panel/CenterRow/VBoxContainer"]
+
+[node name="LeftSpacer" type="Control" parent="Panel/CenterRow/VBoxContainer/PrimaryAction"]
 size_flags_horizontal = 3
-text = "Upgrade DEF (+1) — 3 Core Shards + 2 Stone"
 
-[node name="HSeparator3" type="HSeparator" parent="Panel/VBoxContainer"]
+[node name="VentureButton" parent="Panel/CenterRow/VBoxContainer/PrimaryAction" instance=ExtResource("3_primary")]
+unique_name_in_owner = true
+custom_minimum_size = Vector2(320, 64)
+text = "VENTURE"
 
-[node name="BackButton" type="Button" parent="Panel/VBoxContainer"]
+[node name="RightSpacer" type="Control" parent="Panel/CenterRow/VBoxContainer/PrimaryAction"]
 size_flags_horizontal = 3
+
+[node name="FooterRow" type="HBoxContainer" parent="Panel/CenterRow/VBoxContainer"]
+
+[node name="BackButton" type="Button" parent="Panel/CenterRow/VBoxContainer/FooterRow"]
+size_flags_horizontal = 0
+theme_override_font_sizes/font_size = 14
 text = "Back"
+
+[node name="RightSpacer" type="Control" parent="Panel/CenterRow/VBoxContainer/FooterRow"]
+size_flags_horizontal = 3
+
+[node name="RightSpacer" type="Control" parent="Panel/CenterRow"]
+size_flags_horizontal = 3

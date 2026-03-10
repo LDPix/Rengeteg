@@ -1,0 +1,11 @@
+[gd_scene load_steps=3 format=3]
+
+[ext_resource type="Script" path="res://scripts/ui/map_option_button.gd" id="1_script"]
+[ext_resource type="Theme" path="res://ui/theme.tres" id="2_theme"]
+
+[node name="MapOptionButton" type="Button"]
+theme = ExtResource("2_theme")
+size_flags_horizontal = 3
+custom_minimum_size = Vector2(0, 52)
+script = ExtResource("1_script")
+text = "Map"

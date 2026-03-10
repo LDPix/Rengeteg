@@ -1,16 +1,18 @@
 extends Control
 
-@onready var party_label := $Panel/VBoxContainer/PartyLabel
-@onready var mats_label := $Panel/VBoxContainer/MatsLabel
-@onready var hp_btn := $Panel/VBoxContainer/HpButton
-@onready var atk_btn := $Panel/VBoxContainer/AtkButton
-@onready var def_btn := $Panel/VBoxContainer/DefButton
-@onready var back_btn := $Panel/VBoxContainer/BackButton
-@onready var map_label := $Panel/VBoxContainer/MapLabel
-@onready var map_list := $Panel/VBoxContainer/MapList
-@onready var venture_btn := $Panel/VBoxContainer/VentureButton
-@onready var top_area_label := $TopBar/AreaLabel
-@onready var top_resource_label := $TopBar/ResourceSummary
+const CREATURE_CHIP_SCENE := preload("res://scenes/ui/CreatureChip.tscn")
+const MAP_OPTION_BUTTON_SCENE := preload("res://scenes/ui/MapOptionButton.tscn")
+
+@onready var creature_chips := $Panel/CenterRow/VBoxContainer/TeamCard/Padding/Content/CreatureChips
+@onready var party_label := $Panel/CenterRow/VBoxContainer/TeamCard/Padding/Content/PartyLabel
+@onready var mats_label := $Panel/CenterRow/VBoxContainer/UpgradesCard/Padding/Content/MatsLabel
+@onready var hp_btn := $Panel/CenterRow/VBoxContainer/UpgradesCard/Padding/Content/UpgradeButtons/HpButton
+@onready var atk_btn := $Panel/CenterRow/VBoxContainer/UpgradesCard/Padding/Content/UpgradeButtons/AtkButton
+@onready var def_btn := $Panel/CenterRow/VBoxContainer/UpgradesCard/Padding/Content/UpgradeButtons/DefButton
+@onready var back_btn := $Panel/CenterRow/VBoxContainer/FooterRow/BackButton
+@onready var map_label := $Panel/CenterRow/VBoxContainer/MapCard/Padding/Content/MapLabel
+@onready var map_list := $Panel/CenterRow/VBoxContainer/MapCard/Padding/Content/MapList
+@onready var venture_btn := $Panel/CenterRow/VBoxContainer/PrimaryAction/VentureButton
 
 func _ready() -> void:
 	hp_btn.pressed.connect(_upgrade_hp)
@@ -18,23 +20,23 @@ func _ready() -> void:
 	def_btn.pressed.connect(_upgrade_def)
 	back_btn.pressed.connect(_close)
 	venture_btn.pressed.connect(_venture)
+	hp_btn.tooltip_text = "Upgrade HP: 3 Core Shards, 2 Herb"
+	atk_btn.tooltip_text = "Upgrade ATK: 3 Core Shards, 2 Wood"
+	def_btn.tooltip_text = "Upgrade DEF: 3 Core Shards, 2 Stone"
+	GameState.ensure_starter()
 	_build_map_buttons()
 	_refresh()
-	GameState.ensure_starter()
 	
 func _build_map_buttons() -> void:
-	# Clear old buttons (if any)
 	for child in map_list.get_children():
 		child.queue_free()
 
-	# Create one button per map in GameData.maps
 	for map_id in GameData.maps.keys():
 		var display_name = str(GameData.maps[map_id].get("display_name", map_id))
-
-		var btn := Button.new()
+		var btn := MAP_OPTION_BUTTON_SCENE.instantiate()
+		btn.name = "%sButton" % map_id.capitalize()
 		btn.text = display_name
-		btn.size_flags_horizontal = Control.SIZE_EXPAND_FILL
-		btn.pressed.connect(func(): _select_map(map_id))
+		btn.pressed.connect(_select_map.bind(map_id))
 		map_list.add_child(btn)
 
 func _select_map(map_id: String) -> void:
@@ -58,35 +60,38 @@ func _unhandled_input(event: InputEvent) -> void:
 		
 func _party_text() -> String:
 	if GameState.party.is_empty():
-		return "Team: (empty)"
-	var lines: Array[String] = []
-	lines.append("Team:")
-	for i in range(GameState.party.size()):
-		var mon: Dictionary = GameState.party[i]
-		lines.append("%d) %s  HP %d/%d  ATK %d  DEF %d" % [
-			i + 1, mon["name"], mon["hp"], mon["hp_max"], mon["atk"], mon["def"]
-		])
-	return "\n".join(lines)
-	
+		return "No active creature."
+	var first: Dictionary = GameState.party[0]
+	return "%d creature%s ready. Lead: %s" % [
+		GameState.party.size(),
+		"" if GameState.party.size() == 1 else "s",
+		first["name"],
+	]
+
 func _refresh() -> void:
 	if GameState.party.is_empty():
+		_rebuild_party_chips()
 		party_label.text = "No active creature."
+		party_label.visible = true
+		venture_btn.disabled = true
 		return
-	var first = GameState.party[0]
+
+	_rebuild_party_chips()
 	party_label.text = _party_text()
+	party_label.visible = false
+	venture_btn.disabled = false
 
 	var m := GameState.materials
-	mats_label.text = "Materials: Core %d | Herb %d | Wood %d | Stone %d | Species %d" % [
+	mats_label.text = "Core %d   Herb %d   Wood %d   Stone %d   Species %d" % [
 		m["core_shard"], m["herb"], m["wood"], m["stone"], m["species_mat"]
-	]
-	top_resource_label.text = "Core %d • Herb %d • Wood %d • Stone %d" % [
-		m["core_shard"], m["herb"], m["wood"], m["stone"]
 	]
 
 	var map_id := GameState.current_map_id
 	var display_name = str(GameData.maps[map_id].get("display_name", map_id))
-	map_label.text = "Map (Selected: %s)" % display_name
-	top_area_label.text = display_name
+	map_label.text = "Selected map: %s" % display_name
+	for child in map_list.get_children():
+		if child.has_method("set_selected"):
+			child.set_selected(child.text == display_name)
 
 func _has(cost: Dictionary) -> bool:
 	for k in cost.keys():
@@ -101,7 +106,7 @@ func _pay(cost: Dictionary) -> void:
 func _upgrade_hp() -> void:
 	var cost = {"core_shard": 3, "herb": 2}
 	if not _has(cost):
-		mats_label.text += "\nNot enough materials."
+		mats_label.text = "%s   Not enough materials for +HP." % mats_label.text
 		return
 	_pay(cost)
 	var mon = GameState.party[0]
@@ -112,7 +117,7 @@ func _upgrade_hp() -> void:
 func _upgrade_atk() -> void:
 	var cost = {"core_shard": 3, "wood": 2}
 	if not _has(cost):
-		mats_label.text += "\nNot enough materials."
+		mats_label.text = "%s   Not enough materials for +ATK." % mats_label.text
 		return
 	_pay(cost)
 	var mon = GameState.party[0]
@@ -122,7 +127,7 @@ func _upgrade_atk() -> void:
 func _upgrade_def() -> void:
 	var cost = {"core_shard": 3, "stone": 2}
 	if not _has(cost):
-		mats_label.text += "\nNot enough materials."
+		mats_label.text = "%s   Not enough materials for +DEF." % mats_label.text
 		return
 	_pay(cost)
 	var mon = GameState.party[0]
@@ -131,3 +136,23 @@ func _upgrade_def() -> void:
 
 func _close() -> void:
 	queue_free()
+
+
+func _rebuild_party_chips() -> void:
+	for child in creature_chips.get_children():
+		child.queue_free()
+
+	for mon in GameState.party:
+		var chip = CREATURE_CHIP_SCENE.instantiate()
+		creature_chips.add_child(chip)
+		chip.configure(str(mon["name"]), _palette_for_element(str(mon.get("element", ""))))
+
+
+func _palette_for_element(element: String) -> String:
+	match element:
+		"grass":
+			return "grass"
+		"fire":
+			return "fire"
+		_:
+			return "neutral"

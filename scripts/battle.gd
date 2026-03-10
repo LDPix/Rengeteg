@@ -5,10 +5,10 @@ extends Control
 @onready var btn_switch := $OuterMargin/Root/ActionsCard/ActionsPadding/ActionsVBox/ButtonsRow/SwitchButton
 @onready var btn_capture := $OuterMargin/Root/ActionsCard/ActionsPadding/ActionsVBox/ButtonsRow/CaptureButton
 @onready var btn_run := $OuterMargin/Root/ActionsCard/ActionsPadding/ActionsVBox/ButtonsRow/RunButton
-@onready var hud_area_label := $OuterMargin/Root/TopBar/BattleAreaLabel
-@onready var hud_status_label := $OuterMargin/Root/TopBar/BattleStatusLabel
-@onready var player_label := $OuterMargin/Root/CreaturesRow/PlayerCard/PlayerPadding/PlayerVBox/PlayerLabel
-@onready var enemy_label := $OuterMargin/Root/CreaturesRow/EnemyCard/EnemyPadding/EnemyVBox/EnemyLabel
+@onready var hud_area_label := $OuterMargin/Root/TopBar/StatusRow/BattleAreaLabel
+@onready var hud_status_label := $OuterMargin/Root/TopBar/StatusRow/BattleStatusLabel
+@onready var player_card := $OuterMargin/Root/BattleCard/Padding/CreaturesRow/PlayerCard
+@onready var enemy_card := $OuterMargin/Root/BattleCard/Padding/CreaturesRow/EnemyCard
 
 var player_mon: Dictionary
 var wild_mon: Dictionary
@@ -28,10 +28,14 @@ func _ready() -> void:
 
 func _update_ui() -> void:
 	info.text = "Choose an action."
-	player_label.text = "%s (Slot %d)\nHP %d/%d" % [
-		player_mon["name"], active_index + 1, player_mon["hp"], player_mon["hp_max"],
-	]
-	enemy_label.text = "%s\nHP %d/%d" % [wild_mon["name"], wild_mon["hp"], wild_mon["hp_max"]]
+	player_card.set_details(
+		"%s" % player_mon["name"],
+		"HP %d / %d" % [player_mon["hp"], player_mon["hp_max"]]
+	)
+	enemy_card.set_details(
+		"%s" % wild_mon["name"],
+		"HP %d / %d" % [wild_mon["hp"], wild_mon["hp_max"]]
+	)
 	var map_id := GameState.current_map_id
 	var display_name = str(GameData.maps[map_id].get("display_name", map_id))
 	hud_area_label.text = display_name

@@ -32,7 +32,12 @@ var maps := {
 		"display_name": "Verdant Wilds",
 		"scene_path": "res://scenes/overworld/Overworld_Verdant.tscn",
 		"wild_pool": ["mossling", "shellhorn", "cinder_pup"],
-	}
+	},
+	"ember_caves": {
+		"display_name": "Ember Caves",
+		"scene_path": "res://scenes/overworld/Overworld_Ember.tscn",
+		"wild_pool": ["cinder_pup"],
+	},
 }
 
 func pick_wild_for_map(map_id: String) -> String:

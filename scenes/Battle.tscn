@@ -1,136 +1,219 @@
-[gd_scene format=3 uid="uid://cksp5oqkvhgy6"]
+[gd_scene load_steps=8 format=3]
 
-[ext_resource type="Script" uid="uid://ba44f5ct6te4u" path="res://scripts/battle.gd" id="1_bdmed"]
-[ext_resource type="Theme" uid="uid://6ikl4e3dr7fi" path="res://ui/theme.tres" id="2_theme"]
+[ext_resource type="Script" path="res://scripts/battle.gd" id="1_script"]
+[ext_resource type="Theme" path="res://ui/theme.tres" id="2_theme"]
+[ext_resource type="PackedScene" path="res://scenes/ui/BattleCreaturePanel.tscn" id="3_creature_panel"]
+[ext_resource type="PackedScene" path="res://scenes/ui/PrimaryActionButton.tscn" id="4_primary"]
 
-[sub_resource type="Theme" id="Theme_bdmed"]
+[sub_resource type="StyleBoxFlat" id="1_player_panel"]
+bg_color = Color(0.298039, 0.686275, 0.313726, 0.06)
+corner_radius_top_left = 16
+corner_radius_top_right = 16
+corner_radius_bottom_right = 16
+corner_radius_bottom_left = 16
 
-[node name="BattleUI" type="Control" unique_id=751138133]
-layout_mode = 3
+[sub_resource type="StyleBoxFlat" id="2_enemy_panel"]
+bg_color = Color(0.129412, 0.129412, 0.129412, 0.04)
+corner_radius_top_left = 16
+corner_radius_top_right = 16
+corner_radius_bottom_right = 16
+corner_radius_bottom_left = 16
+
+[sub_resource type="StyleBoxFlat" id="3_secondary_button"]
+bg_color = Color(0.945098, 0.952941, 0.956863, 1)
+corner_radius_top_left = 16
+corner_radius_top_right = 16
+corner_radius_bottom_right = 16
+corner_radius_bottom_left = 16
+content_margin_left = 24.0
+content_margin_top = 18.0
+content_margin_right = 24.0
+content_margin_bottom = 18.0
+
+[sub_resource type="StyleBoxFlat" id="4_secondary_button_hover"]
+bg_color = Color(0.929412, 0.937255, 0.941176, 1)
+corner_radius_top_left = 16
+corner_radius_top_right = 16
+corner_radius_bottom_right = 16
+corner_radius_bottom_left = 16
+content_margin_left = 24.0
+content_margin_top = 18.0
+content_margin_right = 24.0
+content_margin_bottom = 18.0
+
+[sub_resource type="StyleBoxFlat" id="5_secondary_button_pressed"]
+bg_color = Color(0.905882, 0.913725, 0.917647, 1)
+corner_radius_top_left = 16
+corner_radius_top_right = 16
+corner_radius_bottom_right = 16
+corner_radius_bottom_left = 16
+content_margin_left = 24.0
+content_margin_top = 18.0
+content_margin_right = 24.0
+content_margin_bottom = 18.0
+
+[sub_resource type="StyleBoxFlat" id="6_danger_button"]
+bg_color = Color(0.898039, 0.223529, 0.207843, 1)
+corner_radius_top_left = 16
+corner_radius_top_right = 16
+corner_radius_bottom_right = 16
+corner_radius_bottom_left = 16
+content_margin_left = 24.0
+content_margin_top = 18.0
+content_margin_right = 24.0
+content_margin_bottom = 18.0
+
+[sub_resource type="StyleBoxFlat" id="7_danger_button_hover"]
+bg_color = Color(0.92549, 0.282353, 0.270588, 1)
+corner_radius_top_left = 16
+corner_radius_top_right = 16
+corner_radius_bottom_right = 16
+corner_radius_bottom_left = 16
+content_margin_left = 24.0
+content_margin_top = 18.0
+content_margin_right = 24.0
+content_margin_bottom = 18.0
+
+[sub_resource type="StyleBoxFlat" id="8_danger_button_pressed"]
+bg_color = Color(0.823529, 0.192157, 0.180392, 1)
+corner_radius_top_left = 16
+corner_radius_top_right = 16
+corner_radius_bottom_right = 16
+corner_radius_bottom_left = 16
+content_margin_left = 24.0
+content_margin_top = 18.0
+content_margin_right = 24.0
+content_margin_bottom = 18.0
+
+[node name="BattleUI" type="Control"]
 anchors_preset = 15
 anchor_right = 1.0
 anchor_bottom = 1.0
 grow_horizontal = 2
 grow_vertical = 2
 theme = ExtResource("2_theme")
-script = ExtResource("1_bdmed")
+script = ExtResource("1_script")
 
-[node name="Background" type="ColorRect" parent="." unique_id=2300000000]
+[node name="Background" type="ColorRect" parent="."]
 anchors_preset = 15
 anchor_right = 1.0
 anchor_bottom = 1.0
 grow_horizontal = 2
 grow_vertical = 2
-color = Color(0.960784, 0.960784, 0.960784, 1) # #F5F5F5
+color = Color(0.960784, 0.960784, 0.960784, 1)
 
-[node name="OuterMargin" type="MarginContainer" parent="." unique_id=2300000001]
+[node name="OuterMargin" type="MarginContainer" parent="."]
 anchors_preset = 15
 anchor_right = 1.0
 anchor_bottom = 1.0
 grow_horizontal = 2
 grow_vertical = 2
-theme_override_constants/margin_left = 28
-theme_override_constants/margin_right = 28
-theme_override_constants/margin_top = 28
-theme_override_constants/margin_bottom = 28
+theme_override_constants/margin_left = 48
+theme_override_constants/margin_top = 48
+theme_override_constants/margin_right = 48
+theme_override_constants/margin_bottom = 48
 
-[node name="Root" type="VBoxContainer" parent="OuterMargin" unique_id=2300000002]
-theme_override_constants/separation = 12
+[node name="Root" type="VBoxContainer" parent="OuterMargin"]
+theme_override_constants/separation = 24
 
-[node name="TopBar" type="HBoxContainer" parent="OuterMargin/Root" unique_id=1300000000]
+[node name="TopBar" type="VBoxContainer" parent="OuterMargin/Root"]
+theme_override_constants/separation = 8
+
+[node name="TitleLabel" type="Label" parent="OuterMargin/Root/TopBar"]
+text = "BATTLE"
+theme_override_font_sizes/font_size = 36
+
+[node name="StatusRow" type="HBoxContainer" parent="OuterMargin/Root/TopBar"]
+
+[node name="BattleAreaLabel" type="Label" parent="OuterMargin/Root/TopBar/StatusRow"]
 size_flags_horizontal = 3
-
-[node name="BattleAreaLabel" type="Label" parent="OuterMargin/Root/TopBar" unique_id=1300000001]
-size_flags_horizontal = 3
-text = "Encounter"
 theme_override_font_sizes/font_size = 14
+theme_override_colors/font_color = Color(0.380392, 0.380392, 0.380392, 1)
+text = "Verdant Wilds"
 
-[node name="BattleStatusLabel" type="Label" parent="OuterMargin/Root/TopBar" unique_id=1300000002]
+[node name="BattleStatusLabel" type="Label" parent="OuterMargin/Root/TopBar/StatusRow"]
 size_flags_horizontal = 3
-text = "VS ?"
 horizontal_alignment = 2
 theme_override_font_sizes/font_size = 14
+theme_override_colors/font_color = Color(0.380392, 0.380392, 0.380392, 1)
+text = "Mossling vs Wild Fangbeast"
 
-[node name="InfoLabel" type="Label" parent="." unique_id=1825083609]
-visible = false
+[node name="BattleCard" type="PanelContainer" parent="OuterMargin/Root"]
 
-[node name="CreaturesRow" type="HBoxContainer" parent="OuterMargin/Root" unique_id=2300000003]
+[node name="Padding" type="MarginContainer" parent="OuterMargin/Root/BattleCard"]
+theme_override_constants/margin_left = 20
+theme_override_constants/margin_top = 20
+theme_override_constants/margin_right = 20
+theme_override_constants/margin_bottom = 20
+
+[node name="CreaturesRow" type="HBoxContainer" parent="OuterMargin/Root/BattleCard/Padding"]
+theme_override_constants/separation = 24
+
+[node name="PlayerCard" parent="OuterMargin/Root/BattleCard/Padding/CreaturesRow" instance=ExtResource("3_creature_panel")]
 size_flags_horizontal = 3
-theme_override_constants/separation = 12
+theme_override_styles/panel = SubResource("1_player_panel")
 
-[node name="PlayerCard" type="PanelContainer" parent="OuterMargin/Root/CreaturesRow" unique_id=2300000004]
+[node name="EnemyCard" parent="OuterMargin/Root/BattleCard/Padding/CreaturesRow" instance=ExtResource("3_creature_panel")]
 size_flags_horizontal = 3
-size_flags_stretch_ratio = 1.0
+theme_override_styles/panel = SubResource("2_enemy_panel")
+right_aligned = true
 
-[node name="PlayerPadding" type="MarginContainer" parent="OuterMargin/Root/CreaturesRow/PlayerCard" unique_id=2300000005]
-theme_override_constants/margin_left = 16
-theme_override_constants/margin_right = 16
-theme_override_constants/margin_top = 16
-theme_override_constants/margin_bottom = 16
+[node name="ActionsCard" type="PanelContainer" parent="OuterMargin/Root"]
 
-[node name="PlayerVBox" type="VBoxContainer" parent="OuterMargin/Root/CreaturesRow/PlayerCard/PlayerPadding" unique_id=2300000006]
-theme_override_constants/separation = 8
+[node name="ActionsPadding" type="MarginContainer" parent="OuterMargin/Root/ActionsCard"]
+theme_override_constants/margin_left = 20
+theme_override_constants/margin_top = 20
+theme_override_constants/margin_right = 20
+theme_override_constants/margin_bottom = 20
 
-[node name="PlayerHeader" type="Label" parent="OuterMargin/Root/CreaturesRow/PlayerCard/PlayerPadding/PlayerVBox" unique_id=2300000007]
-text = "You"
-theme_override_font_sizes/font_size = 18
+[node name="ActionsVBox" type="VBoxContainer" parent="OuterMargin/Root/ActionsCard/ActionsPadding"]
+theme_override_constants/separation = 20
 
-[node name="PlayerLabel" type="Label" parent="OuterMargin/Root/CreaturesRow/PlayerCard/PlayerPadding/PlayerVBox" unique_id=2300000008]
-text = "—"
-
-[node name="EnemyCard" type="PanelContainer" parent="OuterMargin/Root/CreaturesRow" unique_id=2300000009]
-size_flags_horizontal = 3
-size_flags_stretch_ratio = 1.0
-
-[node name="EnemyPadding" type="MarginContainer" parent="OuterMargin/Root/CreaturesRow/EnemyCard" unique_id=2300000010]
-theme_override_constants/margin_left = 16
-theme_override_constants/margin_right = 16
-theme_override_constants/margin_top = 16
-theme_override_constants/margin_bottom = 16
-
-[node name="EnemyVBox" type="VBoxContainer" parent="OuterMargin/Root/CreaturesRow/EnemyCard/EnemyPadding" unique_id=2300000011]
-theme_override_constants/separation = 8
-
-[node name="EnemyHeader" type="Label" parent="OuterMargin/Root/CreaturesRow/EnemyCard/EnemyPadding/EnemyVBox" unique_id=2300000012]
-text = "Wild"
-theme_override_font_sizes/font_size = 18
-
-[node name="EnemyLabel" type="Label" parent="OuterMargin/Root/CreaturesRow/EnemyCard/EnemyPadding/EnemyVBox" unique_id=2300000013]
-text = "—"
-
-[node name="ActionsCard" type="PanelContainer" parent="OuterMargin/Root" unique_id=2300000014]
-size_flags_horizontal = 3
-size_flags_vertical = 10
-
-[node name="ActionsPadding" type="MarginContainer" parent="OuterMargin/Root/ActionsCard" unique_id=2300000015]
-theme_override_constants/margin_left = 16
-theme_override_constants/margin_right = 16
-theme_override_constants/margin_top = 16
-theme_override_constants/margin_bottom = 16
-
-[node name="ActionsVBox" type="VBoxContainer" parent="OuterMargin/Root/ActionsCard/ActionsPadding" unique_id=2300000016]
-theme_override_constants/separation = 12
-
-[node name="BattleLog" type="Label" parent="OuterMargin/Root/ActionsCard/ActionsPadding/ActionsVBox" unique_id=2300000017]
+[node name="BattleLog" type="Label" parent="OuterMargin/Root/ActionsCard/ActionsPadding/ActionsVBox"]
+custom_minimum_size = Vector2(0, 24)
+theme_override_font_sizes/font_size = 16
+theme_override_colors/font_color = Color(0.380392, 0.380392, 0.380392, 1)
 text = "Choose an action."
 
-[node name="ButtonsRow" type="HBoxContainer" parent="OuterMargin/Root/ActionsCard/ActionsPadding/ActionsVBox" unique_id=2300000018]
-size_flags_horizontal = 3
-theme_override_constants/separation = 12
+[node name="ButtonsRow" type="HBoxContainer" parent="OuterMargin/Root/ActionsCard/ActionsPadding/ActionsVBox"]
+theme_override_constants/separation = 24
 
-[node name="AttackButton" type="Button" parent="OuterMargin/Root/ActionsCard/ActionsPadding/ActionsVBox/ButtonsRow" unique_id=937421271]
+[node name="AttackButton" parent="OuterMargin/Root/ActionsCard/ActionsPadding/ActionsVBox/ButtonsRow" instance=ExtResource("4_primary")]
 size_flags_horizontal = 3
 text = "Attack"
 
-[node name="SwitchButton" type="Button" parent="OuterMargin/Root/ActionsCard/ActionsPadding/ActionsVBox/ButtonsRow" unique_id=954573149]
+[node name="SwitchButton" type="Button" parent="OuterMargin/Root/ActionsCard/ActionsPadding/ActionsVBox/ButtonsRow"]
 size_flags_horizontal = 3
-theme = SubResource("Theme_bdmed")
+custom_minimum_size = Vector2(0, 64)
+theme_override_styles/normal = SubResource("3_secondary_button")
+theme_override_styles/hover = SubResource("4_secondary_button_hover")
+theme_override_styles/pressed = SubResource("5_secondary_button_pressed")
+theme_override_styles/focus = SubResource("4_secondary_button_hover")
+theme_override_colors/font_color = Color(0.129412, 0.129412, 0.129412, 1)
+theme_override_colors/font_hover_color = Color(0.129412, 0.129412, 0.129412, 1)
+theme_override_colors/font_pressed_color = Color(0.129412, 0.129412, 0.129412, 1)
+theme_override_font_sizes/font_size = 20
 text = "Switch"
 
-[node name="CaptureButton" type="Button" parent="OuterMargin/Root/ActionsCard/ActionsPadding/ActionsVBox/ButtonsRow" unique_id=261436276]
+[node name="CaptureButton" type="Button" parent="OuterMargin/Root/ActionsCard/ActionsPadding/ActionsVBox/ButtonsRow"]
 size_flags_horizontal = 3
-text = "Catch"
+custom_minimum_size = Vector2(0, 64)
+theme_override_styles/normal = SubResource("3_secondary_button")
+theme_override_styles/hover = SubResource("4_secondary_button_hover")
+theme_override_styles/pressed = SubResource("5_secondary_button_pressed")
+theme_override_styles/focus = SubResource("4_secondary_button_hover")
+theme_override_colors/font_color = Color(0.129412, 0.129412, 0.129412, 1)
+theme_override_colors/font_hover_color = Color(0.129412, 0.129412, 0.129412, 1)
+theme_override_colors/font_pressed_color = Color(0.129412, 0.129412, 0.129412, 1)
+theme_override_font_sizes/font_size = 20
+text = "Capture"
 
-[node name="RunButton" type="Button" parent="OuterMargin/Root/ActionsCard/ActionsPadding/ActionsVBox/ButtonsRow" unique_id=1914436613]
+[node name="RunButton" type="Button" parent="OuterMargin/Root/ActionsCard/ActionsPadding/ActionsVBox/ButtonsRow"]
 size_flags_horizontal = 3
+custom_minimum_size = Vector2(0, 64)
+theme_override_styles/normal = SubResource("6_danger_button")
+theme_override_styles/hover = SubResource("7_danger_button_hover")
+theme_override_styles/pressed = SubResource("8_danger_button_pressed")
+theme_override_styles/focus = SubResource("7_danger_button_hover")
+theme_override_font_sizes/font_size = 20
 text = "Run"

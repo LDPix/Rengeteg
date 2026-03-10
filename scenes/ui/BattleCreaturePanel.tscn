@@ -1,0 +1,32 @@
+[gd_scene load_steps=3 format=3]
+
+[ext_resource type="Script" path="res://scripts/ui/battle_creature_panel.gd" id="1_script"]
+[ext_resource type="Theme" path="res://ui/theme.tres" id="2_theme"]
+
+[node name="BattleCreaturePanel" type="PanelContainer"]
+theme = ExtResource("2_theme")
+custom_minimum_size = Vector2(0, 200)
+size_flags_horizontal = 3
+script = ExtResource("1_script")
+
+[node name="Padding" type="MarginContainer" parent="."]
+theme_override_constants/margin_left = 24
+theme_override_constants/margin_top = 24
+theme_override_constants/margin_right = 24
+theme_override_constants/margin_bottom = 24
+
+[node name="Content" type="VBoxContainer" parent="Padding"]
+size_flags_horizontal = 3
+size_flags_vertical = 4
+theme_override_constants/separation = 10
+
+[node name="NameLabel" type="Label" parent="Padding/Content"]
+size_flags_horizontal = 3
+text = "Creature"
+theme_override_font_sizes/font_size = 28
+
+[node name="HPLabel" type="Label" parent="Padding/Content"]
+size_flags_horizontal = 3
+text = "HP 0 / 0"
+theme_override_font_sizes/font_size = 20
+theme_override_colors/font_color = Color(0.380392, 0.380392, 0.380392, 1)
