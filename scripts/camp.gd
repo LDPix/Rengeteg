@@ -20,9 +20,12 @@ func _ready() -> void:
 	def_btn.pressed.connect(_upgrade_def)
 	back_btn.pressed.connect(_close)
 	venture_btn.pressed.connect(_venture)
-	hp_btn.tooltip_text = "Upgrade HP: 3 Core Shards, 2 Herb"
-	atk_btn.tooltip_text = "Upgrade ATK: 3 Core Shards, 2 Wood"
-	def_btn.tooltip_text = "Upgrade DEF: 3 Core Shards, 2 Stone"
+	hp_btn.text = "+HP (6 Core, 5 Herb)"
+	atk_btn.text = "+ATK (6 Core, 5 Wood)"
+	def_btn.text = "+DEF (6 Core, 5 Stone)"
+	hp_btn.tooltip_text = "Upgrade HP: 6 Core Shards, 5 Herb"
+	atk_btn.tooltip_text = "Upgrade ATK: 6 Core Shards, 5 Wood"
+	def_btn.tooltip_text = "Upgrade DEF: 6 Core Shards, 5 Stone"
 	GameState.ensure_starter()
 	_build_map_buttons()
 	_refresh()
@@ -48,8 +51,7 @@ func _venture() -> void:
 	var scene_path = str(GameData.maps[map_id].get("scene_path", ""))
 
 	if scene_path == "":
-		# fallback: if you haven't made separate scenes yet
-		get_tree().change_scene_to_file("res://scenes/overworld/Overworld.tscn")
+		get_tree().change_scene_to_file("res://scenes/overworld/Overworld_Verdant.tscn")
 		return
 
 	get_tree().change_scene_to_file(scene_path)
@@ -82,8 +84,8 @@ func _refresh() -> void:
 	venture_btn.disabled = false
 
 	var m := GameState.materials
-	mats_label.text = "Core %d   Herb %d   Wood %d   Stone %d   Species %d" % [
-		m["core_shard"], m["herb"], m["wood"], m["stone"], m["species_mat"]
+	mats_label.text = "Core %d   Herb %d   Wood %d   Stone %d   Crystal %d   Species %d" % [
+		m["core_shard"], m["herb"], m["wood"], m["stone"], m["crystal"], m["species_mat"]
 	]
 
 	var map_id := GameState.current_map_id
@@ -104,7 +106,7 @@ func _pay(cost: Dictionary) -> void:
 		GameState.materials[k] -= int(cost[k])
 
 func _upgrade_hp() -> void:
-	var cost = {"core_shard": 3, "herb": 2}
+	var cost = {"core_shard": 6, "herb": 5}
 	if not _has(cost):
 		mats_label.text = "%s   Not enough materials for +HP." % mats_label.text
 		return
@@ -115,7 +117,7 @@ func _upgrade_hp() -> void:
 	_refresh()
 
 func _upgrade_atk() -> void:
-	var cost = {"core_shard": 3, "wood": 2}
+	var cost = {"core_shard": 6, "wood": 5}
 	if not _has(cost):
 		mats_label.text = "%s   Not enough materials for +ATK." % mats_label.text
 		return
@@ -125,7 +127,7 @@ func _upgrade_atk() -> void:
 	_refresh()
 
 func _upgrade_def() -> void:
-	var cost = {"core_shard": 3, "stone": 2}
+	var cost = {"core_shard": 6, "stone": 5}
 	if not _has(cost):
 		mats_label.text = "%s   Not enough materials for +DEF." % mats_label.text
 		return

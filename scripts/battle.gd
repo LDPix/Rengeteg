@@ -16,7 +16,10 @@ var wild_mon: Dictionary
 var active_index := 0
 
 func _ready() -> void:
-	active_index = 0
+	active_index = _find_first_alive_index()
+	if active_index == -1:
+		_back_to_overworld()
+		return
 	player_mon = GameState.party[active_index]
 	wild_mon = GameState.new_creature_instance(GameState.pending_wild_id)
 	_update_ui()
@@ -30,11 +33,13 @@ func _update_ui() -> void:
 	info.text = "Choose an action."
 	player_card.set_details(
 		"%s" % player_mon["name"],
-		"HP %d / %d" % [player_mon["hp"], player_mon["hp_max"]]
+		"HP %d / %d" % [player_mon["hp"], player_mon["hp_max"]],
+		str(GameData.creatures[player_mon["id"]].get("sprite_path", ""))
 	)
 	enemy_card.set_details(
 		"%s" % wild_mon["name"],
-		"HP %d / %d" % [wild_mon["hp"], wild_mon["hp_max"]]
+		"HP %d / %d" % [wild_mon["hp"], wild_mon["hp_max"]],
+		str(GameData.creatures[wild_mon["id"]].get("sprite_path", ""))
 	)
 	var map_id := GameState.current_map_id
 	var display_name = str(GameData.maps[map_id].get("display_name", map_id))
@@ -94,6 +99,14 @@ func _find_next_alive_index(from_index: int) -> int:
 		if int(mon.get("hp", 0)) > 0:
 			return i
 	return from_index
+
+
+func _find_first_alive_index() -> int:
+	for i in range(GameState.party.size()):
+		var mon: Dictionary = GameState.party[i]
+		if int(mon.get("hp", 0)) > 0:
+			return i
+	return -1
 	
 func _on_capture() -> void:
 	# Capture chance increases as HP lowers
@@ -139,12 +152,26 @@ func _lose_battle() -> void:
 	_back_to_overworld()
 
 func _award_drops(captured: bool) -> void:
-	# MVP: always give a little
-	GameState.materials["core_shard"] += 1
-	GameState.materials["species_mat"] += 1
-	# Small bonus if you defeat instead of capture (tunable)
+	var core_shards: int = randi_range(1, 2)
+	var species_material: int = randi_range(1, 2)
+	var extra_material_amount: int = randi_range(1, 2)
+	var extra_material_type: String = _pick_map_reward_material()
+
 	if not captured:
-		GameState.materials["stone"] += 1
+		extra_material_amount += 1
+
+	GameState.materials["core_shard"] += core_shards
+	GameState.materials["species_mat"] += species_material
+	GameState.materials[extra_material_type] = GameState.materials.get(extra_material_type, 0) + extra_material_amount
+
+	var outcome: String = "Capture rewards" if captured else "Victory rewards"
+	info.text = "%s: +%d Core, +%d Species, +%d %s" % [
+		outcome,
+		core_shards,
+		species_material,
+		extra_material_amount,
+		_pretty_material_name(extra_material_type),
+	]
 		
 func _auto_switch_if_needed() -> bool:
 	if player_mon["hp"] > 0:
@@ -167,5 +194,29 @@ func _auto_switch_if_needed() -> bool:
 
 func _back_to_overworld() -> void:
 	var map_id := GameState.current_map_id
-	var scene_path = str(GameData.maps[map_id].get("scene_path", "res://scenes/overworld/Overworld.tscn"))
+	var scene_path := GameState.battle_return_scene_path
+	if scene_path.is_empty():
+		scene_path = str(GameData.maps[map_id].get("scene_path", "res://scenes/overworld/Overworld_Verdant.tscn"))
 	get_tree().change_scene_to_file(scene_path)
+
+
+func _pick_map_reward_material() -> String:
+	match GameState.current_map_id:
+		"verdant_wilds":
+			return "wood" if randf() < 0.5 else "herb"
+		"ember_caves":
+			return "stone" if randf() < 0.5 else "crystal"
+		_:
+			return "wood"
+
+
+func _pretty_material_name(material_type: String) -> String:
+	match material_type:
+		"core_shard":
+			return "Core Shards"
+		"species_mat":
+			return "Species Mat"
+		"crystal":
+			return "Crystal"
+		_:
+			return material_type.capitalize()

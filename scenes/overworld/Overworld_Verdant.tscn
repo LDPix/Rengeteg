@@ -1,105 +1,120 @@
-[gd_scene load_steps=13 format=3]
+[gd_scene load_steps=9 format=3]
 
 [ext_resource type="Script" path="res://scripts/overworld.gd" id="1_overworld"]
-[ext_resource type="Script" path="res://scripts/player.gd" id="2_player"]
-[ext_resource type="Texture2D" path="res://assets/Simple_Stick_Figure.svg.png" id="3_player_tex"]
+[ext_resource type="Script" path="res://scripts/overworld_tile_layer.gd" id="2_tile_layer"]
+[ext_resource type="PackedScene" path="res://scenes/overworld/Player.tscn" id="3_player"]
 [ext_resource type="PackedScene" path="res://scenes/overworld/ResourceNode.tscn" id="4_resource"]
 [ext_resource type="PackedScene" path="res://scenes/overworld/ExitZone.tscn" id="5_exit"]
 
-[sub_resource type="RectangleShape2D" id="1_player_shape"]
-size = Vector2(32, 32)
-
-[sub_resource type="RectangleShape2D" id="2_encounter_shape"]
+[sub_resource type="RectangleShape2D" id="1_encounter_shape"]
 size = Vector2(288, 192)
 
-[sub_resource type="RectangleShape2D" id="3_encounter_shape_small"]
+[sub_resource type="RectangleShape2D" id="2_encounter_shape_small"]
 size = Vector2(160, 96)
 
 [node name="Overworld" type="Node2D"]
 script = ExtResource("1_overworld")
 encounter_chance = 0.1
 
+[node name="BackgroundRoot" type="CanvasLayer" parent="."]
+layer = -1
+
+[node name="BackgroundFill" type="ColorRect" parent="BackgroundRoot"]
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+color = Color(0.839216, 0.901961, 0.807843, 1)
+
+[node name="ForestFloorBand" type="ColorRect" parent="BackgroundRoot"]
+offset_left = 0.0
+offset_top = 560.0
+offset_right = 1600.0
+offset_bottom = 900.0
+color = Color(0.721569, 0.819608, 0.678431, 1)
+
+[node name="CanopyShadowLeft" type="Polygon2D" parent="BackgroundRoot"]
+position = Vector2(86, 174)
+color = Color(0.309804, 0.486275, 0.27451, 0.18)
+polygon = PackedVector2Array(-180, -150, -30, -192, 102, -126, 138, 28, 72, 170, -76, 202, -180, 88)
+
+[node name="CanopyShadowRight" type="Polygon2D" parent="BackgroundRoot"]
+position = Vector2(1490, 206)
+color = Color(0.309804, 0.486275, 0.27451, 0.16)
+polygon = PackedVector2Array(-150, -186, -18, -152, 74, -56, 94, 92, 8, 192, -138, 158, -184, 8)
+
+[node name="BushSilhouetteLeft" type="Polygon2D" parent="BackgroundRoot"]
+position = Vector2(140, 724)
+color = Color(0.356863, 0.564706, 0.333333, 0.2)
+polygon = PackedVector2Array(-120, 34, -86, -28, -24, -42, 40, -18, 112, 24, 126, 74, 36, 104, -56, 88)
+
+[node name="BushSilhouetteRight" type="Polygon2D" parent="BackgroundRoot"]
+position = Vector2(1430, 760)
+color = Color(0.356863, 0.564706, 0.333333, 0.18)
+polygon = PackedVector2Array(-140, 28, -92, -24, -14, -48, 64, -12, 132, 40, 146, 88, 52, 110, -58, 92)
+
+[node name="ClearingGlow" type="Polygon2D" parent="BackgroundRoot"]
+position = Vector2(804, 452)
+color = Color(0.972549, 0.933333, 0.772549, 0.28)
+polygon = PackedVector2Array(-220, -84, -110, -136, 64, -132, 192, -70, 238, 8, 196, 82, 72, 128, -122, 112, -228, 42)
+
+[node name="TreeLineTop" type="ColorRect" parent="BackgroundRoot"]
+offset_left = 0.0
+offset_top = 0.0
+offset_right = 1600.0
+offset_bottom = 110.0
+color = Color(0.282353, 0.443137, 0.25098, 0.12)
+
 [node name="TileMap_Background" type="TileMapLayer" parent="."]
-modulate = Color(0.78, 0.9, 0.74, 1)
-
-[node name="Backdrop" type="Polygon2D" parent="TileMap_Background"]
-color = Color(0.78, 0.9, 0.74, 1)
-polygon = PackedVector2Array(-352, -256, 352, -256, 352, 256, -352, 256)
-
-[node name="CanopyShade" type="Polygon2D" parent="TileMap_Background"]
-color = Color(0.65, 0.79, 0.6, 0.35)
-polygon = PackedVector2Array(-352, -256, 352, -256, 352, -170, -352, -170)
+position = Vector2(-320, -224)
+script = ExtResource("2_tile_layer")
+layout_rows = PackedStringArray("gggggggggggggggggggg", "gggggggggggggggggggg", "gggggggggggggggggggg", "gggggggggggggggggggg", "gggggggggggggggggggg", "gggggggggggggggggggg", "gggggggggggggggggggg", "gggggggggggggggggggg", "gggggggggggggggggggg", "gggggggggggggggggggg", "gggggggggggggggggggg", "gggggggggggggggggggg", "gggggggggggggggggggg", "gggggggggggggggggggg", "gggggggggggggggggggg")
+tile_paths = {
+"g": "res://assets/tiles/grass.png"
+}
 
 [node name="TileMap_Ground" type="TileMapLayer" parent="."]
-modulate = Color(0.56, 0.77, 0.46, 1)
-
-[node name="CentralGrassField" type="Polygon2D" parent="TileMap_Ground"]
-color = Color(0.54, 0.75, 0.43, 1)
-polygon = PackedVector2Array(-176, -128, 112, -144, 224, -32, 176, 112, -64, 144, -208, 48)
-
-[node name="LowerTrail" type="Polygon2D" parent="TileMap_Ground"]
-color = Color(0.82, 0.73, 0.56, 1)
-polygon = PackedVector2Array(-320, 160, -176, 176, -32, 168, 128, 176, 288, 160, 288, 224, -320, 224)
-
-[node name="CentralClearing" type="Polygon2D" parent="TileMap_Ground"]
-color = Color(0.9, 0.84, 0.66, 1)
-polygon = PackedVector2Array(-64, -48, 32, -72, 96, -24, 80, 56, -8, 80, -80, 24)
-
-[node name="FlowerPatchNorth" type="Polygon2D" parent="TileMap_Ground"]
-color = Color(0.95, 0.88, 0.62, 0.65)
-polygon = PackedVector2Array(-220, -148, -186, -160, -154, -130, -170, -100, -214, -112)
-
-[node name="FlowerPatchSouth" type="Polygon2D" parent="TileMap_Ground"]
-color = Color(0.93, 0.82, 0.7, 0.65)
-polygon = PackedVector2Array(124, 84, 170, 74, 198, 104, 184, 142, 136, 134)
+position = Vector2(-320, -224)
+script = ExtResource("2_tile_layer")
+layout_rows = PackedStringArray("....................", "...f................", "....f.....ffff......", "......gggggggg..f...", ".....gggggggggg.....", ".....gggdddgggg.....", "...f.gggddddgggg....", ".....ggddddddgg.....", "....gggddddddggg....", ".....gggddddggg..f..", "......ggddddgg......", "..f....ggddgg.......", ".....dddddddddddd...", "...ddddddddddddddd..", "....................")
+tile_paths = {
+"d": "res://assets/tiles/dirt.png",
+"f": "res://assets/tiles/flowers.png",
+"g": "res://assets/tiles/grass.png"
+}
 
 [node name="TileMap_Objects" type="TileMapLayer" parent="."]
-modulate = Color(0.24, 0.45, 0.22, 1)
+position = Vector2(-320, -224)
+script = ExtResource("2_tile_layer")
+layout_rows = PackedStringArray("ttt.t..........tttt.", "tt...t........tt..t.", "t...................", "..................t.", "t..................t", "....................", "t..................t", "....................", "....................", "t.................t.", "...b...........b....", "t..............t....", "..t.................", "....t.............t.", ".....t..............")
+tile_paths = {
+"b": "res://assets/resources/bush.png",
+"t": "res://assets/resources/tree.png"
+}
 
-[node name="TreeNorthWest" type="Polygon2D" parent="TileMap_Objects"]
-position = Vector2(-248, -170)
-color = Color(0.24, 0.45, 0.22, 1)
-polygon = PackedVector2Array(-28, 0, -16, -28, 16, -28, 28, 0, 16, 24, -16, 24)
+[node name="ResourceNodes" type="Node2D" parent="."]
 
-[node name="TreeWestMid" type="Polygon2D" parent="TileMap_Objects"]
-position = Vector2(-286, -24)
-color = Color(0.24, 0.45, 0.22, 1)
-polygon = PackedVector2Array(-28, 0, -16, -28, 16, -28, 28, 0, 16, 24, -16, 24)
+[node name="TreeNodeWest" parent="ResourceNodes" instance=ExtResource("4_resource")]
+position = Vector2(-252, 88)
+resource_type = "wood"
+visual_type = "tree"
+min_amount = 3
+max_amount = 6
 
-[node name="TreeSouthWest" type="Polygon2D" parent="TileMap_Objects"]
-position = Vector2(-214, 110)
-color = Color(0.24, 0.45, 0.22, 1)
-polygon = PackedVector2Array(-28, 0, -16, -28, 16, -28, 28, 0, 16, 24, -16, 24)
+[node name="TreeNodeNorth" parent="ResourceNodes" instance=ExtResource("4_resource")]
+position = Vector2(-112, -182)
+resource_type = "wood"
+visual_type = "tree"
+min_amount = 3
+max_amount = 6
 
-[node name="TreeNorthEast" type="Polygon2D" parent="TileMap_Objects"]
-position = Vector2(232, -168)
-color = Color(0.24, 0.45, 0.22, 1)
-polygon = PackedVector2Array(-28, 0, -16, -28, 16, -28, 28, 0, 16, 24, -16, 24)
-
-[node name="TreeEastMid" type="Polygon2D" parent="TileMap_Objects"]
-position = Vector2(280, -24)
-color = Color(0.24, 0.45, 0.22, 1)
-polygon = PackedVector2Array(-28, 0, -16, -28, 16, -28, 28, 0, 16, 24, -16, 24)
-
-[node name="TreeSouthEast" type="Polygon2D" parent="TileMap_Objects"]
-position = Vector2(228, 102)
-color = Color(0.24, 0.45, 0.22, 1)
-polygon = PackedVector2Array(-28, 0, -16, -28, 16, -28, 28, 0, 16, 24, -16, 24)
-
-[node name="BushNorth" type="Polygon2D" parent="TileMap_Objects"]
-position = Vector2(-86, -172)
-color = Color(0.32, 0.56, 0.3, 1)
-polygon = PackedVector2Array(-22, 0, -12, -14, 12, -14, 22, 0, 12, 14, -12, 14)
-
-[node name="BushEast" type="Polygon2D" parent="TileMap_Objects"]
-position = Vector2(158, 14)
-color = Color(0.32, 0.56, 0.3, 1)
-polygon = PackedVector2Array(-22, 0, -12, -14, 12, -14, 22, 0, 12, 14, -12, 14)
-
-[node name="BushSouth" type="Polygon2D" parent="TileMap_Objects"]
-position = Vector2(-24, 166)
-color = Color(0.32, 0.56, 0.3, 1)
-polygon = PackedVector2Array(-22, 0, -12, -14, 12, -14, 22, 0, 12, 14, -12, 14)
+[node name="BushNodeEast" parent="ResourceNodes" instance=ExtResource("4_resource")]
+position = Vector2(232, -84)
+resource_type = "herb"
+visual_type = "bush"
+min_amount = 2
+max_amount = 4
 
 [node name="EncounterZones" type="Node2D" parent="."]
 
@@ -107,52 +122,21 @@ polygon = PackedVector2Array(-22, 0, -12, -14, 12, -14, 22, 0, 12, 14, -12, 14)
 position = Vector2(8, 0)
 
 [node name="CollisionShape2D" type="CollisionShape2D" parent="EncounterZones/CentralGrassEncounter"]
-shape = SubResource("2_encounter_shape")
-
-[node name="Visual" type="Polygon2D" parent="EncounterZones/CentralGrassEncounter"]
-color = Color(0.3, 0.62, 0.24, 0.18)
-polygon = PackedVector2Array(-144, -96, 112, -96, 144, -8, 120, 96, -96, 96, -144, 24)
+shape = SubResource("1_encounter_shape")
 
 [node name="ClearingRimEncounter" type="Area2D" parent="EncounterZones"]
 position = Vector2(4, 4)
 
 [node name="CollisionShape2D" type="CollisionShape2D" parent="EncounterZones/ClearingRimEncounter"]
-shape = SubResource("3_encounter_shape_small")
-
-[node name="Visual" type="Polygon2D" parent="EncounterZones/ClearingRimEncounter"]
-color = Color(0.34, 0.68, 0.28, 0.12)
-polygon = PackedVector2Array(-80, -48, 64, -48, 80, 16, 56, 48, -64, 48, -80, 0)
-
-[node name="ResourceNodes" type="Node2D" parent="."]
-
-[node name="TreeNodeWest" parent="ResourceNodes" instance=ExtResource("4_resource")]
-position = Vector2(-252, 88)
-resource_type = "wood"
-
-[node name="TreeNodeNorth" parent="ResourceNodes" instance=ExtResource("4_resource")]
-position = Vector2(-112, -182)
-resource_type = "wood"
-
-[node name="TreeNodeEast" parent="ResourceNodes" instance=ExtResource("4_resource")]
-position = Vector2(232, -84)
-resource_type = "herb"
+shape = SubResource("2_encounter_shape_small")
 
 [node name="PlayerSpawn" type="Marker2D" parent="."]
 position = Vector2(-256, 160)
 
-[node name="Player" type="CharacterBody2D" parent="."]
+[node name="Player" parent="." instance=ExtResource("3_player")]
 position = Vector2(-256, 160)
-script = ExtResource("2_player")
-
-[node name="Camera2D" type="Camera2D" parent="Player"]
-current = true
-
-[node name="Sprite2D" type="Sprite2D" parent="Player"]
-scale = Vector2(0.05, 0.05)
-texture = ExtResource("3_player_tex")
-
-[node name="CollisionShape2D" type="CollisionShape2D" parent="Player"]
-shape = SubResource("1_player_shape")
 
 [node name="ExitZone" parent="." instance=ExtResource("5_exit")]
 position = Vector2(256, 160)
+next_scene_path = "res://scenes/Camp.tscn"
+marker_style = "forest"

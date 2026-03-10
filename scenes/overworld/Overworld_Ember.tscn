@@ -1,96 +1,119 @@
-[gd_scene load_steps=15 format=3]
+[gd_scene load_steps=10 format=3]
 
 [ext_resource type="Script" path="res://scripts/overworld.gd" id="1_overworld"]
-[ext_resource type="Script" path="res://scripts/player.gd" id="2_player"]
-[ext_resource type="Texture2D" path="res://assets/Simple_Stick_Figure.svg.png" id="3_player_tex"]
+[ext_resource type="Script" path="res://scripts/overworld_tile_layer.gd" id="2_tile_layer"]
+[ext_resource type="PackedScene" path="res://scenes/overworld/Player.tscn" id="3_player"]
 [ext_resource type="PackedScene" path="res://scenes/overworld/ResourceNode.tscn" id="4_resource"]
 [ext_resource type="PackedScene" path="res://scenes/overworld/ExitZone.tscn" id="5_exit"]
 
-[sub_resource type="RectangleShape2D" id="1_player_shape"]
-size = Vector2(32, 32)
-
-[sub_resource type="RectangleShape2D" id="2_left_corridor_shape"]
+[sub_resource type="RectangleShape2D" id="1_left_corridor"]
 size = Vector2(192, 96)
 
-[sub_resource type="RectangleShape2D" id="3_center_corridor_shape"]
+[sub_resource type="RectangleShape2D" id="2_center_corridor"]
 size = Vector2(160, 96)
 
-[sub_resource type="RectangleShape2D" id="4_right_corridor_shape"]
+[sub_resource type="RectangleShape2D" id="3_right_corridor"]
 size = Vector2(192, 96)
 
 [node name="Overworld" type="Node2D"]
 script = ExtResource("1_overworld")
 encounter_chance = 0.16
 
+[node name="BackgroundRoot" type="CanvasLayer" parent="."]
+layer = -1
+
+[node name="BackgroundFill" type="ColorRect" parent="BackgroundRoot"]
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+color = Color(0.156863, 0.12549, 0.12549, 1)
+
+[node name="BasaltBand" type="ColorRect" parent="BackgroundRoot"]
+offset_left = 0.0
+offset_top = 548.0
+offset_right = 1600.0
+offset_bottom = 900.0
+color = Color(0.2, 0.164706, 0.164706, 1)
+
+[node name="LavaGlowLeft" type="Polygon2D" parent="BackgroundRoot"]
+position = Vector2(210, 702)
+color = Color(0.898039, 0.305882, 0.141176, 0.24)
+polygon = PackedVector2Array(-220, 52, -164, -18, -74, -56, 34, -74, 128, -22, 202, 54, 136, 108, 12, 136, -128, 116)
+
+[node name="LavaGlowRight" type="Polygon2D" parent="BackgroundRoot"]
+position = Vector2(1360, 164)
+color = Color(0.898039, 0.305882, 0.141176, 0.18)
+polygon = PackedVector2Array(-188, 18, -124, -44, -12, -84, 108, -42, 188, 26, 144, 98, 36, 128, -102, 102)
+
+[node name="CrystalSilhouetteLeft" type="Polygon2D" parent="BackgroundRoot"]
+position = Vector2(116, 242)
+color = Color(0.486275, 0.631373, 0.858824, 0.2)
+polygon = PackedVector2Array(-44, 122, -16, -42, 24, 20, 52, 140, 6, 164)
+
+[node name="CrystalSilhouetteRight" type="Polygon2D" parent="BackgroundRoot"]
+position = Vector2(1450, 640)
+color = Color(0.486275, 0.631373, 0.858824, 0.16)
+polygon = PackedVector2Array(-58, 138, -22, -56, 26, 10, 64, 152, 8, 184)
+
+[node name="CaveArchTop" type="Polygon2D" parent="BackgroundRoot"]
+position = Vector2(798, 72)
+color = Color(0.0666667, 0.0588235, 0.0588235, 0.34)
+polygon = PackedVector2Array(-820, 42, -690, -84, -496, -152, -236, -196, 38, -204, 314, -174, 552, -120, 748, -48, 824, 46, 824, 124, -820, 124)
+
+[node name="RockShadowBottom" type="Polygon2D" parent="BackgroundRoot"]
+position = Vector2(806, 862)
+color = Color(0.0862745, 0.0784314, 0.0784314, 0.3)
+polygon = PackedVector2Array(-840, -32, -650, -86, -410, -118, -102, -138, 214, -124, 482, -92, 706, -44, 840, 8, 840, 108, -840, 108)
+
 [node name="TileMap_Background" type="TileMapLayer" parent="."]
-modulate = Color(0.18, 0.14, 0.13, 1)
-
-[node name="CaveBackdrop" type="Polygon2D" parent="TileMap_Background"]
-color = Color(0.18, 0.14, 0.13, 1)
-polygon = PackedVector2Array(-352, -256, 352, -256, 352, 256, -352, 256)
-
-[node name="UpperCavernShadow" type="Polygon2D" parent="TileMap_Background"]
-color = Color(0.08, 0.06, 0.06, 0.45)
-polygon = PackedVector2Array(-352, -256, 352, -256, 352, -156, -352, -184)
+position = Vector2(-320, -224)
+script = ExtResource("2_tile_layer")
+layout_rows = PackedStringArray("wwwwwwwwwwwwwwwwwwww", "wwwwwwwwwwwwwwwwwwww", "wwwwwwwwwwwwwwwwwwww", "wwwwwwwwwwwwwwwwwwww", "wwwwwwwwwwwwwwwwwwww", "wwwwwwwwwwwwwwwwwwww", "wwwwwwwwwwwwwwwwwwww", "wwwwwwwwwwwwwwwwwwww", "wwwwwwwwwwwwwwwwwwww", "wwwwwwwwwwwwwwwwwwww", "wwwwwwwwwwwwwwwwwwww", "wwwwwwwwwwwwwwwwwwww", "wwwwwwwwwwwwwwwwwwww", "wwwwwwwwwwwwwwwwwwww", "wwwwwwwwwwwwwwwwwwww")
+tile_paths = {
+"w": "res://assets/tiles/cave_wall.png"
+}
 
 [node name="TileMap_Ground" type="TileMapLayer" parent="."]
-modulate = Color(0.42, 0.35, 0.3, 1)
-
-[node name="MainStonePath" type="Polygon2D" parent="TileMap_Ground"]
-color = Color(0.46, 0.39, 0.34, 1)
-polygon = PackedVector2Array(-320, 192, -208, 192, -136, 128, -72, 128, -8, 64, 72, 64, 144, 120, 256, 120, 320, 152, 320, 224, 224, 224, 120, 176, 8, 176, -88, 224, -320, 224)
-
-[node name="UpperBranchPath" type="Polygon2D" parent="TileMap_Ground"]
-color = Color(0.4, 0.34, 0.3, 1)
-polygon = PackedVector2Array(-120, 32, -16, 32, 64, -24, 168, -24, 224, 32, 160, 80, 48, 80, -40, 128, -120, 112)
-
-[node name="CrackedGroundLeft" type="Polygon2D" parent="TileMap_Ground"]
-color = Color(0.33, 0.27, 0.24, 1)
-polygon = PackedVector2Array(-280, 96, -224, 80, -176, 112, -192, 160, -256, 160)
-
-[node name="CrackedGroundRight" type="Polygon2D" parent="TileMap_Ground"]
-color = Color(0.33, 0.27, 0.24, 1)
-polygon = PackedVector2Array(128, -16, 208, -16, 248, 32, 200, 72, 120, 56)
+position = Vector2(-320, -224)
+script = ExtResource("2_tile_layer")
+layout_rows = PackedStringArray("....................", "....................", ".........ssss.......", "......sssssssssss...", ".....sss......ssss..", "....sss.........ss..", "...sss...ss......ss.", "..sss..ssssss.....s.", ".sss..ssssssss....s.", ".ss..ssssssssss...s.", ".ss...sssssssss..ss.", "..ss...sssssss..sss.", "...ssssssssss..ssss.", "....ssssssssssssss..", ".....ssssssssssss...")
+tile_paths = {
+"s": "res://assets/tiles/stone.png"
+}
 
 [node name="TileMap_Objects" type="TileMapLayer" parent="."]
-modulate = Color(0.22, 0.2, 0.2, 1)
+position = Vector2(-320, -224)
+script = ExtResource("2_tile_layer")
+layout_rows = PackedStringArray("wwwww..wwwwww..wwwww", "ww..............w..w", "w......lll.........w", "w.....lllll........w", "w....lllllll.......w", "w..................w", "w........lll.......w", "w.......lllll......w", "w......lllllll.....w", "w..................w", "w..............lll.w", "w............lllll.w", "ww...........lllllww", "www.........lllllwww", "wwwww..wwwwww..wwwww")
+tile_paths = {
+"l": "res://assets/tiles/lava.png",
+"w": "res://assets/tiles/cave_wall.png"
+}
 
-[node name="LavaPoolWest" type="Polygon2D" parent="TileMap_Objects"]
-color = Color(0.86, 0.26, 0.14, 0.95)
-polygon = PackedVector2Array(-304, 12, -232, -20, -152, 12, -160, 92, -248, 120, -320, 88)
+[node name="ResourceNodes" type="Node2D" parent="."]
 
-[node name="LavaPoolCenter" type="Polygon2D" parent="TileMap_Objects"]
-color = Color(0.9, 0.3, 0.12, 0.95)
-polygon = PackedVector2Array(-40, -120, 56, -136, 120, -88, 104, -8, 24, 8, -56, -32)
+[node name="RockNodeWest" parent="ResourceNodes" instance=ExtResource("4_resource")]
+position = Vector2(-250, -110)
+resource_type = "stone"
+visual_type = "rock"
+min_amount = 3
+max_amount = 5
 
-[node name="LavaPoolEast" type="Polygon2D" parent="TileMap_Objects"]
-color = Color(0.88, 0.24, 0.12, 0.95)
-polygon = PackedVector2Array(136, 72, 248, 40, 320, 80, 304, 168, 200, 176, 136, 136)
+[node name="RockNodeCenter" parent="ResourceNodes" instance=ExtResource("4_resource")]
+position = Vector2(-24, 28)
+resource_type = "stone"
+visual_type = "rock"
+min_amount = 3
+max_amount = 5
 
-[node name="RockClusterNorthWest" type="Polygon2D" parent="TileMap_Objects"]
-position = Vector2(-228, -128)
-color = Color(0.24, 0.24, 0.26, 1)
-polygon = PackedVector2Array(-38, 8, -20, -22, 20, -30, 44, 0, 10, 24, -26, 26)
-
-[node name="RockClusterNorthEast" type="Polygon2D" parent="TileMap_Objects"]
-position = Vector2(228, -132)
-color = Color(0.24, 0.24, 0.26, 1)
-polygon = PackedVector2Array(-38, 8, -20, -22, 20, -30, 44, 0, 10, 24, -26, 26)
-
-[node name="RockClusterSouth" type="Polygon2D" parent="TileMap_Objects"]
-position = Vector2(40, 214)
-color = Color(0.24, 0.24, 0.26, 1)
-polygon = PackedVector2Array(-38, 8, -20, -22, 20, -30, 44, 0, 10, 24, -26, 26)
-
-[node name="CrystalClusterLeft" type="Polygon2D" parent="TileMap_Objects"]
-position = Vector2(-100, 20)
-color = Color(0.64, 0.72, 0.9, 0.9)
-polygon = PackedVector2Array(-16, 16, -8, -22, 6, -12, 16, 18, 0, 26)
-
-[node name="CrystalClusterRight" type="Polygon2D" parent="TileMap_Objects"]
-position = Vector2(160, -54)
-color = Color(0.64, 0.72, 0.9, 0.9)
-polygon = PackedVector2Array(-16, 16, -8, -22, 6, -12, 16, 18, 0, 26)
+[node name="CrystalNodeEast" parent="ResourceNodes" instance=ExtResource("4_resource")]
+position = Vector2(232, -110)
+resource_type = "crystal"
+visual_type = "crystal"
+min_amount = 2
+max_amount = 4
 
 [node name="EncounterZones" type="Node2D" parent="."]
 
@@ -98,62 +121,27 @@ polygon = PackedVector2Array(-16, 16, -8, -22, 6, -12, 16, 18, 0, 26)
 position = Vector2(-208, 144)
 
 [node name="CollisionShape2D" type="CollisionShape2D" parent="EncounterZones/LeftCorridorEncounter"]
-shape = SubResource("2_left_corridor_shape")
-
-[node name="Visual" type="Polygon2D" parent="EncounterZones/LeftCorridorEncounter"]
-color = Color(0.65, 0.24, 0.12, 0.12)
-polygon = PackedVector2Array(-96, -48, 80, -48, 96, 0, 48, 48, -96, 48)
+shape = SubResource("1_left_corridor")
 
 [node name="CenterCorridorEncounter" type="Area2D" parent="EncounterZones"]
 position = Vector2(8, 96)
 
 [node name="CollisionShape2D" type="CollisionShape2D" parent="EncounterZones/CenterCorridorEncounter"]
-shape = SubResource("3_center_corridor_shape")
-
-[node name="Visual" type="Polygon2D" parent="EncounterZones/CenterCorridorEncounter"]
-color = Color(0.72, 0.28, 0.14, 0.12)
-polygon = PackedVector2Array(-80, -48, 80, -48, 80, 48, -80, 48)
+shape = SubResource("2_center_corridor")
 
 [node name="UpperBranchEncounter" type="Area2D" parent="EncounterZones"]
 position = Vector2(88, 24)
 
 [node name="CollisionShape2D" type="CollisionShape2D" parent="EncounterZones/UpperBranchEncounter"]
-shape = SubResource("4_right_corridor_shape")
-
-[node name="Visual" type="Polygon2D" parent="EncounterZones/UpperBranchEncounter"]
-color = Color(0.76, 0.3, 0.15, 0.12)
-polygon = PackedVector2Array(-96, -48, 80, -48, 96, 0, 64, 48, -80, 48)
-
-[node name="ResourceNodes" type="Node2D" parent="."]
-
-[node name="RockNodeWest" parent="ResourceNodes" instance=ExtResource("4_resource")]
-position = Vector2(-250, -110)
-resource_type = "stone"
-
-[node name="RockNodeCenter" parent="ResourceNodes" instance=ExtResource("4_resource")]
-position = Vector2(-24, 28)
-resource_type = "stone"
-
-[node name="CrystalNodeEast" parent="ResourceNodes" instance=ExtResource("4_resource")]
-position = Vector2(232, -110)
-resource_type = "stone"
+shape = SubResource("3_right_corridor")
 
 [node name="PlayerSpawn" type="Marker2D" parent="."]
 position = Vector2(-256, 192)
 
-[node name="Player" type="CharacterBody2D" parent="."]
+[node name="Player" parent="." instance=ExtResource("3_player")]
 position = Vector2(-256, 192)
-script = ExtResource("2_player")
-
-[node name="Camera2D" type="Camera2D" parent="Player"]
-current = true
-
-[node name="Sprite2D" type="Sprite2D" parent="Player"]
-scale = Vector2(0.05, 0.05)
-texture = ExtResource("3_player_tex")
-
-[node name="CollisionShape2D" type="CollisionShape2D" parent="Player"]
-shape = SubResource("1_player_shape")
 
 [node name="ExitZone" parent="." instance=ExtResource("5_exit")]
 position = Vector2(256, 192)
+next_scene_path = "res://scenes/Camp.tscn"
+marker_style = "cave"

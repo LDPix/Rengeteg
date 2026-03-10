@@ -10,6 +10,7 @@ var creatures := {
 		"base_hp": 30,
 		"base_atk": 8,
 		"base_def": 6,
+		"sprite_path": "res://assets/creatures/mossling.png",
 	},
 	"cinder_pup": {
 		"name": "Cinder Pup",
@@ -17,6 +18,7 @@ var creatures := {
 		"base_hp": 22,
 		"base_atk": 11,
 		"base_def": 4,
+		"sprite_path": "res://assets/creatures/cinder_pup.png",
 	},
 	"shellhorn": {
 		"name": "Shellhorn",
@@ -24,6 +26,7 @@ var creatures := {
 		"base_hp": 36,
 		"base_atk": 6,
 		"base_def": 9,
+		"sprite_path": "res://assets/creatures/shellhorn.png",
 	},
 }
 
@@ -36,7 +39,7 @@ var maps := {
 	"ember_caves": {
 		"display_name": "Ember Caves",
 		"scene_path": "res://scenes/overworld/Overworld_Ember.tscn",
-		"wild_pool": ["cinder_pup"],
+		"wild_pool": ["cinder_pup", "cinder_pup", "shellhorn"],
 	},
 }
 
