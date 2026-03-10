@@ -222,15 +222,5 @@ text = "VENTURE"
 [node name="RightSpacer" type="Control" parent="Panel/CenterRow/VBoxContainer/PrimaryAction"]
 size_flags_horizontal = 3
 
-[node name="FooterRow" type="HBoxContainer" parent="Panel/CenterRow/VBoxContainer"]
-
-[node name="BackButton" type="Button" parent="Panel/CenterRow/VBoxContainer/FooterRow"]
-size_flags_horizontal = 0
-theme_override_font_sizes/font_size = 14
-text = "Back"
-
-[node name="RightSpacer" type="Control" parent="Panel/CenterRow/VBoxContainer/FooterRow"]
-size_flags_horizontal = 3
-
 [node name="RightSpacer" type="Control" parent="Panel/CenterRow"]
 size_flags_horizontal = 3

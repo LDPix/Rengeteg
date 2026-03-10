@@ -97,21 +97,27 @@ tile_paths = {
 [node name="RockNodeWest" parent="ResourceNodes" instance=ExtResource("4_resource")]
 position = Vector2(-250, -110)
 resource_type = "stone"
-visual_type = "rock"
+visual_type = "basalt"
+biome_type = "ember_caves"
+rarity = "common"
 min_amount = 3
 max_amount = 5
 
 [node name="RockNodeCenter" parent="ResourceNodes" instance=ExtResource("4_resource")]
 position = Vector2(-24, 28)
 resource_type = "stone"
-visual_type = "rock"
+visual_type = "basalt"
+biome_type = "ember_caves"
+rarity = "common"
 min_amount = 3
 max_amount = 5
 
 [node name="CrystalNodeEast" parent="ResourceNodes" instance=ExtResource("4_resource")]
 position = Vector2(232, -110)
 resource_type = "crystal"
-visual_type = "crystal"
+visual_type = "lava_crystal"
+biome_type = "ember_caves"
+rarity = "uncommon"
 min_amount = 2
 max_amount = 4
 

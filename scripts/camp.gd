@@ -9,7 +9,6 @@ const MAP_OPTION_BUTTON_SCENE := preload("res://scenes/ui/MapOptionButton.tscn")
 @onready var hp_btn := $Panel/CenterRow/VBoxContainer/UpgradesCard/Padding/Content/UpgradeButtons/HpButton
 @onready var atk_btn := $Panel/CenterRow/VBoxContainer/UpgradesCard/Padding/Content/UpgradeButtons/AtkButton
 @onready var def_btn := $Panel/CenterRow/VBoxContainer/UpgradesCard/Padding/Content/UpgradeButtons/DefButton
-@onready var back_btn := $Panel/CenterRow/VBoxContainer/FooterRow/BackButton
 @onready var map_label := $Panel/CenterRow/VBoxContainer/MapCard/Padding/Content/MapLabel
 @onready var map_list := $Panel/CenterRow/VBoxContainer/MapCard/Padding/Content/MapList
 @onready var venture_btn := $Panel/CenterRow/VBoxContainer/PrimaryAction/VentureButton
@@ -18,7 +17,6 @@ func _ready() -> void:
 	hp_btn.pressed.connect(_upgrade_hp)
 	atk_btn.pressed.connect(_upgrade_atk)
 	def_btn.pressed.connect(_upgrade_def)
-	back_btn.pressed.connect(_close)
 	venture_btn.pressed.connect(_venture)
 	hp_btn.text = "+HP (6 Core, 5 Herb)"
 	atk_btn.text = "+ATK (6 Core, 5 Wood)"

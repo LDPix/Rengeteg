@@ -98,21 +98,27 @@ tile_paths = {
 [node name="TreeNodeWest" parent="ResourceNodes" instance=ExtResource("4_resource")]
 position = Vector2(-252, 88)
 resource_type = "wood"
-visual_type = "tree"
+visual_type = "stump"
+biome_type = "verdant_wilds"
+rarity = "common"
 min_amount = 3
 max_amount = 6
 
 [node name="TreeNodeNorth" parent="ResourceNodes" instance=ExtResource("4_resource")]
 position = Vector2(-112, -182)
 resource_type = "wood"
-visual_type = "tree"
+visual_type = "branch_pile"
+biome_type = "verdant_wilds"
+rarity = "common"
 min_amount = 3
 max_amount = 6
 
 [node name="BushNodeEast" parent="ResourceNodes" instance=ExtResource("4_resource")]
 position = Vector2(232, -84)
 resource_type = "herb"
-visual_type = "bush"
+visual_type = "flower_patch"
+biome_type = "verdant_wilds"
+rarity = "common"
 min_amount = 2
 max_amount = 4
 
