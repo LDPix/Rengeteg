@@ -7,6 +7,7 @@ extends Control
 @onready var btn_run := $OuterMargin/Root/ActionsCard/ActionsPadding/ActionsVBox/ButtonsRow/RunButton
 @onready var hud_area_label := $OuterMargin/Root/TopBar/StatusRow/BattleAreaLabel
 @onready var hud_status_label := $OuterMargin/Root/TopBar/StatusRow/BattleStatusLabel
+@onready var hud_seal_label := $OuterMargin/Root/TopBar/StatusRow/SealCountLabel
 @onready var player_card := $OuterMargin/Root/BattleCard/Padding/CreaturesRow/PlayerCard
 @onready var enemy_card := $OuterMargin/Root/BattleCard/Padding/CreaturesRow/EnemyCard
 
@@ -45,6 +46,13 @@ func _update_ui() -> void:
 	var display_name = str(GameData.maps[map_id].get("display_name", map_id))
 	hud_area_label.text = display_name
 	hud_status_label.text = "%s vs %s" % [player_mon["name"], wild_mon["name"]]
+	_refresh_capture_ui()
+
+
+func _refresh_capture_ui() -> void:
+	hud_seal_label.text = "Seals: %d" % GameState.seals
+	btn_capture.text = "Capture (No Seals)" if GameState.seals <= 0 else "Capture (%d)" % GameState.seals
+	btn_capture.disabled = false
 
 func _damage(attacker: Dictionary, defender: Dictionary) -> int:
 	# Simple MVP formula
@@ -109,6 +117,14 @@ func _find_first_alive_index() -> int:
 	return -1
 	
 func _on_capture() -> void:
+	if GameState.seals <= 0:
+		info.text = "No Seals left. Craft more at camp."
+		_refresh_capture_ui()
+		return
+
+	GameState.seals -= 1
+	_refresh_capture_ui()
+
 	# Capture chance increases as HP lowers
 	var hp_ratio = float(wild_mon["hp"]) / float(wild_mon["hp_max"])
 	var chance = clamp(0.25 + (0.60 * (1.0 - hp_ratio)), 0.25, 0.85)
@@ -116,14 +132,14 @@ func _on_capture() -> void:
 	if randf() < chance:
 		var went_to_party := GameState.add_creature_to_collection(wild_mon)
 		if went_to_party:
-			info.text = "Captured %s! Added to team." % wild_mon["name"]
+			info.text = "Captured %s! Added to team. 1 Seal used." % wild_mon["name"]
 		else:
-			info.text = "Captured %s! Sent to storage." % wild_mon["name"]
+			info.text = "Captured %s! Sent to storage. 1 Seal used." % wild_mon["name"]
 		await get_tree().create_timer(0.8).timeout
 		_award_drops(true)
 		_back_to_overworld()
 	else:
-		info.text = "Capture failed!"
+		info.text = "Capture failed! 1 Seal was used."
 		await get_tree().create_timer(0.4).timeout
 		# Wild gets a free hit on fail
 		player_mon["hp"] -= _damage(wild_mon, player_mon)
@@ -143,13 +159,9 @@ func _win_battle() -> void:
 func _lose_battle() -> void:
 	info.text = "Your %s fainted..." % player_mon["name"]
 	await get_tree().create_timer(0.8).timeout
-	# MVP penalty: lose 50% materials
-	for k in GameState.materials.keys():
-		GameState.materials[k] = int(GameState.materials[k] * 0.5)
-	# heal for now so loop continues
-	for m in GameState.party:
-		m["hp"] = m["hp_max"]
-	_back_to_overworld()
+	GameState.forfeit_current_map_run()
+	GameState.set_camp_notice("Your whole team fainted. You were carried back to camp and lost all resources gathered on that run.")
+	get_tree().change_scene_to_file("res://scenes/Camp.tscn")
 
 func _award_drops(captured: bool) -> void:
 	var core_shards: int = randi_range(1, 2)

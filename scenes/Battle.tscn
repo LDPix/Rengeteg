@@ -138,6 +138,13 @@ theme_override_font_sizes/font_size = 14
 theme_override_colors/font_color = Color(0.380392, 0.380392, 0.380392, 1)
 text = "Mossling vs Wild Fangbeast"
 
+[node name="SealCountLabel" type="Label" parent="OuterMargin/Root/TopBar/StatusRow"]
+size_flags_horizontal = 3
+horizontal_alignment = 2
+theme_override_font_sizes/font_size = 14
+theme_override_colors/font_color = Color(0.380392, 0.380392, 0.380392, 1)
+text = "Seals: 5"
+
 [node name="BattleCard" type="PanelContainer" parent="OuterMargin/Root"]
 
 [node name="Padding" type="MarginContainer" parent="OuterMargin/Root/BattleCard"]

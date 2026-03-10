@@ -17,13 +17,21 @@ position = Vector2(0, -8)
 texture = ExtResource("1_forest")
 texture_filter = 1
 
-[node name="HintLabel" type="Label" parent="."]
-visible = false
-offset_left = -52.0
-offset_top = -48.0
-offset_right = 52.0
-offset_bottom = -10.0
+[node name="HintAnchor" type="Marker2D" parent="."]
+position = Vector2(0, -30)
+
+[node name="HintPanel" type="PanelContainer" parent="."]
+offset_left = -44.0
+offset_top = -54.0
+offset_right = 44.0
+offset_bottom = -26.0
+
+[node name="HintLabel" type="Label" parent="HintPanel"]
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
 horizontal_alignment = 1
-theme_override_font_sizes/font_size = 14
-theme_override_colors/font_color = Color(0.129412, 0.129412, 0.129412, 1)
-text = "Press E to Exit"
+vertical_alignment = 1
+text = "E  EXIT"

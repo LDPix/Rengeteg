@@ -1,23 +1,13 @@
-[gd_resource type="Theme" format=3]
+[gd_resource type="Theme" format=3 uid="uid://bafodvd74f14i"]
 
-[ext_resource type="FontFile" path="res://assets/fonts/Inter-VariableFont_opsz,wght.ttf" id="1_font"]
+[ext_resource type="FontFile" uid="uid://bud8y04ytfyp1" path="res://assets/fonts/Inter-VariableFont_opsz,wght.ttf" id="1_font"]
 
-[sub_resource type="StyleBoxFlat" id="1_panel"]
-bg_color = Color(1, 1, 1, 1)
-corner_radius_top_left = 16
-corner_radius_top_right = 16
-corner_radius_bottom_right = 16
-corner_radius_bottom_left = 16
-shadow_color = Color(0, 0, 0, 0.08)
-shadow_size = 18
-shadow_offset = Vector2(0, 6)
-
-[sub_resource type="StyleBoxFlat" id="2_button_normal"]
+[sub_resource type="StyleBoxFlat" id="5_button_disabled"]
 content_margin_left = 24.0
 content_margin_top = 18.0
 content_margin_right = 24.0
 content_margin_bottom = 18.0
-bg_color = Color(0.298039, 0.686275, 0.313726, 1)
+bg_color = Color(0.298039, 0.686275, 0.313726, 0.45)
 corner_radius_top_left = 16
 corner_radius_top_right = 16
 corner_radius_bottom_right = 16
@@ -34,6 +24,17 @@ corner_radius_top_right = 16
 corner_radius_bottom_right = 16
 corner_radius_bottom_left = 16
 
+[sub_resource type="StyleBoxFlat" id="2_button_normal"]
+content_margin_left = 24.0
+content_margin_top = 18.0
+content_margin_right = 24.0
+content_margin_bottom = 18.0
+bg_color = Color(0.298039, 0.686275, 0.313726, 1)
+corner_radius_top_left = 16
+corner_radius_top_right = 16
+corner_radius_bottom_right = 16
+corner_radius_bottom_left = 16
+
 [sub_resource type="StyleBoxFlat" id="4_button_pressed"]
 content_margin_left = 24.0
 content_margin_top = 18.0
@@ -45,24 +46,23 @@ corner_radius_top_right = 16
 corner_radius_bottom_right = 16
 corner_radius_bottom_left = 16
 
-[sub_resource type="StyleBoxFlat" id="5_button_disabled"]
-content_margin_left = 24.0
-content_margin_top = 18.0
-content_margin_right = 24.0
-content_margin_bottom = 18.0
-bg_color = Color(0.298039, 0.686275, 0.313726, 0.45)
+[sub_resource type="StyleBoxFlat" id="1_panel"]
+bg_color = Color(1, 1, 1, 1)
 corner_radius_top_left = 16
 corner_radius_top_right = 16
 corner_radius_bottom_right = 16
 corner_radius_bottom_left = 16
+shadow_color = Color(0, 0, 0, 0.08)
+shadow_size = 18
+shadow_offset = Vector2(0, 6)
 
 [resource]
 default_font = ExtResource("1_font")
 default_font_size = 16
 Button/colors/font_color = Color(1, 1, 1, 1)
+Button/colors/font_disabled_color = Color(1, 1, 1, 0.75)
 Button/colors/font_hover_color = Color(1, 1, 1, 1)
 Button/colors/font_pressed_color = Color(1, 1, 1, 1)
-Button/colors/font_disabled_color = Color(1, 1, 1, 0.75)
 Button/font_sizes/font_size = 18
 Button/styles/disabled = SubResource("5_button_disabled")
 Button/styles/focus = SubResource("3_button_hover")

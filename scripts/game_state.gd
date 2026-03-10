@@ -10,6 +10,10 @@ var battle_return_position: Vector2 = Vector2.ZERO
 var battle_return_scene_path: String = ""
 var battle_return_map_id: String = ""
 var has_battle_return_position := false
+var seals := 5
+var camp_notice: String = ""
+var map_run_active := false
+var map_run_materials_snapshot := {}
 
 const PARTY_MAX := 6
 var box: Array = [] # extra captured creatures
@@ -58,6 +62,7 @@ func to_save_dict() -> Dictionary:
 	return {
 		"party": party,
 		"materials": materials,
+		"seals": seals,
 	}
 
 func from_save_dict(d: Dictionary) -> void:
@@ -66,6 +71,7 @@ func from_save_dict(d: Dictionary) -> void:
 	materials = materials.duplicate(true)
 	for key in saved_materials.keys():
 		materials[key] = saved_materials[key]
+	seals = int(d.get("seals", 5))
 
 func save_game() -> bool:
 	var f := FileAccess.open(SAVE_PATH, FileAccess.WRITE)
@@ -100,3 +106,31 @@ func clear_battle_return() -> void:
 	battle_return_scene_path = ""
 	battle_return_position = Vector2.ZERO
 	has_battle_return_position = false
+
+
+func begin_map_run() -> void:
+	map_run_active = true
+	map_run_materials_snapshot = materials.duplicate(true)
+
+
+func end_map_run() -> void:
+	map_run_active = false
+	map_run_materials_snapshot = {}
+
+
+func forfeit_current_map_run() -> void:
+	if map_run_active:
+		materials = map_run_materials_snapshot.duplicate(true)
+	end_map_run()
+	clear_battle_return()
+	pending_wild_id = ""
+
+
+func set_camp_notice(message: String) -> void:
+	camp_notice = message
+
+
+func consume_camp_notice() -> String:
+	var message := camp_notice
+	camp_notice = ""
+	return message
