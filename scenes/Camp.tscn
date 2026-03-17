@@ -77,9 +77,9 @@ anchor_bottom = 1.0
 grow_horizontal = 2
 grow_vertical = 2
 theme_override_constants/margin_left = 48
-theme_override_constants/margin_top = 52
+theme_override_constants/margin_top = 44
 theme_override_constants/margin_right = 36
-theme_override_constants/margin_bottom = 24
+theme_override_constants/margin_bottom = 40
 
 [node name="CenterRow" type="HBoxContainer" parent="Panel" unique_id=1919036229]
 layout_mode = 2
@@ -643,7 +643,7 @@ visible = false
 layout_mode = 2
 size_flags_horizontal = 3
 size_flags_vertical = 3
-theme_override_constants/separation = 20
+theme_override_constants/separation = 14
 
 [node name="Header" type="HBoxContainer" parent="Panel/CenterRow/ContentColumn/Panels/CraftingPanel" unique_id=1825213773]
 layout_mode = 2
@@ -664,18 +664,19 @@ text = "Back"
 
 [node name="TitleColumn" type="VBoxContainer" parent="Panel/CenterRow/ContentColumn/Panels/CraftingPanel/Header" unique_id=591408149]
 layout_mode = 2
-theme_override_constants/separation = 6
+theme_override_constants/separation = 4
 
 [node name="TitleLabel" type="Label" parent="Panel/CenterRow/ContentColumn/Panels/CraftingPanel/Header/TitleColumn" unique_id=370915205]
 layout_mode = 2
-theme_override_font_sizes/font_size = 30
+theme_override_font_sizes/font_size = 26
 text = "Crafting"
 
 [node name="SubtitleLabel" type="Label" parent="Panel/CenterRow/ContentColumn/Panels/CraftingPanel/Header/TitleColumn" unique_id=87849064]
+visible = false
 layout_mode = 2
 theme_override_colors/font_color = Color(0.380392, 0.380392, 0.380392, 1)
 theme_override_font_sizes/font_size = 14
-text = "Materials only become progression through crafted items."
+text = ""
 
 [node name="CraftingCard" type="PanelContainer" parent="Panel/CenterRow/ContentColumn/Panels/CraftingPanel" unique_id=1228475304]
 layout_mode = 2
@@ -683,17 +684,17 @@ layout_mode = 2
 [node name="Padding" type="MarginContainer" parent="Panel/CenterRow/ContentColumn/Panels/CraftingPanel/CraftingCard" unique_id=1446096607]
 layout_mode = 2
 theme_override_constants/margin_left = 16
-theme_override_constants/margin_top = 16
+theme_override_constants/margin_top = 12
 theme_override_constants/margin_right = 16
-theme_override_constants/margin_bottom = 16
+theme_override_constants/margin_bottom = 12
 
 [node name="Content" type="VBoxContainer" parent="Panel/CenterRow/ContentColumn/Panels/CraftingPanel/CraftingCard/Padding" unique_id=205834979]
 layout_mode = 2
-theme_override_constants/separation = 16
+theme_override_constants/separation = 12
 
 [node name="CraftingTitle" type="Label" parent="Panel/CenterRow/ContentColumn/Panels/CraftingPanel/CraftingCard/Padding/Content" unique_id=1662503203]
 layout_mode = 2
-theme_override_font_sizes/font_size = 24
+theme_override_font_sizes/font_size = 22
 text = "Workshop Recipes"
 
 [node name="MatsChips" type="HFlowContainer" parent="Panel/CenterRow/ContentColumn/Panels/CraftingPanel/CraftingCard/Padding/Content"]
@@ -702,10 +703,11 @@ theme_override_constants/h_separation = 10
 theme_override_constants/v_separation = 10
 
 [node name="CraftingStatusLabel" type="Label" parent="Panel/CenterRow/ContentColumn/Panels/CraftingPanel/CraftingCard/Padding/Content" unique_id=1526464754]
+visible = false
 layout_mode = 2
 theme_override_colors/font_color = Color(0.380392, 0.380392, 0.380392, 1)
 theme_override_font_sizes/font_size = 14
-text = "Craft supplies into consumables, held items, and camp items."
+text = ""
 
 [node name="SearchRow" type="HBoxContainer" parent="Panel/CenterRow/ContentColumn/Panels/CraftingPanel/CraftingCard/Padding/Content"]
 layout_mode = 2
@@ -723,15 +725,17 @@ size_flags_horizontal = 3
 placeholder_text = "Filter recipes by name"
 
 [node name="RecipesScroll" type="ScrollContainer" parent="Panel/CenterRow/ContentColumn/Panels/CraftingPanel/CraftingCard/Padding/Content"]
-custom_minimum_size = Vector2(0, 340)
+custom_minimum_size = Vector2(0, 300)
 layout_mode = 2
 size_flags_vertical = 3
 vertical_scroll_mode = 1
 
-[node name="RecipesList" type="VBoxContainer" parent="Panel/CenterRow/ContentColumn/Panels/CraftingPanel/CraftingCard/Padding/Content/RecipesScroll"]
+[node name="RecipesList" type="GridContainer" parent="Panel/CenterRow/ContentColumn/Panels/CraftingPanel/CraftingCard/Padding/Content/RecipesScroll"]
 layout_mode = 2
 size_flags_horizontal = 3
-theme_override_constants/separation = 8
+columns = 3
+theme_override_constants/h_separation = 12
+theme_override_constants/v_separation = 12
 
 [node name="CampItemsLabel" type="Label" parent="Panel/CenterRow/ContentColumn/Panels/CraftingPanel/CraftingCard/Padding/Content"]
 layout_mode = 2

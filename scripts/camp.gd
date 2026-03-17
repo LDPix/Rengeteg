@@ -70,7 +70,6 @@ var crafting_search_text := ""
 var crafting_category := GameData.ITEM_CATEGORY_CONSUMABLE
 var crafting_owned_only := false
 var crafting_craftable_only := false
-var selected_crafting_item_id := ""
 var selected_collection_item_id := ""
 var crafting_browser := {}
 var collection_browser := {}
@@ -231,25 +230,10 @@ func _setup_crafting_browser() -> Dictionary:
 	craftable_toggle.pressed.connect(_toggle_crafting_craftable_only)
 	filter_row.add_child(craftable_toggle)
 
-	var browser_row := HBoxContainer.new()
-	browser_row.name = "CraftingBrowserRow"
-	browser_row.size_flags_vertical = Control.SIZE_EXPAND_FILL
-	browser_row.add_theme_constant_override("separation", 12)
-	var recipe_scroll_parent: Control = crafting_recipe_scroll.get_parent()
-	var recipe_scroll_index := crafting_recipe_scroll.get_index()
-	recipe_scroll_parent.remove_child(crafting_recipe_scroll)
-	browser_row.add_child(crafting_recipe_scroll)
-	var detail := _create_item_detail_panel("wood")
-	browser_row.add_child(detail["panel"])
-	content.add_child(browser_row)
-	content.move_child(browser_row, recipe_scroll_index)
-	detail["action_button"].pressed.connect(_on_crafting_detail_action)
-
 	return {
 		"category_buttons": category_buttons,
 		"owned_toggle": owned_toggle,
 		"craftable_toggle": craftable_toggle,
-		"detail": detail,
 	}
 
 
@@ -443,18 +427,9 @@ func _heal_team_on_entry() -> void:
 		mon["hp"] = GameState.get_effective_creature_stat(mon, "hp_max")
 		mon["mp"] = GameState.get_effective_creature_stat(mon, "mp_max")
 
-	var has_healing_tent := GameState.has_camp_item("healing_tent")
-	if has_healing_tent:
-		for mon in GameState.box:
-			GameState.ensure_creature_progression_fields(mon)
-			mon["hp"] = GameState.get_effective_creature_stat(mon, "hp_max")
-			mon["mp"] = GameState.get_effective_creature_stat(mon, "mp_max")
-
 	var notice := GameState.consume_camp_notice()
 	if not notice.is_empty():
 		main_status_label.text = notice
-	elif has_healing_tent:
-		main_status_label.text = "Your Healing Tent restored the whole collection while the party rested."
 	else:
 		main_status_label.text = "Your team rests and heals automatically at camp."
 
@@ -533,8 +508,7 @@ func _refresh_maps_menu() -> void:
 
 func _refresh_crafting_menu() -> void:
 	WorldUI.populate_resource_chips(crafting_mats_chips, GameState.get_item_count(SEAL_ITEM_ID), GameState.materials, "wood")
-	if crafting_status_label.text.is_empty():
-		crafting_status_label.text = "Craft supplies into consumables, held items, and camp items."
+	crafting_status_label.visible = not crafting_status_label.text.is_empty()
 	_refresh_crafting_browser()
 	crafting_recipe_scroll.scroll_vertical = 0
 	var camp_items := GameState.get_owned_camp_items()
@@ -551,10 +525,7 @@ func _refresh_crafting_browser() -> void:
 	crafting_browser["craftable_toggle"].text = "Craftable Only: %s" % ("On" if crafting_craftable_only else "Off")
 
 	var item_ids := _get_crafting_browser_item_ids()
-	if not item_ids.has(selected_crafting_item_id):
-		selected_crafting_item_id = item_ids[0] if not item_ids.is_empty() else ""
-	_rebuild_browser_list(crafting_recipe_list, item_ids, selected_crafting_item_id, _select_crafting_item, _format_crafting_browser_row)
-	_refresh_crafting_detail()
+	_rebuild_crafting_grid(crafting_recipe_list, item_ids)
 
 
 func _refresh_collection_browser() -> void:
@@ -661,13 +632,105 @@ func _rebuild_browser_list(container: VBoxContainer, item_ids: Array[String], se
 		container.add_child(button)
 
 
-func _format_crafting_browser_row(item_id: String, selected: bool) -> String:
+func _rebuild_crafting_grid(container: GridContainer, item_ids: Array[String]) -> void:
+	for child in container.get_children():
+		child.queue_free()
+	if item_ids.is_empty():
+		var empty_label := Label.new()
+		empty_label.text = "No items match the current filters."
+		empty_label.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
+		WorldUI.apply_label(empty_label, "subtitle", "verdant")
+		container.add_child(empty_label)
+		return
+	for item_id in item_ids:
+		container.add_child(_create_crafting_card(item_id))
+
+
+func _create_crafting_card(item_id: String) -> Button:
 	var item_data := GameData.get_item_data(item_id)
-	var parts: Array[String] = [str(item_data.get("name", item_id))]
-	parts.append("x%d" % GameState.get_item_count(item_id))
-	if GameState.can_craft(item_id):
-		parts.append("Ready")
-	return ("> " if selected else "") + "  ".join(parts)
+	var variant := GameData.get_item_variant(item_id)
+	var recipe := GameData.get_item_recipe(item_id)
+	var can_craft := GameState.can_craft(item_id)
+	var button := Button.new()
+	button.custom_minimum_size = Vector2(210, 176)
+	button.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	button.text = ""
+	button.tooltip_text = GameData.get_item_detail_text(item_id)
+	WorldUI.apply_button(button, variant, can_craft, "battle")
+	button.pressed.connect(_craft_item.bind(item_id))
+
+	var padding := MarginContainer.new()
+	padding.set_anchors_preset(Control.PRESET_FULL_RECT)
+	padding.add_theme_constant_override("margin_left", 12)
+	padding.add_theme_constant_override("margin_top", 12)
+	padding.add_theme_constant_override("margin_right", 12)
+	padding.add_theme_constant_override("margin_bottom", 12)
+	padding.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	button.add_child(padding)
+
+	var content := VBoxContainer.new()
+	content.size_flags_vertical = Control.SIZE_EXPAND_FILL
+	content.add_theme_constant_override("separation", 8)
+	content.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	padding.add_child(content)
+
+	var title := Label.new()
+	title.text = str(item_data.get("name", item_id))
+	title.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+	title.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
+	title.add_theme_font_size_override("font_size", 15)
+	title.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	WorldUI.apply_label(title, "title", variant)
+	content.add_child(title)
+
+	var icon_holder := PanelContainer.new()
+	icon_holder.custom_minimum_size = Vector2(0, 68)
+	icon_holder.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	WorldUI.apply_panel(icon_holder, "parchment")
+	content.add_child(icon_holder)
+
+	var icon_padding := MarginContainer.new()
+	icon_padding.set_anchors_preset(Control.PRESET_FULL_RECT)
+	icon_padding.add_theme_constant_override("margin_left", 10)
+	icon_padding.add_theme_constant_override("margin_top", 10)
+	icon_padding.add_theme_constant_override("margin_right", 10)
+	icon_padding.add_theme_constant_override("margin_bottom", 10)
+	icon_padding.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	icon_holder.add_child(icon_padding)
+
+	var icon_path := GameData.get_item_icon_path(item_id)
+	if not icon_path.is_empty():
+		var icon := TextureRect.new()
+		icon.texture = load(icon_path)
+		icon.expand_mode = TextureRect.EXPAND_IGNORE_SIZE
+		icon.stretch_mode = TextureRect.STRETCH_KEEP_ASPECT_CENTERED
+		icon.texture_filter = CanvasItem.TEXTURE_FILTER_NEAREST
+		icon.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+		icon.size_flags_vertical = Control.SIZE_EXPAND_FILL
+		icon.mouse_filter = Control.MOUSE_FILTER_IGNORE
+		icon_padding.add_child(icon)
+	else:
+		var fallback := Label.new()
+		fallback.text = "?"
+		fallback.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+		fallback.vertical_alignment = VERTICAL_ALIGNMENT_CENTER
+		fallback.add_theme_font_size_override("font_size", 28)
+		fallback.mouse_filter = Control.MOUSE_FILTER_IGNORE
+		WorldUI.apply_label(fallback, "dark", "parchment")
+		icon_padding.add_child(fallback)
+
+	var recipe_label := Label.new()
+	recipe_label.text = GameData.format_material_cost(recipe) if not recipe.is_empty() else "No recipe"
+	recipe_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+	recipe_label.vertical_alignment = VERTICAL_ALIGNMENT_CENTER
+	recipe_label.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
+	recipe_label.size_flags_vertical = Control.SIZE_EXPAND_FILL
+	recipe_label.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	recipe_label.add_theme_font_size_override("font_size", 12)
+	WorldUI.apply_label(recipe_label, "body", variant)
+	content.add_child(recipe_label)
+
+	return button
 
 
 func _format_collection_browser_row(item_id: String, selected: bool) -> String:
@@ -681,10 +744,6 @@ func _format_collection_browser_row(item_id: String, selected: bool) -> String:
 	if collection_mode == GameData.ITEM_CATEGORY_HELD and str(selected_creature.get("held_item_id", "")) == item_id:
 		parts.append("Equipped")
 	return ("> " if selected else "") + "  ".join(parts)
-
-
-func _refresh_crafting_detail() -> void:
-	_refresh_item_detail_panel(crafting_browser["detail"], selected_crafting_item_id, "craft")
 
 
 func _refresh_collection_detail() -> void:
@@ -892,7 +951,7 @@ func _refresh_inventory_summary() -> void:
 				consumables += count
 	inventory_summary_label.text = "Party %d / %d\nStorage %d creatures\nConsumables %d\nSpare held items %d" % [
 		GameState.party.size(),
-		GameState.PARTY_MAX,
+		GameState.get_party_limit(),
 		GameState.box.size(),
 		consumables,
 		spare_held,
@@ -935,9 +994,11 @@ func _use_consumable_on_selected(item_id: String) -> void:
 func _craft_item(item_id: String) -> void:
 	if not GameState.craft_item(item_id):
 		crafting_status_label.text = "Not enough materials to craft %s." % str(GameData.get_item_data(item_id).get("name", item_id))
+		crafting_status_label.visible = true
 		return
 	var item_data := GameData.get_item_data(item_id)
 	crafting_status_label.text = "Crafted %s." % str(item_data.get("name", item_id))
+	crafting_status_label.visible = true
 	main_status_label.text = "%s added to your supplies." % str(item_data.get("name", item_id))
 	_refresh()
 
@@ -981,19 +1042,9 @@ func _toggle_crafting_craftable_only() -> void:
 	_refresh_crafting_browser()
 
 
-func _select_crafting_item(item_id: String) -> void:
-	selected_crafting_item_id = item_id
-	_refresh_crafting_detail()
-
-
 func _select_collection_item(item_id: String) -> void:
 	selected_collection_item_id = item_id
 	_refresh_collection_detail()
-
-
-func _on_crafting_detail_action() -> void:
-	if not selected_crafting_item_id.is_empty():
-		_craft_item(selected_crafting_item_id)
 
 
 func _on_collection_detail_action() -> void:

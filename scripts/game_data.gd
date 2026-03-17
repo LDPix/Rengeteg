@@ -74,6 +74,7 @@ var items := {
 		"stackable": true,
 		"max_stack": 20,
 		"variant": "verdant",
+		"icon_path": "res://assets/items/small_potion.svg",
 		"use_contexts": ["camp_creature"],
 		"use_effects": [{"type": "restore_hp", "amount": 18}],
 		"recipe": {"herb": 3, "wood": 1},
@@ -89,6 +90,7 @@ var items := {
 		"stackable": true,
 		"max_stack": 20,
 		"variant": "crystal",
+		"icon_path": "res://assets/items/focus_tonic.svg",
 		"use_contexts": ["camp_creature"],
 		"use_effects": [{"type": "restore_mp", "amount": 8}],
 		"recipe": {"herb": 1, "crystal": 2},
@@ -104,6 +106,7 @@ var items := {
 		"stackable": true,
 		"max_stack": 10,
 		"variant": "verdant",
+		"icon_path": "res://assets/items/moss_charm.svg",
 		"held_effects": [{"type": "flat_stat", "stat": "hp_max", "amount": 10}],
 		"recipe": {"herb": 4, "species_mat": 1},
 	},
@@ -118,6 +121,7 @@ var items := {
 		"stackable": true,
 		"max_stack": 10,
 		"variant": "ember",
+		"icon_path": "res://assets/items/sharp_fang.svg",
 		"held_effects": [{"type": "flat_stat", "stat": "atk", "amount": 3}],
 		"recipe": {"wood": 2, "core_shard": 2, "species_mat": 1},
 	},
@@ -132,6 +136,7 @@ var items := {
 		"stackable": true,
 		"max_stack": 10,
 		"variant": "stone",
+		"icon_path": "res://assets/items/stone_ring.svg",
 		"held_effects": [{"type": "flat_stat", "stat": "def", "amount": 3}],
 		"recipe": {"stone": 3, "core_shard": 1},
 	},
@@ -146,6 +151,7 @@ var items := {
 		"stackable": true,
 		"max_stack": 10,
 		"variant": "wood",
+		"icon_path": "res://assets/items/fleet_feather.svg",
 		"held_effects": [{"type": "flat_stat", "stat": "spd", "amount": 3}],
 		"recipe": {"wood": 2, "herb": 2},
 	},
@@ -160,6 +166,7 @@ var items := {
 		"stackable": true,
 		"max_stack": 10,
 		"variant": "crystal",
+		"icon_path": "res://assets/items/hunter_lens.svg",
 		"held_effects": [{"type": "flat_stat", "stat": "acc", "amount": 8}],
 		"recipe": {"crystal": 2, "wood": 1, "core_shard": 1},
 	},
@@ -174,6 +181,7 @@ var items := {
 		"stackable": true,
 		"max_stack": 10,
 		"variant": "battle",
+		"icon_path": "res://assets/items/mist_cloak.svg",
 		"held_effects": [{"type": "flat_stat", "stat": "eva", "amount": 8}],
 		"recipe": {"herb": 2, "crystal": 1, "species_mat": 1},
 	},
@@ -188,6 +196,7 @@ var items := {
 		"stackable": true,
 		"max_stack": 10,
 		"variant": "ember",
+		"icon_path": "res://assets/items/ember_idol.svg",
 		"held_effects": [{"type": "flat_stat", "stat": "crit", "amount": 4}],
 		"recipe": {"core_shard": 2, "crystal": 1},
 	},
@@ -202,22 +211,24 @@ var items := {
 		"stackable": true,
 		"max_stack": 10,
 		"variant": "crystal",
+		"icon_path": "res://assets/items/mana_bead.svg",
 		"held_effects": [{"type": "flat_stat", "stat": "mp_max", "amount": 6}],
 		"recipe": {"crystal": 3, "species_mat": 1},
 	},
-	"healing_tent": {
-		"id": "healing_tent",
-		"name": "Healing Tent",
-		"description": "A camp installation that restores every creature when you return to camp.",
+	"party_tent": {
+		"id": "party_tent",
+		"name": "Party Tent",
+		"description": "A larger expedition tent that raises the active party limit by 1.",
 		"category": ITEM_CATEGORY_CAMP,
-		"tags": ["expedition", "utility"],
+		"tags": ["expedition", "party"],
 		"rarity": "uncommon",
 		"sort_order": 210,
 		"stackable": false,
 		"max_stack": 1,
 		"variant": "stone",
-		"camp_effects": [{"type": "full_collection_restoration"}],
-		"recipe": {"wood": 6, "herb": 4, "stone": 3},
+		"icon_path": "res://assets/items/party_tent.svg",
+		"camp_effects": [{"type": "party_limit", "amount": 1}],
+		"recipe": {"wood": 5, "herb": 2, "stone": 2},
 	},
 }
 
@@ -906,8 +917,13 @@ func get_item_effect_summary(item_id: String) -> String:
 			"capture_tool":
 				parts.append("Used for capture")
 	for effect in item_data.get("camp_effects", []):
-		if effect is Dictionary and str(effect.get("type", "")) == "full_collection_restoration":
-			parts.append("Restores the full collection at camp")
+		if not (effect is Dictionary):
+			continue
+		match str(effect.get("type", "")):
+			"full_collection_restoration":
+				parts.append("Restores the full collection at camp")
+			"party_limit":
+				parts.append("+%d active party slot" % int(effect.get("amount", 0)))
 	return ", ".join(parts) if not parts.is_empty() else "No effect data."
 
 

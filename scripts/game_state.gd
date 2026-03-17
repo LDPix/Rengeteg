@@ -24,7 +24,8 @@ var map_completion_state := {}
 var objective_completion_history := {}
 var map_objective_progression := {}
 
-const PARTY_MAX := 6
+const BASE_PARTY_LIMIT := 2
+const PARTY_MAX := 3
 var box: Array = [] # extra captured creatures
 
 # Materials (drops/crafting)
@@ -46,17 +47,19 @@ func ensure_starter() -> void:
 	if starter_given:
 		_normalize_creature_array(party)
 		_normalize_creature_array(box)
+		_enforce_party_limit()
 		return
 	if party.is_empty():
 		party.append(new_creature_instance("mossling")) # pick your starter id
 	_normalize_creature_array(party)
 	_normalize_creature_array(box)
+	_enforce_party_limit()
 	starter_given = true
 	
 func add_creature_to_collection(mon: Dictionary) -> bool:
 	# returns true if it went to party, false if it went to box
 	normalize_creature_stats(mon)
-	if party.size() < PARTY_MAX:
+	if party.size() < get_party_limit():
 		party.append(mon)
 		return true
 	box.append(mon)
@@ -127,12 +130,16 @@ func from_save_dict(d: Dictionary) -> void:
 	owned_camp_items = {}
 	var saved_camp_items: Array = d.get("camp_items", [])
 	for item_id in saved_camp_items:
-		owned_camp_items[str(item_id)] = true
+		var resolved_item_id := str(item_id)
+		if resolved_item_id == "healing_tent":
+			resolved_item_id = "party_tent"
+		owned_camp_items[resolved_item_id] = true
 	map_completion_state = d.get("map_completion_state", {}).duplicate(true)
 	objective_completion_history = d.get("objective_completion_history", {}).duplicate(true)
 	map_objective_progression = d.get("map_objective_progression", {}).duplicate(true)
 	_normalize_creature_array(party)
 	_normalize_creature_array(box)
+	_enforce_party_limit()
 
 func save_game() -> bool:
 	var f := FileAccess.open(SAVE_PATH, FileAccess.WRITE)
@@ -524,6 +531,10 @@ func has_camp_item(item_id: String) -> bool:
 	return owned_camp_items.has(item_id)
 
 
+func get_party_limit() -> int:
+	return clampi(BASE_PARTY_LIMIT + get_camp_effect_value("party_limit"), BASE_PARTY_LIMIT, PARTY_MAX)
+
+
 func get_camp_effect_value(effect_type: String) -> int:
 	var total := 0
 	for item_id in get_owned_camp_items():
@@ -542,6 +553,11 @@ func _normalize_creature_array(creatures: Array) -> void:
 	for creature in creatures:
 		if creature is Dictionary:
 			ensure_creature_progression_fields(creature)
+
+
+func _enforce_party_limit() -> void:
+	while party.size() > get_party_limit():
+		box.insert(0, party.pop_back())
 
 
 func set_battle_return(map_id: String, scene_path: String, world_position: Vector2) -> void:
