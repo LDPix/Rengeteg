@@ -1,10 +1,12 @@
-[gd_scene load_steps=10 format=3]
+[gd_scene load_steps=11 format=3]
 
 [ext_resource type="Script" path="res://scripts/overworld.gd" id="1_overworld"]
 [ext_resource type="Script" path="res://scripts/overworld_tile_layer.gd" id="2_tile_layer"]
 [ext_resource type="PackedScene" path="res://scenes/overworld/Player.tscn" id="3_player"]
-[ext_resource type="PackedScene" path="res://scenes/overworld/ResourceNode.tscn" id="4_resource"]
 [ext_resource type="PackedScene" path="res://scenes/overworld/ExitZone.tscn" id="5_exit"]
+[ext_resource type="Script" path="res://scripts/resource_spawn_point.gd" id="6_resource_point"]
+[ext_resource type="Script" path="res://scripts/encounter_patch.gd" id="7_patch"]
+[ext_resource type="Script" path="res://scripts/boss_spawn_point.gd" id="8_boss_point"]
 
 [sub_resource type="RectangleShape2D" id="1_left_corridor"]
 size = Vector2(192, 96)
@@ -78,9 +80,27 @@ tile_paths = {
 [node name="TileMap_Ground" type="TileMapLayer" parent="."]
 position = Vector2(-320, -224)
 script = ExtResource("2_tile_layer")
-layout_rows = PackedStringArray("....................", "....................", ".........ssss.......", "......sssssssssss...", ".....sss......ssss..", "....sss.........ss..", "...sss...ss......ss.", "..sss..ssssss.....s.", ".sss..ssssssss....s.", ".ss..ssssssssss...s.", ".ss...sssssssss..ss.", "..ss...sssssss..sss.", "...ssssssssss..ssss.", "....ssssssssssssss..", ".....ssssssssssss...")
+layout_rows = PackedStringArray("....................", "....................", ".........scccs......", "......sccccccccss...", ".....scc......cccs..", "....scc.........cs..", "...scc...sc......cs.", "..scc..sccccs.....s.", ".scc..sccccccs....s.", ".sc..sccccccccs...s.", ".sc...sccccccss..cs.", "..sc...sccccss..ccs.", "...sccccccccs..cccs.", "....sccccccccccccs..", ".....ssccccccccss...")
 tile_paths = {
+"c": "res://assets/tiles/stone_encounter.svg",
 "s": "res://assets/tiles/stone.png"
+}
+
+[node name="TileMap_Encounter" type="TileMapLayer" parent="."]
+position = Vector2(-320, -224)
+script = ExtResource("2_tile_layer")
+layout_rows = PackedStringArray("....................", "....................", "....................", "....................", "....................", "....................", "....................", "....................", "....................", "....................", "....................", "....................", "....................", "....................", "....................")
+tile_paths = {
+"c": "res://assets/tiles/stone_encounter.svg",
+"h": "res://assets/tiles/stone_encounter.svg"
+}
+tile_tags = {
+"c": "cave",
+"h": "high_risk_patch"
+}
+preview_colors = {
+"c": Color(0.933333, 0.501961, 0.196078, 0.28),
+"h": Color(0.968627, 0.572549, 0.227451, 0.24)
 }
 
 [node name="TileMap_Objects" type="TileMapLayer" parent="."]
@@ -92,54 +112,124 @@ tile_paths = {
 "w": "res://assets/tiles/cave_wall.png"
 }
 
-[node name="ResourceNodes" type="Node2D" parent="."]
+[node name="GeneratedContent" type="Node2D" parent="."]
 
-[node name="RockNodeWest" parent="ResourceNodes" instance=ExtResource("4_resource")]
+[node name="Resources" type="Node2D" parent="GeneratedContent"]
+
+[node name="Boss" type="Node2D" parent="GeneratedContent"]
+
+[node name="ResourceSpawnPoints" type="Node2D" parent="."]
+
+[node name="WestBasalt" type="Marker2D" parent="ResourceSpawnPoints"]
 position = Vector2(-250, -110)
-resource_type = "stone"
-visual_type = "basalt"
-biome_type = "ember_caves"
-rarity = "common"
-min_amount = 3
-max_amount = 5
+script = ExtResource("6_resource_point")
+spawn_id = "west_basalt"
+allowed_resource_types = PackedStringArray("stone")
+visual_type_override = "basalt"
+min_amount_override = 3
+max_amount_override = 5
 
-[node name="RockNodeCenter" parent="ResourceNodes" instance=ExtResource("4_resource")]
+[node name="CenterBasalt" type="Marker2D" parent="ResourceSpawnPoints"]
 position = Vector2(-24, 28)
-resource_type = "stone"
-visual_type = "basalt"
-biome_type = "ember_caves"
-rarity = "common"
-min_amount = 3
-max_amount = 5
+script = ExtResource("6_resource_point")
+spawn_id = "center_basalt"
+allowed_resource_types = PackedStringArray("stone", "core_shard")
+visual_type_override = "basalt"
+min_amount_override = 3
+max_amount_override = 5
 
-[node name="CrystalNodeEast" parent="ResourceNodes" instance=ExtResource("4_resource")]
+[node name="EastCrystal" type="Marker2D" parent="ResourceSpawnPoints"]
 position = Vector2(232, -110)
-resource_type = "crystal"
-visual_type = "lava_crystal"
-biome_type = "ember_caves"
-rarity = "uncommon"
-min_amount = 2
-max_amount = 4
+script = ExtResource("6_resource_point")
+spawn_id = "east_crystal"
+allowed_resource_types = PackedStringArray("crystal")
+visual_type_override = "lava_crystal"
+rarity_override = "uncommon"
+min_amount_override = 2
+max_amount_override = 4
+
+[node name="UpperShelf" type="Marker2D" parent="ResourceSpawnPoints"]
+position = Vector2(12, -152)
+script = ExtResource("6_resource_point")
+spawn_id = "upper_shelf"
+allowed_resource_types = PackedStringArray("stone", "crystal")
+
+[node name="LeftCorridorPocket" type="Marker2D" parent="ResourceSpawnPoints"]
+position = Vector2(-186, 76)
+script = ExtResource("6_resource_point")
+spawn_id = "left_corridor_pocket"
+allowed_resource_types = PackedStringArray("stone", "core_shard")
+
+[node name="CenterBranch" type="Marker2D" parent="ResourceSpawnPoints"]
+position = Vector2(54, 116)
+script = ExtResource("6_resource_point")
+spawn_id = "center_branch"
+allowed_resource_types = PackedStringArray("stone", "crystal")
+
+[node name="RightFissure" type="Marker2D" parent="ResourceSpawnPoints"]
+position = Vector2(208, 96)
+script = ExtResource("6_resource_point")
+spawn_id = "right_fissure"
+allowed_resource_types = PackedStringArray("crystal", "core_shard")
+rarity_override = "uncommon"
 
 [node name="EncounterZones" type="Node2D" parent="."]
 
 [node name="LeftCorridorEncounter" type="Area2D" parent="EncounterZones"]
 position = Vector2(-208, 144)
+script = ExtResource("7_patch")
+patch_id = "left_corridor"
+encounter_tag = "cave"
+encounter_tile_key = "c"
+active_fill_color = Color(0.933333, 0.501961, 0.196078, 0.28)
 
 [node name="CollisionShape2D" type="CollisionShape2D" parent="EncounterZones/LeftCorridorEncounter"]
 shape = SubResource("1_left_corridor")
 
 [node name="CenterCorridorEncounter" type="Area2D" parent="EncounterZones"]
 position = Vector2(8, 96)
+script = ExtResource("7_patch")
+patch_id = "center_corridor"
+encounter_tag = "cave"
+encounter_tile_key = "c"
+active_fill_color = Color(0.933333, 0.501961, 0.196078, 0.28)
 
 [node name="CollisionShape2D" type="CollisionShape2D" parent="EncounterZones/CenterCorridorEncounter"]
 shape = SubResource("2_center_corridor")
 
 [node name="UpperBranchEncounter" type="Area2D" parent="EncounterZones"]
 position = Vector2(88, 24)
+script = ExtResource("7_patch")
+patch_id = "upper_branch"
+encounter_tag = "high_risk_patch"
+encounter_tile_key = "h"
+active_fill_color = Color(0.968627, 0.572549, 0.227451, 0.24)
 
 [node name="CollisionShape2D" type="CollisionShape2D" parent="EncounterZones/UpperBranchEncounter"]
 shape = SubResource("3_right_corridor")
+
+[node name="LowerFissureEncounter" type="Area2D" parent="EncounterZones"]
+position = Vector2(122, 176)
+script = ExtResource("7_patch")
+patch_id = "lower_fissure"
+encounter_tag = "cave"
+encounter_tile_key = "c"
+active_fill_color = Color(0.933333, 0.501961, 0.196078, 0.28)
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="EncounterZones/LowerFissureEncounter"]
+shape = SubResource("2_center_corridor")
+
+[node name="BossSpawnPoints" type="Node2D" parent="."]
+
+[node name="MagmaDen" type="Marker2D" parent="BossSpawnPoints"]
+position = Vector2(182, -26)
+script = ExtResource("8_boss_point")
+spawn_id = "magma_den"
+
+[node name="CrackedPlatform" type="Marker2D" parent="BossSpawnPoints"]
+position = Vector2(-18, -58)
+script = ExtResource("8_boss_point")
+spawn_id = "cracked_platform"
 
 [node name="PlayerSpawn" type="Marker2D" parent="."]
 position = Vector2(-256, 192)
@@ -148,6 +238,6 @@ position = Vector2(-256, 192)
 position = Vector2(-256, 192)
 
 [node name="ExitZone" parent="." instance=ExtResource("5_exit")]
-position = Vector2(256, 192)
+position = Vector2(-256, 192)
 next_scene_path = "res://scenes/Camp.tscn"
-marker_style = "cave"
+marker_style = "portal"

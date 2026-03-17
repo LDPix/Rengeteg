@@ -6,6 +6,12 @@ Players explore different maps, encounter wild creatures, gather resources, and 
 
 ---
 
+# Team
+
+Fadeev Nikita (everything)
+
+---
+
 # Overview
 
 Creature Expedition is a **roguelite-style creature battler** where each run begins from a camp. From camp you choose a map, venture out to explore it, and return with captured creatures and materials.
@@ -15,7 +21,7 @@ The game focuses on:
 * exploration
 * creature battles
 * team management
-* upgrading creatures
+* crafting items
 * map-based progression
 
 ---

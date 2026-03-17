@@ -11,6 +11,11 @@ script = ExtResource("1_g7qsf")
 [node name="CollisionShape2D" type="CollisionShape2D" parent="." unique_id=750007097]
 shape = SubResource("RectangleShape2D_g7qsf")
 
+[node name="PresentationRoot" type="Node2D" parent="."]
+
+[node name="Sprite2D" type="Sprite2D" parent="PresentationRoot"]
+texture_filter = 1
+
 [node name="HintAnchor" type="Marker2D" parent="."]
 position = Vector2(0, -28)
 

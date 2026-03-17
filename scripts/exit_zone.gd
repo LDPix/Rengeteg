@@ -1,7 +1,7 @@
 extends Area2D
 
 @export_file("*.tscn") var next_scene_path: String = "res://scenes/Camp.tscn"
-@export_enum("forest", "cave") var marker_style: String = "forest"
+@export_enum("forest", "cave", "portal") var marker_style: String = "portal"
 @export var show_interaction_prompt := true
 @export var prompt_text := "E"
 @export var show_prompt_action_text := true
@@ -49,44 +49,22 @@ func _on_body_exited(body: Node) -> void:
 
 
 func _apply_marker() -> void:
-	var texture_path := "res://assets/overworld/exit_forest.png"
-	if marker_style == "cave":
+	var texture_path := "res://assets/overworld/exit_portal.svg"
+	if marker_style == "forest":
+		texture_path = "res://assets/overworld/exit_forest.png"
+	elif marker_style == "cave":
 		texture_path = "res://assets/overworld/exit_cave.png"
 	sprite.texture = load(texture_path)
 	sprite.texture_filter = CanvasItem.TEXTURE_FILTER_NEAREST
 
 
 func _configure_hint() -> void:
-	var panel_style := StyleBoxFlat.new()
-	panel_style.bg_color = Color("17361edc") if marker_style == "forest" else Color("2f1b17e0")
-	panel_style.border_color = Color("95da88") if marker_style == "forest" else Color("ffae6f")
-	panel_style.border_width_left = 1
-	panel_style.border_width_top = 1
-	panel_style.border_width_right = 1
-	panel_style.border_width_bottom = 1
-	panel_style.corner_radius_top_left = 11
-	panel_style.corner_radius_top_right = 11
-	panel_style.corner_radius_bottom_right = 11
-	panel_style.corner_radius_bottom_left = 11
-	panel_style.shadow_color = Color("050a06a0")
-	panel_style.shadow_size = 8
-	panel_style.shadow_offset = Vector2(0, 2)
-	panel_style.content_margin_left = 10.0
-	panel_style.content_margin_right = 10.0
-	panel_style.content_margin_top = 4.0
-	panel_style.content_margin_bottom = 4.0
-	hint_panel.add_theme_stylebox_override("panel", panel_style)
-
-	if hint.label_settings == null:
-		hint.label_settings = LabelSettings.new()
-	hint.label_settings.font_size = 13
-	hint.label_settings.outline_size = 2
-	hint.label_settings.outline_color = Color("0f0c08")
-	hint.label_settings.font_color = Color("f7ffe5") if marker_style == "forest" else Color("fff1dd")
-	hint.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
-	hint.vertical_alignment = VERTICAL_ALIGNMENT_CENTER
-	hint_panel.mouse_filter = Control.MOUSE_FILTER_IGNORE
-	hint_panel.z_index = 20
+	var hint_variant := "verdant"
+	if marker_style == "cave":
+		hint_variant = "ember"
+	elif marker_style == "portal":
+		hint_variant = "battle"
+	WorldUI.apply_hint(hint_panel, hint, hint_variant)
 	_update_hint_text()
 
 

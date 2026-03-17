@@ -1,0 +1,44 @@
+[gd_scene load_steps=2 format=3]
+
+[ext_resource type="Script" path="res://scripts/ui/objective_panel.gd" id="1_script"]
+
+[node name="ObjectivePanel" type="MarginContainer"]
+script = ExtResource("1_script")
+offset_left = 16.0
+offset_top = 16.0
+offset_right = 236.0
+offset_bottom = 112.0
+
+[node name="Panel" type="PanelContainer" parent="."]
+layout_mode = 2
+
+[node name="Padding" type="MarginContainer" parent="Panel"]
+layout_mode = 2
+theme_override_constants/margin_left = 8
+theme_override_constants/margin_top = 8
+theme_override_constants/margin_right = 8
+theme_override_constants/margin_bottom = 8
+
+[node name="Content" type="VBoxContainer" parent="Panel/Padding"]
+layout_mode = 2
+theme_override_constants/separation = 4
+
+[node name="SectionLabel" type="Label" parent="Panel/Padding/Content"]
+layout_mode = 2
+text = "Current Objective"
+theme_override_font_sizes/font_size = 12
+
+[node name="PrimaryLabel" type="Label" parent="Panel/Padding/Content"]
+layout_mode = 2
+text = "Defeat the Boss"
+autowrap_mode = 3
+theme_override_font_sizes/font_size = 14
+
+[node name="SecondaryLabel" type="Label" parent="Panel/Padding/Content"]
+layout_mode = 2
+text = "Bonus Objectives"
+theme_override_font_sizes/font_size = 11
+
+[node name="SecondaryList" type="VBoxContainer" parent="Panel/Padding/Content"]
+layout_mode = 2
+theme_override_constants/separation = 2

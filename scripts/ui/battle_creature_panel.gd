@@ -1,6 +1,7 @@
 extends PanelContainer
 
 @export var right_aligned := false
+@export_enum("wood", "stone", "battle", "ember") var panel_variant := "battle"
 
 @onready var portrait: TextureRect = $Padding/Content/Portrait
 @onready var name_label: Label = $Padding/Content/NameLabel
@@ -8,6 +9,7 @@ extends PanelContainer
 
 
 func _ready() -> void:
+	_apply_variant()
 	_apply_alignment()
 
 
@@ -25,3 +27,14 @@ func _apply_alignment() -> void:
 	portrait.custom_minimum_size = Vector2(72, 72)
 	name_label.horizontal_alignment = alignment
 	hp_label.horizontal_alignment = alignment
+
+
+func apply_variant(variant: String) -> void:
+	panel_variant = variant
+	_apply_variant()
+
+
+func _apply_variant() -> void:
+	WorldUI.apply_panel(self, panel_variant, true)
+	WorldUI.apply_label(name_label, "title", panel_variant)
+	WorldUI.apply_label(hp_label, "subtitle", panel_variant)

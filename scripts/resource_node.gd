@@ -5,6 +5,34 @@ signal interaction_range_changed(is_active: bool)
 signal harvested(resource_type: String, amount: int)
 signal harvest_feedback_requested(resource_type: String, feedback_profile: String, world_position: Vector2)
 
+const RESOURCE_TEXTURES := {
+	"wood": "res://assets/resources/wood_node.svg",
+	"herb": "res://assets/resources/herb_node.svg",
+	"stone": "res://assets/resources/stone_node.svg",
+	"crystal": "res://assets/resources/crystal_node.svg",
+	"core_shard": "res://assets/resources/core_shard_node.svg",
+	"species_mat": "res://assets/resources/species_mat_node.svg",
+}
+
+const VARIANT_TEXTURES := {
+	"stump": "res://assets/resources/wood_stump.svg",
+	"branch_pile": "res://assets/resources/wood_branch_pile.svg",
+	"leaf_cluster": "res://assets/resources/herb_node.svg",
+	"flower_patch": "res://assets/resources/herb_flower_patch.svg",
+	"fungus": "res://assets/resources/herb_fungus.svg",
+	"rock_pile": "res://assets/resources/stone_node.svg",
+	"mossy_rocks": "res://assets/resources/stone_mossy.svg",
+	"basalt": "res://assets/resources/stone_basalt.svg",
+	"shard_cluster": "res://assets/resources/crystal_node.svg",
+	"overgrown_crystal": "res://assets/resources/crystal_overgrown.svg",
+	"lava_crystal": "res://assets/resources/crystal_lava.svg",
+	"floating_relic": "res://assets/resources/core_shard_relic.svg",
+	"ember_relic": "res://assets/resources/core_shard_relic.svg",
+	"organic_remains": "res://assets/resources/species_mat_node.svg",
+	"moss_cocoon": "res://assets/resources/species_mat_cocoon.svg",
+	"ember_residue": "res://assets/resources/species_mat_node.svg",
+}
+
 const RESOURCE_DEFAULTS := {
 	"wood": {
 		"default_visual": "stump",
@@ -176,11 +204,42 @@ const BIOME_PRESETS := {
 	},
 }
 
-@export_enum("wood", "herb", "stone", "crystal", "core_shard", "species_mat") var resource_type: String = "wood"
-@export var visual_type: String = ""
-@export_enum("auto", "verdant_wilds", "ember_caves") var biome_type: String = "auto"
-@export_enum("auto", "common", "uncommon", "rare") var rarity: String = "auto"
-@export_enum("auto", "bob", "sway", "settle", "glint", "hover", "pulse") var idle_animation_profile: String = "auto"
+var _resource_type := "wood"
+var _visual_type := ""
+var _biome_type := "auto"
+var _rarity := "auto"
+var _idle_animation_profile := "auto"
+
+@export_enum("wood", "herb", "stone", "crystal", "core_shard", "species_mat") var resource_type: String = "wood":
+	get:
+		return _resource_type
+	set(value):
+		_resource_type = value
+		_request_visual_refresh()
+@export var visual_type: String = "":
+	get:
+		return _visual_type
+	set(value):
+		_visual_type = value
+		_request_visual_refresh()
+@export_enum("auto", "verdant_wilds", "ember_caves") var biome_type: String = "auto":
+	get:
+		return _biome_type
+	set(value):
+		_biome_type = value
+		_request_visual_refresh()
+@export_enum("auto", "common", "uncommon", "rare") var rarity: String = "auto":
+	get:
+		return _rarity
+	set(value):
+		_rarity = value
+		_request_visual_refresh()
+@export_enum("auto", "bob", "sway", "settle", "glint", "hover", "pulse") var idle_animation_profile: String = "auto":
+	get:
+		return _idle_animation_profile
+	set(value):
+		_idle_animation_profile = value
+		_request_visual_refresh()
 @export var min_amount: int = 1
 @export var max_amount: int = 1
 @export var show_ground_base := true
@@ -190,11 +249,15 @@ const BIOME_PRESETS := {
 @export var show_prompt_action_text := true
 @export var contrast_boost := 1.0
 @export var prompt_offset := Vector2.ZERO
+@export var spawn_id: String = ""
+@export var rare_drop_table_id: String = ""
 
 @onready var hint_panel: PanelContainer = $HintPanel
 @onready var hint: Label = $HintPanel/HintLabel
 @onready var hint_anchor: Marker2D = $HintAnchor
 @onready var feedback_anchor: Marker2D = $FeedbackAnchor
+@onready var presentation_root: Node2D = $PresentationRoot
+@onready var sprite: Sprite2D = $PresentationRoot/Sprite2D
 
 var _player_near := false
 var _presentation_time := 0.0
@@ -249,10 +312,56 @@ func _unhandled_input(event: InputEvent) -> void:
 		return
 	if _player_near and event.is_action_pressed("interact"):
 		var amount := randi_range(min_amount, max_amount)
-		GameState.materials[resource_type] = GameState.materials.get(resource_type, 0) + amount
+		var gathered_rewards := {resource_type: amount}
+		var rare_drops := _roll_rare_drops()
+		if not rare_drops.is_empty():
+			gathered_rewards = GameData.merge_materials(gathered_rewards, rare_drops)
+		if _try_trigger_node_encounter(gathered_rewards):
+			return
+		GameState.award_gathered_materials(gathered_rewards)
+		if not spawn_id.is_empty():
+			GameState.mark_resource_spawn_harvested(spawn_id)
 		emit_signal("harvested", resource_type, amount)
 		emit_signal("harvest_feedback_requested", resource_type, _harvest_feedback_key(), feedback_anchor.global_position)
 		queue_free()
+
+
+func _roll_rare_drops() -> Dictionary:
+	if not rare_drop_table_id.is_empty():
+		var map_config := GameData.get_map_run_config(GameState.current_map_id)
+		var rare_tables: Dictionary = map_config.get("resource_rare_drops", {})
+		return GameData.roll_material_table(rare_tables.get(rare_drop_table_id, []))
+	return GameData.get_resource_rare_drops(GameState.current_map_id, resource_type)
+
+
+func _try_trigger_node_encounter(gathered_rewards: Dictionary) -> bool:
+	var encounter_data := GameData.roll_resource_node_encounter(GameState.current_map_id, resource_type)
+	if encounter_data.is_empty():
+		return false
+	var creature_id := str(encounter_data.get("creature_id", ""))
+	if creature_id.is_empty():
+		return false
+	var current_scene := get_tree().current_scene
+	var scene_path := ""
+	if current_scene != null:
+		scene_path = str(current_scene.scene_file_path)
+	GameState.set_battle_return(GameState.current_map_id, scene_path, global_position)
+	GameState.set_pending_battle(creature_id, {
+		"encounter_source": "resource_node",
+		"resource_type": resource_type,
+		"resource_spawn_id": spawn_id,
+		"resource_node_reward": {
+			"spawn_id": spawn_id,
+			"materials": gathered_rewards.duplicate(true),
+		},
+		"intro_message": str(encounter_data.get("message", "A creature was disturbed!")),
+		"ui_variant": str(encounter_data.get("ui_variant", "battle")),
+		"level_bonus": int(encounter_data.get("level_bonus", 0)),
+		"stat_multiplier": float(encounter_data.get("stat_multiplier", 1.0)),
+		"exp_multiplier": float(encounter_data.get("exp_multiplier", 1.0)),
+	})
+	get_tree().change_scene_to_file("res://scenes/Battle.tscn")
+	return true
 
 
 func _get_configuration_warnings() -> PackedStringArray:
@@ -273,8 +382,17 @@ func _apply_default_yield_range() -> void:
 
 func _refresh_configuration() -> void:
 	_cached_config = _resolve_visual_config()
+	_apply_sprite_presentation()
 	_update_prompt_position()
 	queue_redraw()
+
+
+func _request_visual_refresh() -> void:
+	if not is_node_ready():
+		return
+	_refresh_configuration()
+	_configure_hint_label()
+	_update_prompt_visibility()
 
 
 func _resolve_visual_config() -> Dictionary:
@@ -326,36 +444,8 @@ func _harvest_feedback_key() -> String:
 
 
 func _configure_hint_label() -> void:
-	var panel_style := StyleBoxFlat.new()
-	panel_style.bg_color = Color("17361edc")
-	panel_style.border_color = Color("95da88")
-	panel_style.border_width_left = 1
-	panel_style.border_width_top = 1
-	panel_style.border_width_right = 1
-	panel_style.border_width_bottom = 1
-	panel_style.corner_radius_top_left = 11
-	panel_style.corner_radius_top_right = 11
-	panel_style.corner_radius_bottom_right = 11
-	panel_style.corner_radius_bottom_left = 11
-	panel_style.shadow_color = Color("050a06a0")
-	panel_style.shadow_size = 8
-	panel_style.shadow_offset = Vector2(0, 2)
-	panel_style.content_margin_left = 10.0
-	panel_style.content_margin_right = 10.0
-	panel_style.content_margin_top = 4.0
-	panel_style.content_margin_bottom = 4.0
-	hint_panel.add_theme_stylebox_override("panel", panel_style)
-	if hint.label_settings == null:
-		hint.label_settings = LabelSettings.new()
-	hint.label_settings.font_size = 13
-	hint.label_settings.outline_size = 2
-	hint.label_settings.outline_color = Color("0f0c08")
-	hint.label_settings.font_color = Color("f7ffe5")
-	hint.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
-	hint.vertical_alignment = VERTICAL_ALIGNMENT_CENTER
+	WorldUI.apply_hint(hint_panel, hint, "verdant" if _resolved_biome() == "verdant_wilds" else "stone")
 	hint_panel.visible = false
-	hint_panel.z_index = 20
-	hint_panel.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	_update_hint_text()
 
 
@@ -382,6 +472,67 @@ func _update_hint_presentation() -> void:
 	hint_panel.modulate = Color(1.0, 1.0, 1.0, visibility)
 	hint_panel.scale = Vector2.ONE * (0.94 + visibility * 0.06)
 	hint_panel.position = hint_anchor.position + prompt_offset + Vector2(0, -4.0 - visibility * 6.0 + lift * visibility)
+
+
+func _apply_sprite_presentation() -> void:
+	if not is_instance_valid(sprite):
+		return
+	var config: Dictionary = _cached_config if not _cached_config.is_empty() else _resolve_visual_config()
+	var variant := str(config.get("variant", ""))
+	var texture_path := str(VARIANT_TEXTURES.get(variant, RESOURCE_TEXTURES.get(resource_type, RESOURCE_TEXTURES["stone"])))
+	sprite.texture = load(texture_path)
+	sprite.texture_filter = CanvasItem.TEXTURE_FILTER_NEAREST
+	sprite.centered = true
+	sprite.offset = Vector2.ZERO
+	sprite.modulate = _sprite_modulate()
+	presentation_root.position = Vector2(0, -6)
+	presentation_root.scale = Vector2.ONE
+	presentation_root.rotation = 0.0
+
+
+func _sprite_modulate() -> Color:
+	match _resolved_biome():
+		"ember_caves":
+			match resource_type:
+				"wood":
+					return Color("d7b39a")
+				"herb":
+					return Color("f5c9a6")
+				"stone":
+					return Color("d6cfda")
+				"crystal":
+					return Color("ffd4b2")
+				"core_shard":
+					return Color("fff1d1")
+				"species_mat":
+					return Color("ffd1b5")
+		_:
+			match resource_type:
+				"wood":
+					return Color("fff2dc")
+				"herb":
+					return Color("f0ffdc")
+				"stone":
+					return Color("eaf0e1")
+				"crystal":
+					return Color("eaffff")
+				"core_shard":
+					return Color("f8fff0")
+				"species_mat":
+					return Color("eef7da")
+	return Color.WHITE
+
+
+func _update_sprite_motion(config: Dictionary, motion: Dictionary) -> void:
+	if not is_instance_valid(presentation_root):
+		return
+	var scale_value: float = float(config.get("scale", 1.0)) + float(motion.get("scale_offset", 0.0))
+	var bob: float = float(motion.get("bob", 0.0))
+	var sway: float = float(motion.get("sway", 0.0))
+	var hover: float = float(motion.get("hover", 0.0))
+	presentation_root.position = Vector2(0, bob - hover - 6.0)
+	presentation_root.scale = Vector2.ONE * scale_value
+	presentation_root.rotation = sway
 
 
 func _prompt_action_verb() -> String:
@@ -413,9 +564,7 @@ func _boost_color(color: Color) -> Color:
 func _draw_presentation() -> void:
 	var config: Dictionary = _cached_config if not _cached_config.is_empty() else _resolve_visual_config()
 	var motion := _animation_state(config)
-	var base_scale: float = float(config.get("scale", 1.0)) + motion["scale_offset"]
 	var bob: float = motion["bob"]
-	var sway: float = motion["sway"]
 	var hover: float = motion["hover"]
 	var center := Vector2(0, bob - hover)
 
@@ -429,26 +578,11 @@ func _draw_presentation() -> void:
 		glow_color.a = float(config.get("glow_alpha", 0.0))
 		draw_colored_polygon(_ellipse_points(center + Vector2(0, 2), Vector2(22, 10 + hover * 0.5), 18), glow_color)
 
-	match resource_type:
-		"wood":
-			_draw_wood(config, center, base_scale, sway)
-		"herb":
-			_draw_herb(config, center, base_scale, sway)
-		"stone":
-			_draw_stone(config, center, base_scale, sway)
-		"crystal":
-			_draw_crystal(config, center, base_scale, sway)
-		"core_shard":
-			_draw_core_shard(config, center, base_scale, sway, hover)
-		"species_mat":
-			_draw_species_mat(config, center, base_scale, sway)
-		_:
-			_draw_stone(config, center, base_scale, sway)
-
 	if _interaction_amount > 0.02:
 		var ring_color := Color(config["highlight"])
 		ring_color.a = 0.08 + _interaction_amount * 0.12
 		draw_polyline(_ellipse_points(center + Vector2(0, 6), Vector2(20, 8), 20), ring_color, 2.0, true)
+	_update_sprite_motion(config, motion)
 
 
 func _animation_state(config: Dictionary) -> Dictionary:

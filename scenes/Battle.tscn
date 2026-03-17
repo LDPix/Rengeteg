@@ -1,10 +1,8 @@
-[gd_scene load_steps=8 format=3]
+[gd_scene load_steps=7 format=3]
 
 [ext_resource type="Script" path="res://scripts/battle.gd" id="1_script"]
 [ext_resource type="Theme" path="res://ui/theme.tres" id="2_theme"]
 [ext_resource type="PackedScene" path="res://scenes/ui/BattleCreaturePanel.tscn" id="3_creature_panel"]
-[ext_resource type="PackedScene" path="res://scenes/ui/PrimaryActionButton.tscn" id="4_primary"]
-
 [sub_resource type="StyleBoxFlat" id="1_player_panel"]
 bg_color = Color(0.298039, 0.686275, 0.313726, 0.06)
 corner_radius_top_left = 16
@@ -100,7 +98,7 @@ anchor_right = 1.0
 anchor_bottom = 1.0
 grow_horizontal = 2
 grow_vertical = 2
-color = Color(0.960784, 0.960784, 0.960784, 1)
+color = Color(0.113725, 0.0941176, 0.0745098, 1)
 
 [node name="OuterMargin" type="MarginContainer" parent="."]
 anchors_preset = 15
@@ -122,28 +120,6 @@ theme_override_constants/separation = 8
 [node name="TitleLabel" type="Label" parent="OuterMargin/Root/TopBar"]
 text = "BATTLE"
 theme_override_font_sizes/font_size = 36
-
-[node name="StatusRow" type="HBoxContainer" parent="OuterMargin/Root/TopBar"]
-
-[node name="BattleAreaLabel" type="Label" parent="OuterMargin/Root/TopBar/StatusRow"]
-size_flags_horizontal = 3
-theme_override_font_sizes/font_size = 14
-theme_override_colors/font_color = Color(0.380392, 0.380392, 0.380392, 1)
-text = "Verdant Wilds"
-
-[node name="BattleStatusLabel" type="Label" parent="OuterMargin/Root/TopBar/StatusRow"]
-size_flags_horizontal = 3
-horizontal_alignment = 2
-theme_override_font_sizes/font_size = 14
-theme_override_colors/font_color = Color(0.380392, 0.380392, 0.380392, 1)
-text = "Mossling vs Wild Fangbeast"
-
-[node name="SealCountLabel" type="Label" parent="OuterMargin/Root/TopBar/StatusRow"]
-size_flags_horizontal = 3
-horizontal_alignment = 2
-theme_override_font_sizes/font_size = 14
-theme_override_colors/font_color = Color(0.380392, 0.380392, 0.380392, 1)
-text = "Seals: 5"
 
 [node name="BattleCard" type="PanelContainer" parent="OuterMargin/Root"]
 
@@ -182,12 +158,11 @@ theme_override_font_sizes/font_size = 16
 theme_override_colors/font_color = Color(0.380392, 0.380392, 0.380392, 1)
 text = "Choose an action."
 
+[node name="AbilitiesList" type="VBoxContainer" parent="OuterMargin/Root/ActionsCard/ActionsPadding/ActionsVBox"]
+theme_override_constants/separation = 12
+
 [node name="ButtonsRow" type="HBoxContainer" parent="OuterMargin/Root/ActionsCard/ActionsPadding/ActionsVBox"]
 theme_override_constants/separation = 24
-
-[node name="AttackButton" parent="OuterMargin/Root/ActionsCard/ActionsPadding/ActionsVBox/ButtonsRow" instance=ExtResource("4_primary")]
-size_flags_horizontal = 3
-text = "Attack"
 
 [node name="SwitchButton" type="Button" parent="OuterMargin/Root/ActionsCard/ActionsPadding/ActionsVBox/ButtonsRow"]
 size_flags_horizontal = 3
@@ -224,3 +199,22 @@ theme_override_styles/pressed = SubResource("8_danger_button_pressed")
 theme_override_styles/focus = SubResource("7_danger_button_hover")
 theme_override_font_sizes/font_size = 20
 text = "Run"
+
+[node name="SealChooserPanel" type="PanelContainer" parent="OuterMargin/Root/ActionsCard/ActionsPadding/ActionsVBox"]
+visible = false
+
+[node name="SealChooserPadding" type="MarginContainer" parent="OuterMargin/Root/ActionsCard/ActionsPadding/ActionsVBox/SealChooserPanel"]
+theme_override_constants/margin_left = 16
+theme_override_constants/margin_top = 16
+theme_override_constants/margin_right = 16
+theme_override_constants/margin_bottom = 16
+
+[node name="SealChooserVBox" type="VBoxContainer" parent="OuterMargin/Root/ActionsCard/ActionsPadding/ActionsVBox/SealChooserPanel/SealChooserPadding"]
+theme_override_constants/separation = 12
+
+[node name="SealChooserTitle" type="Label" parent="OuterMargin/Root/ActionsCard/ActionsPadding/ActionsVBox/SealChooserPanel/SealChooserPadding/SealChooserVBox"]
+text = "Choose a seal"
+theme_override_font_sizes/font_size = 18
+
+[node name="SealOptions" type="VBoxContainer" parent="OuterMargin/Root/ActionsCard/ActionsPadding/ActionsVBox/SealChooserPanel/SealChooserPadding/SealChooserVBox"]
+theme_override_constants/separation = 10

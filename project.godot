@@ -24,6 +24,7 @@ GameState="*uid://cil02siil4k8w"
 
 window/size/viewport_width=1600
 window/size/viewport_height=900
+window/stretch/mode="canvas_items"
 
 [input]
 
@@ -82,6 +83,5 @@ load_game={
 
 [rendering]
 
-rendering_device/driver.windows="d3d12"
-textures/canvas_textures/default_texture_filter=1
 textures/canvas_textures/default_texture_repeat=1
+rendering_device/driver.windows="d3d12"

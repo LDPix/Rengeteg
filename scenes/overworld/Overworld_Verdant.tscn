@@ -1,25 +1,27 @@
-[gd_scene load_steps=9 format=3]
+[gd_scene format=3 uid="uid://bnsvmg2h53oa3"]
 
-[ext_resource type="Script" path="res://scripts/overworld.gd" id="1_overworld"]
-[ext_resource type="Script" path="res://scripts/overworld_tile_layer.gd" id="2_tile_layer"]
+[ext_resource type="Script" uid="uid://c2fiojkipmduv" path="res://scripts/overworld.gd" id="1_overworld"]
+[ext_resource type="Script" uid="uid://c1ha77bag1a5i" path="res://scripts/overworld_tile_layer.gd" id="2_tile_layer"]
 [ext_resource type="PackedScene" path="res://scenes/overworld/Player.tscn" id="3_player"]
-[ext_resource type="PackedScene" path="res://scenes/overworld/ResourceNode.tscn" id="4_resource"]
-[ext_resource type="PackedScene" path="res://scenes/overworld/ExitZone.tscn" id="5_exit"]
-
-[sub_resource type="RectangleShape2D" id="1_encounter_shape"]
-size = Vector2(288, 192)
+[ext_resource type="PackedScene" uid="uid://ctx7oixaduacu" path="res://scenes/overworld/ExitZone.tscn" id="5_exit"]
+[ext_resource type="Script" uid="uid://cdbtvudtafsoj" path="res://scripts/resource_spawn_point.gd" id="6_resource_point"]
+[ext_resource type="Script" uid="uid://bjwlw6xni2v05" path="res://scripts/encounter_patch.gd" id="7_patch"]
+[ext_resource type="Script" uid="uid://c7yp41cjoofoe" path="res://scripts/boss_spawn_point.gd" id="8_boss_point"]
 
 [sub_resource type="RectangleShape2D" id="2_encounter_shape_small"]
 size = Vector2(160, 96)
 
-[node name="Overworld" type="Node2D"]
+[sub_resource type="RectangleShape2D" id="1_encounter_shape"]
+size = Vector2(288, 192)
+
+[node name="Overworld" type="Node2D" unique_id=750787014]
 script = ExtResource("1_overworld")
 encounter_chance = 0.1
 
-[node name="BackgroundRoot" type="CanvasLayer" parent="."]
+[node name="BackgroundRoot" type="CanvasLayer" parent="." unique_id=1659316288]
 layer = -1
 
-[node name="BackgroundFill" type="ColorRect" parent="BackgroundRoot"]
+[node name="BackgroundFill" type="ColorRect" parent="BackgroundRoot" unique_id=449081752]
 anchors_preset = 15
 anchor_right = 1.0
 anchor_bottom = 1.0
@@ -27,46 +29,44 @@ grow_horizontal = 2
 grow_vertical = 2
 color = Color(0.839216, 0.901961, 0.807843, 1)
 
-[node name="ForestFloorBand" type="ColorRect" parent="BackgroundRoot"]
-offset_left = 0.0
+[node name="ForestFloorBand" type="ColorRect" parent="BackgroundRoot" unique_id=751137273]
 offset_top = 560.0
 offset_right = 1600.0
 offset_bottom = 900.0
 color = Color(0.721569, 0.819608, 0.678431, 1)
 
-[node name="CanopyShadowLeft" type="Polygon2D" parent="BackgroundRoot"]
+[node name="CanopyShadowLeft" type="Polygon2D" parent="BackgroundRoot" unique_id=1094575134]
 position = Vector2(86, 174)
 color = Color(0.309804, 0.486275, 0.27451, 0.18)
 polygon = PackedVector2Array(-180, -150, -30, -192, 102, -126, 138, 28, 72, 170, -76, 202, -180, 88)
 
-[node name="CanopyShadowRight" type="Polygon2D" parent="BackgroundRoot"]
+[node name="CanopyShadowRight" type="Polygon2D" parent="BackgroundRoot" unique_id=367759197]
 position = Vector2(1490, 206)
 color = Color(0.309804, 0.486275, 0.27451, 0.16)
 polygon = PackedVector2Array(-150, -186, -18, -152, 74, -56, 94, 92, 8, 192, -138, 158, -184, 8)
 
-[node name="BushSilhouetteLeft" type="Polygon2D" parent="BackgroundRoot"]
+[node name="BushSilhouetteLeft" type="Polygon2D" parent="BackgroundRoot" unique_id=957064508]
 position = Vector2(140, 724)
 color = Color(0.356863, 0.564706, 0.333333, 0.2)
 polygon = PackedVector2Array(-120, 34, -86, -28, -24, -42, 40, -18, 112, 24, 126, 74, 36, 104, -56, 88)
 
-[node name="BushSilhouetteRight" type="Polygon2D" parent="BackgroundRoot"]
+[node name="BushSilhouetteRight" type="Polygon2D" parent="BackgroundRoot" unique_id=712951484]
 position = Vector2(1430, 760)
 color = Color(0.356863, 0.564706, 0.333333, 0.18)
 polygon = PackedVector2Array(-140, 28, -92, -24, -14, -48, 64, -12, 132, 40, 146, 88, 52, 110, -58, 92)
 
-[node name="ClearingGlow" type="Polygon2D" parent="BackgroundRoot"]
+[node name="ClearingGlow" type="Polygon2D" parent="BackgroundRoot" unique_id=762649855]
 position = Vector2(804, 452)
 color = Color(0.972549, 0.933333, 0.772549, 0.28)
 polygon = PackedVector2Array(-220, -84, -110, -136, 64, -132, 192, -70, 238, 8, 196, 82, 72, 128, -122, 112, -228, 42)
 
-[node name="TreeLineTop" type="ColorRect" parent="BackgroundRoot"]
-offset_left = 0.0
-offset_top = 0.0
+[node name="TreeLineTop" type="ColorRect" parent="BackgroundRoot" unique_id=65295237]
 offset_right = 1600.0
 offset_bottom = 110.0
 color = Color(0.282353, 0.443137, 0.25098, 0.12)
 
-[node name="TileMap_Background" type="TileMapLayer" parent="."]
+[node name="TileMap_Background" type="TileMapLayer" parent="." unique_id=1998287860]
+texture_filter = 1
 position = Vector2(-320, -224)
 script = ExtResource("2_tile_layer")
 layout_rows = PackedStringArray("gggggggggggggggggggg", "gggggggggggggggggggg", "gggggggggggggggggggg", "gggggggggggggggggggg", "gggggggggggggggggggg", "gggggggggggggggggggg", "gggggggggggggggggggg", "gggggggggggggggggggg", "gggggggggggggggggggg", "gggggggggggggggggggg", "gggggggggggggggggggg", "gggggggggggggggggggg", "gggggggggggggggggggg", "gggggggggggggggggggg", "gggggggggggggggggggg")
@@ -74,17 +74,38 @@ tile_paths = {
 "g": "res://assets/tiles/grass.png"
 }
 
-[node name="TileMap_Ground" type="TileMapLayer" parent="."]
+[node name="TileMap_Ground" type="TileMapLayer" parent="." unique_id=2007938369]
+texture_filter = 1
 position = Vector2(-320, -224)
 script = ExtResource("2_tile_layer")
-layout_rows = PackedStringArray("....................", "...f................", "....f.....ffff......", "......gggggggg..f...", ".....gggggggggg.....", ".....gggdddgggg.....", "...f.gggddddgggg....", ".....ggddddddgg.....", "....gggddddddggg....", ".....gggddddggg..f..", "......ggddddgg......", "..f....ggddgg.......", ".....dddddddddddd...", "...ddddddddddddddd..", "....................")
+layout_rows = PackedStringArray("....................", "...f................", "....f.....ffff......", "......ggghhhhg..f...", ".....gghhhhhhhh.....", ".....ghhdddghhh.....", "...f.hhhddddghhh....", ".....hhddddddgh.....", "....hhhddddddghh....", ".....hhhddddghh..f..", "......hhddddhh......", "..f....hhddhh.......", ".....dddddddddddd...", "...ddddddddddddddd..", "....................")
 tile_paths = {
 "d": "res://assets/tiles/dirt.png",
 "f": "res://assets/tiles/flowers.png",
-"g": "res://assets/tiles/grass.png"
+"g": "res://assets/tiles/grass.png",
+"h": "res://assets/tiles/grass_encounter.svg"
 }
 
-[node name="TileMap_Objects" type="TileMapLayer" parent="."]
+[node name="TileMap_Encounter" type="TileMapLayer" parent="." unique_id=206899296]
+texture_filter = 1
+position = Vector2(-320, -224)
+script = ExtResource("2_tile_layer")
+layout_rows = PackedStringArray("....................", "....................", "....................", "....................", "....................", "....................", "....................", "....................", "....................", "....................", "....................", "....................", "....................", "....................", "....................")
+tile_paths = {
+"f": "res://assets/tiles/grass_encounter.svg",
+"h": "res://assets/tiles/grass_encounter.svg"
+}
+tile_tags = {
+"f": "forest",
+"h": "high_risk_patch"
+}
+preview_colors = {
+"f": Color(0.258824, 0.639216, 0.247059, 0.28),
+"h": Color(0.341176, 0.694118, 0.278431, 0.24)
+}
+
+[node name="TileMap_Objects" type="TileMapLayer" parent="." unique_id=108961277]
+texture_filter = 1
 position = Vector2(-320, -224)
 script = ExtResource("2_tile_layer")
 layout_rows = PackedStringArray("ttt.t..........tttt.", "tt...t........tt..t.", "t...................", "..................t.", "t..................t", "....................", "t..................t", "....................", "....................", "t.................t.", "...b...........b....", "t..............t....", "..t.................", "....t.............t.", ".....t..............")
@@ -93,56 +114,138 @@ tile_paths = {
 "t": "res://assets/resources/tree.png"
 }
 
-[node name="ResourceNodes" type="Node2D" parent="."]
+[node name="GeneratedContent" type="Node2D" parent="." unique_id=616477268]
 
-[node name="TreeNodeWest" parent="ResourceNodes" instance=ExtResource("4_resource")]
+[node name="Resources" type="Node2D" parent="GeneratedContent" unique_id=68232380]
+
+[node name="Boss" type="Node2D" parent="GeneratedContent" unique_id=1970290250]
+
+[node name="ResourceSpawnPoints" type="Node2D" parent="." unique_id=1407839682]
+
+[node name="WestRoots" type="Marker2D" parent="ResourceSpawnPoints" unique_id=465674371]
 position = Vector2(-252, 88)
-resource_type = "wood"
-visual_type = "stump"
-biome_type = "verdant_wilds"
-rarity = "common"
-min_amount = 3
-max_amount = 6
+script = ExtResource("6_resource_point")
+spawn_id = "west_roots"
+allowed_resource_types = PackedStringArray("wood")
+visual_type_override = "stump"
+min_amount_override = 3
+max_amount_override = 6
 
-[node name="TreeNodeNorth" parent="ResourceNodes" instance=ExtResource("4_resource")]
+[node name="NorthCanopy" type="Marker2D" parent="ResourceSpawnPoints" unique_id=1076549791]
 position = Vector2(-112, -182)
-resource_type = "wood"
-visual_type = "branch_pile"
-biome_type = "verdant_wilds"
-rarity = "common"
-min_amount = 3
-max_amount = 6
+script = ExtResource("6_resource_point")
+spawn_id = "north_canopy"
+allowed_resource_types = PackedStringArray("wood", "herb")
+visual_type_override = "branch_pile"
+min_amount_override = 3
+max_amount_override = 6
 
-[node name="BushNodeEast" parent="ResourceNodes" instance=ExtResource("4_resource")]
+[node name="EastBlooms" type="Marker2D" parent="ResourceSpawnPoints" unique_id=583035472]
 position = Vector2(232, -84)
-resource_type = "herb"
-visual_type = "flower_patch"
-biome_type = "verdant_wilds"
-rarity = "common"
-min_amount = 2
-max_amount = 4
+script = ExtResource("6_resource_point")
+spawn_id = "east_blooms"
+allowed_resource_types = PackedStringArray("herb")
+visual_type_override = "flower_patch"
+min_amount_override = 2
+max_amount_override = 4
 
-[node name="EncounterZones" type="Node2D" parent="."]
+[node name="SouthTrail" type="Marker2D" parent="ResourceSpawnPoints" unique_id=543092183]
+position = Vector2(-28, 176)
+script = ExtResource("6_resource_point")
+spawn_id = "south_trail"
+allowed_resource_types = PackedStringArray("wood", "herb")
 
-[node name="CentralGrassEncounter" type="Area2D" parent="EncounterZones"]
-position = Vector2(8, 0)
+[node name="ClearingWest" type="Marker2D" parent="ResourceSpawnPoints" unique_id=2052955310]
+position = Vector2(-152, -24)
+script = ExtResource("6_resource_point")
+spawn_id = "clearing_west"
+allowed_resource_types = PackedStringArray("wood", "stone")
 
-[node name="CollisionShape2D" type="CollisionShape2D" parent="EncounterZones/CentralGrassEncounter"]
-shape = SubResource("1_encounter_shape")
+[node name="ClearingEast" type="Marker2D" parent="ResourceSpawnPoints" unique_id=927492833]
+position = Vector2(140, 16)
+script = ExtResource("6_resource_point")
+spawn_id = "clearing_east"
+allowed_resource_types = PackedStringArray("herb", "wood")
 
-[node name="ClearingRimEncounter" type="Area2D" parent="EncounterZones"]
-position = Vector2(4, 4)
+[node name="NorthRim" type="Marker2D" parent="ResourceSpawnPoints" unique_id=1374487586]
+position = Vector2(96, -170)
+script = ExtResource("6_resource_point")
+spawn_id = "north_rim"
+allowed_resource_types = PackedStringArray("wood", "herb")
 
-[node name="CollisionShape2D" type="CollisionShape2D" parent="EncounterZones/ClearingRimEncounter"]
+[node name="SouthPocket" type="Marker2D" parent="ResourceSpawnPoints" unique_id=262135224]
+position = Vector2(168, 146)
+script = ExtResource("6_resource_point")
+spawn_id = "south_pocket"
+allowed_resource_types = PackedStringArray("herb", "stone")
+
+[node name="EncounterZones" type="Node2D" parent="." unique_id=607687104]
+
+[node name="NorthThicket" type="Area2D" parent="EncounterZones" unique_id=1716985983]
+position = Vector2(2, -88)
+script = ExtResource("7_patch")
+patch_id = "north_thicket"
+encounter_tag = "forest"
+encounter_tile_key = "f"
+patch_tags = PackedStringArray()
+active_fill_color = Color(0.258824, 0.639216, 0.247059, 0.28)
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="EncounterZones/NorthThicket" unique_id=1458102347]
 shape = SubResource("2_encounter_shape_small")
 
-[node name="PlayerSpawn" type="Marker2D" parent="."]
+[node name="CentralBrush" type="Area2D" parent="EncounterZones" unique_id=1285588078]
+position = Vector2(8, 0)
+script = ExtResource("7_patch")
+patch_id = "central_brush"
+encounter_tag = "forest"
+encounter_tile_key = "f"
+patch_tags = PackedStringArray()
+active_fill_color = Color(0.258824, 0.639216, 0.247059, 0.28)
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="EncounterZones/CentralBrush" unique_id=1068916296]
+shape = SubResource("1_encounter_shape")
+
+[node name="EastRim" type="Area2D" parent="EncounterZones" unique_id=1566037254]
+position = Vector2(140, 30)
+script = ExtResource("7_patch")
+patch_id = "east_rim"
+encounter_tag = "high_risk_patch"
+encounter_tile_key = "h"
+patch_tags = PackedStringArray()
+active_fill_color = Color(0.341176, 0.694118, 0.278431, 0.24)
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="EncounterZones/EastRim" unique_id=1295429191]
+shape = SubResource("2_encounter_shape_small")
+
+[node name="SouthGlade" type="Area2D" parent="EncounterZones" unique_id=557906149]
+position = Vector2(-42, 118)
+script = ExtResource("7_patch")
+patch_id = "south_glade"
+encounter_tag = "forest"
+encounter_tile_key = "f"
+patch_tags = PackedStringArray()
+active_fill_color = Color(0.258824, 0.639216, 0.247059, 0.28)
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="EncounterZones/SouthGlade" unique_id=1660945541]
+shape = SubResource("2_encounter_shape_small")
+
+[node name="BossSpawnPoints" type="Node2D" parent="." unique_id=1236172491]
+
+[node name="AncientOak" type="Marker2D" parent="BossSpawnPoints" unique_id=1824505473]
+position = Vector2(186, -154)
+script = ExtResource("8_boss_point")
+spawn_id = "ancient_oak"
+
+[node name="ClearingHeart" type="Marker2D" parent="BossSpawnPoints" unique_id=1666304663]
+position = Vector2(52, 58)
+script = ExtResource("8_boss_point")
+spawn_id = "clearing_heart"
+
+[node name="PlayerSpawn" type="Marker2D" parent="." unique_id=1786528042]
 position = Vector2(-256, 160)
 
-[node name="Player" parent="." instance=ExtResource("3_player")]
+[node name="Player" parent="." unique_id=940319227 instance=ExtResource("3_player")]
 position = Vector2(-256, 160)
 
-[node name="ExitZone" parent="." instance=ExtResource("5_exit")]
-position = Vector2(256, 160)
-next_scene_path = "res://scenes/Camp.tscn"
-marker_style = "forest"
+[node name="ExitZone" parent="." unique_id=290079164 instance=ExtResource("5_exit")]
+position = Vector2(-256, 160)
