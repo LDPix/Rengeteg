@@ -4,6 +4,10 @@ A **monster-collection exploration RPG** built with **Godot 4.6**.
 
 Players explore different maps, encounter wild creatures, gather resources, and upgrade their team between expeditions.
 
+# Playable version:
+
+https://ldpix.github.io/Rengeteg/
+
 ---
 
 # Team
