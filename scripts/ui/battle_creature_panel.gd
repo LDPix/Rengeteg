@@ -1,5 +1,7 @@
 extends PanelContainer
 
+const PORTRAIT_SIZE := Vector2(108, 144)
+
 @export var right_aligned := false
 @export_enum("wood", "stone", "battle", "ember") var panel_variant := "battle"
 
@@ -24,7 +26,7 @@ func set_details(display_name: String, hp_text: String, sprite_path: String = ""
 
 func _apply_alignment() -> void:
 	var alignment := HORIZONTAL_ALIGNMENT_RIGHT if right_aligned else HORIZONTAL_ALIGNMENT_LEFT
-	portrait.custom_minimum_size = Vector2(72, 72)
+	portrait.custom_minimum_size = PORTRAIT_SIZE
 	name_label.horizontal_alignment = alignment
 	hp_label.horizontal_alignment = alignment
 

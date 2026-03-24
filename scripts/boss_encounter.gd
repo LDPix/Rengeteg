@@ -6,16 +6,24 @@ const MARKER_TEXTURE := preload("res://assets/overworld/boss_marker.svg")
 @onready var hint_label: Label = $HintPanel/HintLabel
 @onready var hint_anchor: Marker2D = $HintAnchor
 @onready var marker_sprite: Sprite2D = $MarkerSprite
+@onready var confirm_panel: PanelContainer = $ConfirmPanel
+@onready var confirm_title: Label = $ConfirmPanel/ConfirmPadding/ConfirmContent/ConfirmTitle
+@onready var confirm_body: Label = $ConfirmPanel/ConfirmPadding/ConfirmContent/ConfirmBody
+@onready var cancel_button: Button = $ConfirmPanel/ConfirmPadding/ConfirmContent/ConfirmButtons/CancelButton
+@onready var proceed_button: Button = $ConfirmPanel/ConfirmPadding/ConfirmContent/ConfirmButtons/ProceedButton
 
 var _player_near := false
 var _presentation_time := 0.0
 var _hint_strength := 0.0
 var _boss_data: Dictionary = {}
+var _confirm_open := false
 
 
 func _ready() -> void:
 	body_entered.connect(_on_body_entered)
 	body_exited.connect(_on_body_exited)
+	cancel_button.pressed.connect(_hide_confirmation)
+	proceed_button.pressed.connect(_confirm_and_start_battle)
 	_apply_visuals()
 	_update_hint()
 	set_process(true)
@@ -34,7 +42,7 @@ func _process(delta: float) -> void:
 	_update_hint_presentation()
 	queue_redraw()
 	if _player_near and Input.is_action_just_pressed("interact"):
-		_start_boss_battle()
+		_on_interact()
 
 
 func _draw() -> void:
@@ -57,6 +65,11 @@ func _on_body_exited(body: Node) -> void:
 
 func _apply_visuals() -> void:
 	WorldUI.apply_hint(hint_panel, hint_label, str(_boss_data.get("ui_variant", "ember")))
+	WorldUI.apply_panel(confirm_panel, "battle", true)
+	WorldUI.apply_label(confirm_title, "title", "ember")
+	WorldUI.apply_label(confirm_body, "body", "verdant")
+	WorldUI.apply_button(cancel_button, "stone")
+	WorldUI.apply_button(proceed_button, "ember", true)
 	marker_sprite.texture = MARKER_TEXTURE
 	marker_sprite.texture_filter = CanvasItem.TEXTURE_FILTER_NEAREST
 	queue_redraw()
@@ -64,7 +77,7 @@ func _apply_visuals() -> void:
 
 func _update_hint() -> void:
 	hint_label.text = "E  CHALLENGE"
-	hint_panel.visible = _player_near
+	hint_panel.visible = _player_near and not _confirm_open
 	hint_panel.position = hint_anchor.position
 
 
@@ -77,6 +90,33 @@ func _update_hint_presentation() -> void:
 	hint_panel.position = hint_anchor.position + Vector2(0, -4.0 - _hint_strength * 6.0 + lift * _hint_strength)
 	var pulse := 1.0 + sin(_presentation_time * 2.8) * 0.04
 	marker_sprite.scale = Vector2.ONE * pulse
+
+
+func _on_interact() -> void:
+	if _confirm_open:
+		return
+	if not GameState.first_boss_warning_shown:
+		_show_confirmation()
+		return
+	_start_boss_battle()
+
+
+func _show_confirmation() -> void:
+	_confirm_open = true
+	confirm_panel.visible = true
+	_update_hint()
+
+
+func _hide_confirmation() -> void:
+	_confirm_open = false
+	confirm_panel.visible = false
+	_update_hint()
+
+
+func _confirm_and_start_battle() -> void:
+	GameState.first_boss_warning_shown = true
+	_hide_confirmation()
+	_start_boss_battle()
 
 
 func _start_boss_battle() -> void:

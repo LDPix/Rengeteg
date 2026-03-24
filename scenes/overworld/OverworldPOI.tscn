@@ -1,0 +1,65 @@
+[gd_scene load_steps=3 format=3]
+
+[ext_resource type="Script" path="res://scripts/overworld_poi.gd" id="1_poi"]
+
+[sub_resource type="CircleShape2D" id="1_hit_shape"]
+radius = 24.0
+
+[node name="OverworldPOI" type="Area2D"]
+script = ExtResource("1_poi")
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="."]
+shape = SubResource("1_hit_shape")
+
+[node name="IconSprite" type="Sprite2D" parent="."]
+position = Vector2(0, -4)
+scale = Vector2(1.05, 1.05)
+texture_filter = 1
+
+[node name="HintAnchor" type="Marker2D" parent="."]
+position = Vector2(0, -40)
+
+[node name="HintPanel" type="PanelContainer" parent="."]
+offset_left = -82.0
+offset_top = -44.0
+offset_right = 82.0
+offset_bottom = -14.0
+
+[node name="HintLabel" type="Label" parent="HintPanel"]
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+horizontal_alignment = 1
+vertical_alignment = 1
+text = "E  EXPLORE"
+
+[node name="ResultPanel" type="PanelContainer" parent="."]
+visible = false
+offset_left = -112.0
+offset_top = -84.0
+offset_right = 112.0
+offset_bottom = -30.0
+
+[node name="ResultContent" type="VBoxContainer" parent="ResultPanel"]
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+theme_override_constants/separation = 10
+
+[node name="ResultLabel" type="Label" parent="ResultPanel/ResultContent"]
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+horizontal_alignment = 1
+vertical_alignment = 1
+autowrap_mode = 3
+
+[node name="ResultCloseButton" type="Button" parent="ResultPanel/ResultContent"]
+custom_minimum_size = Vector2(0, 34)
+text = "Close"

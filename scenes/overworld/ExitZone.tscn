@@ -14,6 +14,7 @@ shape = SubResource("1_shape")
 
 [node name="Sprite2D" type="Sprite2D" parent="." unique_id=1663271596]
 position = Vector2(0, -8)
+scale = Vector2(1.8, 1.8)
 texture = ExtResource("1_forest")
 texture_filter = 1
 

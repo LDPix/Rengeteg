@@ -265,6 +265,7 @@ var _interaction_amount := 0.0
 var _glint_accumulator := 0.0
 var _pulse_accumulator := 0.0
 var _cached_config: Dictionary = {}
+var _objective_highlighted := false
 
 func _ready() -> void:
 	_configure_hint_label()
@@ -335,6 +336,8 @@ func _roll_rare_drops() -> Dictionary:
 
 
 func _try_trigger_node_encounter(gathered_rewards: Dictionary) -> bool:
+	if GameState.should_suppress_resource_node_encounter(resource_type):
+		return false
 	var encounter_data := GameData.roll_resource_node_encounter(GameState.current_map_id, resource_type)
 	if encounter_data.is_empty():
 		return false
@@ -393,6 +396,11 @@ func _request_visual_refresh() -> void:
 	_refresh_configuration()
 	_configure_hint_label()
 	_update_prompt_visibility()
+
+
+func set_objective_highlighted(is_active: bool) -> void:
+	_objective_highlighted = is_active
+	queue_redraw()
 
 
 func _resolve_visual_config() -> Dictionary:
@@ -485,7 +493,7 @@ func _apply_sprite_presentation() -> void:
 	sprite.centered = true
 	sprite.offset = Vector2.ZERO
 	sprite.modulate = _sprite_modulate()
-	presentation_root.position = Vector2(0, -6)
+	presentation_root.position = Vector2(0, 2)
 	presentation_root.scale = Vector2.ONE
 	presentation_root.rotation = 0.0
 
@@ -530,7 +538,7 @@ func _update_sprite_motion(config: Dictionary, motion: Dictionary) -> void:
 	var bob: float = float(motion.get("bob", 0.0))
 	var sway: float = float(motion.get("sway", 0.0))
 	var hover: float = float(motion.get("hover", 0.0))
-	presentation_root.position = Vector2(0, bob - hover - 6.0)
+	presentation_root.position = Vector2(0, bob - hover + 2.0)
 	presentation_root.scale = Vector2.ONE * scale_value
 	presentation_root.rotation = sway
 
@@ -582,6 +590,23 @@ func _draw_presentation() -> void:
 		var ring_color := Color(config["highlight"])
 		ring_color.a = 0.08 + _interaction_amount * 0.12
 		draw_polyline(_ellipse_points(center + Vector2(0, 6), Vector2(20, 8), 20), ring_color, 2.0, true)
+	if _objective_highlighted:
+		var objective_ring := Color(config["accent"])
+		objective_ring.a = 0.48 + max(0.0, sin(_presentation_time * 3.4)) * 0.2
+		draw_polyline(_ellipse_points(center + Vector2(0, 5), Vector2(26, 11), 22), objective_ring, 4.0, true)
+		var beacon_color := Color(config["highlight"])
+		beacon_color.a = 0.3 + max(0.0, sin(_presentation_time * 4.1)) * 0.24
+		draw_line(center + Vector2(0, -34), center + Vector2(0, -8), beacon_color, 3.0)
+		var arrow_points := PackedVector2Array([
+			center + Vector2(0, -42),
+			center + Vector2(-9, -28),
+			center + Vector2(-3, -28),
+			center + Vector2(-3, -18),
+			center + Vector2(3, -18),
+			center + Vector2(3, -28),
+			center + Vector2(9, -28),
+		])
+		draw_colored_polygon(arrow_points, beacon_color)
 	_update_sprite_motion(config, motion)
 
 
@@ -592,6 +617,9 @@ func _animation_state(config: Dictionary) -> Dictionary:
 	var sway := 0.0
 	var hover := 0.0
 	var scale_offset := _interaction_amount * 0.04
+	if _objective_highlighted:
+		scale_offset += 0.035 + max(0.0, sin(time * 2.2)) * 0.02
+		hover += 0.8 + max(0.0, sin(time * 2.6)) * 0.6
 	match idle_key:
 		"sway":
 			sway = sin(time * 1.6) * 0.08

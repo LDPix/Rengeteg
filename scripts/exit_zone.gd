@@ -6,6 +6,7 @@ extends Area2D
 @export var prompt_text := "E"
 @export var show_prompt_action_text := true
 @export var prompt_offset := Vector2.ZERO
+@export var marker_scale := Vector2(1.8, 1.8)
 
 @onready var hint_panel: PanelContainer = $HintPanel
 @onready var hint: Label = $HintPanel/HintLabel
@@ -15,8 +16,10 @@ extends Area2D
 var _player_near := false
 var _hint_strength := 0.0
 var _presentation_time := 0.0
+var _objective_highlighted := false
 
 func _ready() -> void:
+	add_to_group("objective_exit_zone")
 	body_entered.connect(_on_body_entered)
 	body_exited.connect(_on_body_exited)
 	_configure_hint()
@@ -56,6 +59,7 @@ func _apply_marker() -> void:
 		texture_path = "res://assets/overworld/exit_cave.png"
 	sprite.texture = load(texture_path)
 	sprite.texture_filter = CanvasItem.TEXTURE_FILTER_NEAREST
+	sprite.scale = marker_scale
 
 
 func _configure_hint() -> void:
@@ -74,14 +78,24 @@ func _update_hint_text() -> void:
 
 func _update_hint_visibility() -> void:
 	_update_hint_text()
-	hint_panel.visible = show_interaction_prompt and _player_near
+	hint_panel.visible = show_interaction_prompt and (_player_near or _objective_highlighted)
 	hint_panel.position = hint_anchor.position + prompt_offset
 
 
 func _update_hint_presentation() -> void:
 	if not is_instance_valid(hint_panel):
 		return
-	var lift := sin(_presentation_time * 3.2) * 1.2
-	hint_panel.modulate = Color(1.0, 1.0, 1.0, _hint_strength)
-	hint_panel.scale = Vector2.ONE * (0.94 + _hint_strength * 0.06)
-	hint_panel.position = hint_anchor.position + prompt_offset + Vector2(0, -4.0 - _hint_strength * 6.0 + lift * _hint_strength)
+	var objective_strength: float = 0.72 if _objective_highlighted else 0.0
+	var visible_strength: float = maxf(_hint_strength, objective_strength)
+	var lift: float = sin(_presentation_time * 3.2) * 1.2
+	hint_panel.modulate = Color(1.0, 1.0, 1.0, visible_strength)
+	hint_panel.scale = Vector2.ONE * (0.94 + visible_strength * 0.06)
+	hint_panel.position = hint_anchor.position + prompt_offset + Vector2(0, -4.0 - visible_strength * 6.0 + lift * visible_strength)
+	var pulse: float = 1.0 + sin(_presentation_time * 2.8) * (0.04 + objective_strength * 0.05)
+	sprite.scale = marker_scale * pulse
+	sprite.modulate = Color(1.0, 1.0, 1.0, 1.0).lerp(Color(1.0, 0.95, 0.72, 1.0), objective_strength * 0.45)
+
+
+func set_objective_highlighted(is_active: bool) -> void:
+	_objective_highlighted = is_active
+	_update_hint_visibility()

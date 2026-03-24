@@ -30,44 +30,44 @@ anchor_right = 1.0
 anchor_bottom = 1.0
 grow_horizontal = 2
 grow_vertical = 2
-color = Color(0.156863, 0.12549, 0.12549, 1)
+color = Color(0.423529, 0.384314, 0.376471, 1)
 
-[node name="BasaltBand" type="ColorRect" parent="BackgroundRoot"]
+[node name="FogBandBottom" type="ColorRect" parent="BackgroundRoot"]
 offset_left = 0.0
 offset_top = 548.0
 offset_right = 1600.0
 offset_bottom = 900.0
-color = Color(0.2, 0.164706, 0.164706, 1)
+color = Color(0.560784, 0.521569, 0.513725, 0.78)
 
-[node name="LavaGlowLeft" type="Polygon2D" parent="BackgroundRoot"]
-position = Vector2(210, 702)
-color = Color(0.898039, 0.305882, 0.141176, 0.24)
-polygon = PackedVector2Array(-220, 52, -164, -18, -74, -56, 34, -74, 128, -22, 202, 54, 136, 108, 12, 136, -128, 116)
+[node name="FogShelfTop" type="Polygon2D" parent="BackgroundRoot"]
+position = Vector2(798, 132)
+color = Color(0.788235, 0.752941, 0.737255, 0.42)
+polygon = PackedVector2Array(-836, 50, -836, -114, -700, -148, -504, -116, -310, -168, -84, -130, 132, -176, 364, -126, 566, -144, 736, -86, 836, -18, 836, 50)
 
-[node name="LavaGlowRight" type="Polygon2D" parent="BackgroundRoot"]
-position = Vector2(1360, 164)
-color = Color(0.898039, 0.305882, 0.141176, 0.18)
-polygon = PackedVector2Array(-188, 18, -124, -44, -12, -84, 108, -42, 188, 26, 144, 98, 36, 128, -102, 102)
+[node name="FogBankLeft" type="Polygon2D" parent="BackgroundRoot"]
+position = Vector2(118, 458)
+color = Color(0.737255, 0.709804, 0.698039, 0.34)
+polygon = PackedVector2Array(-156, -404, -34, -372, 30, -288, 82, -168, 98, -28, 80, 110, 34, 238, -38, 334, -116, 404, -156, 404)
 
-[node name="CrystalSilhouetteLeft" type="Polygon2D" parent="BackgroundRoot"]
-position = Vector2(116, 242)
-color = Color(0.486275, 0.631373, 0.858824, 0.2)
-polygon = PackedVector2Array(-44, 122, -16, -42, 24, 20, 52, 140, 6, 164)
+[node name="FogBankRight" type="Polygon2D" parent="BackgroundRoot"]
+position = Vector2(1482, 456)
+color = Color(0.737255, 0.709804, 0.698039, 0.32)
+polygon = PackedVector2Array(156, -404, 36, -370, -30, -286, -84, -164, -98, -24, -80, 112, -34, 240, 40, 336, 118, 404, 156, 404)
 
-[node name="CrystalSilhouetteRight" type="Polygon2D" parent="BackgroundRoot"]
-position = Vector2(1450, 640)
-color = Color(0.486275, 0.631373, 0.858824, 0.16)
-polygon = PackedVector2Array(-58, 138, -22, -56, 26, 10, 64, 152, 8, 184)
+[node name="FogDriftBottom" type="Polygon2D" parent="BackgroundRoot"]
+position = Vector2(798, 836)
+color = Color(0.776471, 0.741176, 0.72549, 0.26)
+polygon = PackedVector2Array(-840, 62, -840, -18, -690, -56, -510, -18, -324, -72, -112, -30, 106, -84, 316, -40, 510, -74, 698, -22, 840, 14, 840, 62)
 
-[node name="CaveArchTop" type="Polygon2D" parent="BackgroundRoot"]
-position = Vector2(798, 72)
-color = Color(0.0666667, 0.0588235, 0.0588235, 0.34)
-polygon = PackedVector2Array(-820, 42, -690, -84, -496, -152, -236, -196, 38, -204, 314, -174, 552, -120, 748, -48, 824, 46, 824, 124, -820, 124)
+[node name="MistRibbonLeft" type="Polygon2D" parent="BackgroundRoot"]
+position = Vector2(232, 290)
+color = Color(0.843137, 0.803922, 0.784314, 0.2)
+polygon = PackedVector2Array(-222, 64, -182, -10, -90, -58, 8, -66, 108, -28, 178, 36, 204, 102, 136, 144, 6, 154, -126, 118)
 
-[node name="RockShadowBottom" type="Polygon2D" parent="BackgroundRoot"]
-position = Vector2(806, 862)
-color = Color(0.0862745, 0.0784314, 0.0784314, 0.3)
-polygon = PackedVector2Array(-840, -32, -650, -86, -410, -118, -102, -138, 214, -124, 482, -92, 706, -44, 840, 8, 840, 108, -840, 108)
+[node name="MistRibbonRight" type="Polygon2D" parent="BackgroundRoot"]
+position = Vector2(1368, 270)
+color = Color(0.843137, 0.803922, 0.784314, 0.18)
+polygon = PackedVector2Array(-190, 66, -152, -16, -64, -60, 44, -68, 140, -28, 210, 36, 228, 106, 158, 146, 28, 154, -104, 120)
 
 [node name="TileMap_Background" type="TileMapLayer" parent="."]
 position = Vector2(-320, -224)
@@ -232,12 +232,12 @@ script = ExtResource("8_boss_point")
 spawn_id = "cracked_platform"
 
 [node name="PlayerSpawn" type="Marker2D" parent="."]
-position = Vector2(-256, 192)
+position = Vector2(-192, 192)
 
 [node name="Player" parent="." instance=ExtResource("3_player")]
-position = Vector2(-256, 192)
+position = Vector2(-192, 192)
 
 [node name="ExitZone" parent="." instance=ExtResource("5_exit")]
-position = Vector2(-256, 192)
+position = Vector2(-192, 192)
 next_scene_path = "res://scenes/Camp.tscn"
 marker_style = "portal"

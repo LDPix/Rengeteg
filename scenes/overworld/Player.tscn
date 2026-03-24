@@ -122,7 +122,7 @@ script = ExtResource("1_script")
 
 [node name="Camera2D" type="Camera2D" parent="."]
 current = true
-zoom = Vector2(1.5, 1.5)
+zoom = Vector2(2.0, 2.0)
 
 [node name="AnimatedSprite2D" type="AnimatedSprite2D" parent="."]
 position = Vector2(0, -6)

@@ -2,16 +2,16 @@
 
 importer="texture"
 type="CompressedTexture2D"
-uid="uid://dnwe1egmad2xj"
-path="res://.godot/imported/index.icon.png-b92c9a802ad4b78e247784454a6b506f.ctex"
+uid="uid://uoor1yayojwf"
+path="res://.godot/imported/shellhorn.svg-9e028c37f052a4756efe19978fac437a.ctex"
 metadata={
 "vram_texture": false
 }
 
 [deps]
 
-source_file="res://docs/index.icon.png"
-dest_files=["res://.godot/imported/index.icon.png-b92c9a802ad4b78e247784454a6b506f.ctex"]
+source_file="res://assets/creatures/shellhorn.svg"
+dest_files=["res://.godot/imported/shellhorn.svg-9e028c37f052a4756efe19978fac437a.ctex"]
 
 [params]
 
@@ -38,3 +38,6 @@ process/hdr_as_srgb=false
 process/hdr_clamp_exposure=false
 process/size_limit=0
 detect_3d/compress_to=1
+svg/scale=1.0
+editor/scale_with_editor_scale=false
+editor/convert_colors_with_editor_theme=false

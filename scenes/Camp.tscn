@@ -70,6 +70,65 @@ grow_horizontal = 2
 grow_vertical = 2
 color = Color(0.152941, 0.129412, 0.0941176, 1)
 
+[node name="IntroOverlay" type="CanvasLayer" parent="."]
+layer = 20
+
+[node name="Root" type="Control" parent="IntroOverlay"]
+layout_mode = 0
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+mouse_filter = 1
+
+[node name="Dim" type="ColorRect" parent="IntroOverlay/Root"]
+layout_mode = 0
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+color = Color(0.0431373, 0.0352941, 0.027451, 0.78)
+
+[node name="Center" type="CenterContainer" parent="IntroOverlay/Root"]
+layout_mode = 0
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+
+[node name="IntroPanel" type="PanelContainer" parent="IntroOverlay/Root/Center"]
+custom_minimum_size = Vector2(760, 0)
+layout_mode = 2
+
+[node name="Padding" type="MarginContainer" parent="IntroOverlay/Root/Center/IntroPanel"]
+layout_mode = 2
+theme_override_constants/margin_left = 24
+theme_override_constants/margin_top = 22
+theme_override_constants/margin_right = 24
+theme_override_constants/margin_bottom = 22
+
+[node name="Content" type="VBoxContainer" parent="IntroOverlay/Root/Center/IntroPanel/Padding"]
+layout_mode = 2
+theme_override_constants/separation = 16
+
+[node name="TitleLabel" type="Label" parent="IntroOverlay/Root/Center/IntroPanel/Padding/Content"]
+layout_mode = 2
+theme_override_font_sizes/font_size = 28
+text = "A New Realm"
+
+[node name="BodyLabel" type="Label" parent="IntroOverlay/Root/Center/IntroPanel/Padding/Content"]
+layout_mode = 2
+theme_override_font_sizes/font_size = 16
+text = "A newly discovered realm, rich with untapped resources and unknown life, has opened its gates to exploration.\n\nScholars from your world have developed a powerful new technology — magical seals capable of binding creatures to your command. With their help, even the wildest beings of this realm can become allies.\n\nAs one of the first expeditioners, you are sent into these uncharted lands.\nGather resources, study strange ecosystems, and build your team of bound creatures.\n\nBut the deeper you go, the more dangerous the world becomes."
+autowrap_mode = 3
+
+[node name="ContinueButton" type="Button" parent="IntroOverlay/Root/Center/IntroPanel/Padding/Content"]
+custom_minimum_size = Vector2(0, 48)
+layout_mode = 2
+text = "Begin Expedition"
+
 [node name="Panel" type="MarginContainer" parent="." unique_id=1382359619]
 layout_mode = 0
 anchor_right = 1.0
@@ -91,7 +150,7 @@ layout_mode = 2
 size_flags_horizontal = 3
 
 [node name="ContentColumn" type="VBoxContainer" parent="Panel/CenterRow" unique_id=1816622350]
-custom_minimum_size = Vector2(900, 0)
+custom_minimum_size = Vector2(900, 620)
 layout_mode = 2
 size_flags_horizontal = 4
 size_flags_vertical = 3
@@ -114,17 +173,20 @@ theme_override_font_sizes/font_size = 16
 text = ""
 
 [node name="Panels" type="VBoxContainer" parent="Panel/CenterRow/ContentColumn" unique_id=976602803]
+custom_minimum_size = Vector2(900, 560)
 layout_mode = 2
 size_flags_horizontal = 3
 size_flags_vertical = 3
 
 [node name="MainCampPanel" type="VBoxContainer" parent="Panel/CenterRow/ContentColumn/Panels" unique_id=136604923]
+custom_minimum_size = Vector2(900, 560)
 layout_mode = 2
 size_flags_horizontal = 3
 size_flags_vertical = 3
 theme_override_constants/separation = 14
 
 [node name="SummaryRow" type="HBoxContainer" parent="Panel/CenterRow/ContentColumn/Panels/MainCampPanel" unique_id=2005091968]
+custom_minimum_size = Vector2(0, 340)
 layout_mode = 2
 size_flags_horizontal = 3
 theme_override_constants/separation = 16
@@ -175,7 +237,7 @@ theme_override_constants/separation = 12
 
 [node name="SelectedCreaturePortrait" type="TextureRect" parent="Panel/CenterRow/ContentColumn/Panels/MainCampPanel/SummaryRow/TeamCard/Padding/Content/SelectedCreatureCard/Padding/SelectedCreatureContent"]
 visible = false
-custom_minimum_size = Vector2(72, 72)
+custom_minimum_size = Vector2(104, 148)
 layout_mode = 2
 stretch_mode = 5
 
@@ -201,11 +263,13 @@ theme_override_colors/font_color = Color(0.380392, 0.380392, 0.380392, 1)
 theme_override_font_sizes/font_size = 14
 
 [node name="RightColumn" type="VBoxContainer" parent="Panel/CenterRow/ContentColumn/Panels/MainCampPanel/SummaryRow" unique_id=1624735156]
+custom_minimum_size = Vector2(0, 340)
 layout_mode = 2
 size_flags_horizontal = 3
 theme_override_constants/separation = 16
 
 [node name="MapSummaryCard" type="PanelContainer" parent="Panel/CenterRow/ContentColumn/Panels/MainCampPanel/SummaryRow/RightColumn" unique_id=2114572060]
+custom_minimum_size = Vector2(0, 156)
 layout_mode = 2
 
 [node name="Padding" type="MarginContainer" parent="Panel/CenterRow/ContentColumn/Panels/MainCampPanel/SummaryRow/RightColumn/MapSummaryCard" unique_id=1266863851]
@@ -225,17 +289,24 @@ theme_override_font_sizes/font_size = 22
 text = "Selected Map"
 
 [node name="MapLabel" type="Label" parent="Panel/CenterRow/ContentColumn/Panels/MainCampPanel/SummaryRow/RightColumn/MapSummaryCard/Padding/Content" unique_id=1989797608]
+custom_minimum_size = Vector2(0, 52)
 layout_mode = 2
 theme_override_font_sizes/font_size = 18
 text = "No map selected"
+autowrap_mode = 3
+max_lines_visible = 2
 
 [node name="MapHintLabel" type="Label" parent="Panel/CenterRow/ContentColumn/Panels/MainCampPanel/SummaryRow/RightColumn/MapSummaryCard/Padding/Content" unique_id=1595371669]
+custom_minimum_size = Vector2(0, 24)
 layout_mode = 2
 theme_override_colors/font_color = Color(0.380392, 0.380392, 0.380392, 1)
 theme_override_font_sizes/font_size = 14
 text = "Choose a map from the Maps menu, then venture out from here."
+autowrap_mode = 3
+max_lines_visible = 2
 
 [node name="ResourcesCard" type="PanelContainer" parent="Panel/CenterRow/ContentColumn/Panels/MainCampPanel/SummaryRow/RightColumn" unique_id=1211563723]
+custom_minimum_size = Vector2(0, 168)
 layout_mode = 2
 
 [node name="Padding" type="MarginContainer" parent="Panel/CenterRow/ContentColumn/Panels/MainCampPanel/SummaryRow/RightColumn/ResourcesCard" unique_id=1820172650]
@@ -441,7 +512,7 @@ theme_override_constants/margin_right = 14
 theme_override_constants/margin_bottom = 14
 
 [node name="SelectedCreatureScroll" type="ScrollContainer" parent="Panel/CenterRow/ContentColumn/Panels/CreatureCollectionPanel/SummaryRow/TeamCard/Padding/Content/SelectedCreatureCard/Padding"]
-custom_minimum_size = Vector2(0, 340)
+custom_minimum_size = Vector2(0, 312)
 layout_mode = 2
 size_flags_vertical = 3
 horizontal_scroll_mode = 0
@@ -462,7 +533,7 @@ theme_override_constants/separation = 14
 
 [node name="SelectedCreaturePortrait" type="TextureRect" parent="Panel/CenterRow/ContentColumn/Panels/CreatureCollectionPanel/SummaryRow/TeamCard/Padding/Content/SelectedCreatureCard/Padding/SelectedCreatureScroll/SelectedCreatureContent/SelectedCreatureRow" unique_id=381162601]
 visible = false
-custom_minimum_size = Vector2(72, 72)
+custom_minimum_size = Vector2(104, 148)
 layout_mode = 2
 stretch_mode = 5
 
@@ -480,7 +551,7 @@ text = "No creatures available"
 layout_mode = 2
 theme_override_colors/font_color = Color(0.380392, 0.380392, 0.380392, 1)
 theme_override_font_sizes/font_size = 16
-text = "Capture a creature to unlock camp upgrades."
+text = "Bind a creature to unlock camp upgrades."
 
 [node name="SelectedCreatureAbilities" type="VBoxContainer" parent="Panel/CenterRow/ContentColumn/Panels/CreatureCollectionPanel/SummaryRow/TeamCard/Padding/Content/SelectedCreatureCard/Padding/SelectedCreatureScroll/SelectedCreatureContent"]
 layout_mode = 2
@@ -494,6 +565,12 @@ text = "Held Item: None"
 [node name="LoadoutButtons" type="HBoxContainer" parent="Panel/CenterRow/ContentColumn/Panels/CreatureCollectionPanel/SummaryRow/TeamCard/Padding/Content/SelectedCreatureCard/Padding/SelectedCreatureScroll/SelectedCreatureContent"]
 layout_mode = 2
 theme_override_constants/separation = 10
+
+[node name="TransferButton" type="Button" parent="Panel/CenterRow/ContentColumn/Panels/CreatureCollectionPanel/SummaryRow/TeamCard/Padding/Content/SelectedCreatureCard/Padding/SelectedCreatureScroll/SelectedCreatureContent/LoadoutButtons"]
+custom_minimum_size = Vector2(0, 42)
+layout_mode = 2
+size_flags_horizontal = 3
+text = "Move"
 
 [node name="EquipHeldItemButton" type="Button" parent="Panel/CenterRow/ContentColumn/Panels/CreatureCollectionPanel/SummaryRow/TeamCard/Padding/Content/SelectedCreatureCard/Padding/SelectedCreatureScroll/SelectedCreatureContent/LoadoutButtons"]
 custom_minimum_size = Vector2(0, 42)
@@ -558,11 +635,21 @@ theme_override_font_sizes/font_size = 14
 text = "No storage data available."
 autowrap_mode = 3
 
+[node name="StorageTitle" type="Label" parent="Panel/CenterRow/ContentColumn/Panels/CreatureCollectionPanel/SummaryRow/InventoryCard/Padding/Content"]
+layout_mode = 2
+theme_override_font_sizes/font_size = 16
+text = "Storage"
+
+[node name="StorageChips" type="HFlowContainer" parent="Panel/CenterRow/ContentColumn/Panels/CreatureCollectionPanel/SummaryRow/InventoryCard/Padding/Content"]
+layout_mode = 2
+theme_override_constants/h_separation = 10
+theme_override_constants/v_separation = 10
+
 [node name="InventoryHintLabel" type="Label" parent="Panel/CenterRow/ContentColumn/Panels/CreatureCollectionPanel/SummaryRow/InventoryCard/Padding/Content" unique_id=123404156]
 layout_mode = 2
 theme_override_colors/font_color = Color(0.380392, 0.380392, 0.380392, 1)
 theme_override_font_sizes/font_size = 14
-text = "Crafted held items stay here until equipped. Camp items are installed permanently."
+text = "Select creatures from storage here and move them into the active team when space allows."
 autowrap_mode = 3
 
 [node name="CampItemsLabel" type="Label" parent="Panel/CenterRow/ContentColumn/Panels/CreatureCollectionPanel/SummaryRow/InventoryCard/Padding/Content"]
@@ -643,7 +730,7 @@ visible = false
 layout_mode = 2
 size_flags_horizontal = 3
 size_flags_vertical = 3
-theme_override_constants/separation = 14
+theme_override_constants/separation = 10
 
 [node name="Header" type="HBoxContainer" parent="Panel/CenterRow/ContentColumn/Panels/CraftingPanel" unique_id=1825213773]
 layout_mode = 2
@@ -668,7 +755,7 @@ theme_override_constants/separation = 4
 
 [node name="TitleLabel" type="Label" parent="Panel/CenterRow/ContentColumn/Panels/CraftingPanel/Header/TitleColumn" unique_id=370915205]
 layout_mode = 2
-theme_override_font_sizes/font_size = 26
+theme_override_font_sizes/font_size = 24
 text = "Crafting"
 
 [node name="SubtitleLabel" type="Label" parent="Panel/CenterRow/ContentColumn/Panels/CraftingPanel/Header/TitleColumn" unique_id=87849064]
@@ -684,30 +771,23 @@ layout_mode = 2
 [node name="Padding" type="MarginContainer" parent="Panel/CenterRow/ContentColumn/Panels/CraftingPanel/CraftingCard" unique_id=1446096607]
 layout_mode = 2
 theme_override_constants/margin_left = 16
-theme_override_constants/margin_top = 12
+theme_override_constants/margin_top = 10
 theme_override_constants/margin_right = 16
-theme_override_constants/margin_bottom = 12
+theme_override_constants/margin_bottom = 10
 
 [node name="Content" type="VBoxContainer" parent="Panel/CenterRow/ContentColumn/Panels/CraftingPanel/CraftingCard/Padding" unique_id=205834979]
 layout_mode = 2
-theme_override_constants/separation = 12
+theme_override_constants/separation = 10
 
 [node name="CraftingTitle" type="Label" parent="Panel/CenterRow/ContentColumn/Panels/CraftingPanel/CraftingCard/Padding/Content" unique_id=1662503203]
 layout_mode = 2
-theme_override_font_sizes/font_size = 22
+theme_override_font_sizes/font_size = 20
 text = "Workshop Recipes"
 
 [node name="MatsChips" type="HFlowContainer" parent="Panel/CenterRow/ContentColumn/Panels/CraftingPanel/CraftingCard/Padding/Content"]
 layout_mode = 2
 theme_override_constants/h_separation = 10
 theme_override_constants/v_separation = 10
-
-[node name="CraftingStatusLabel" type="Label" parent="Panel/CenterRow/ContentColumn/Panels/CraftingPanel/CraftingCard/Padding/Content" unique_id=1526464754]
-visible = false
-layout_mode = 2
-theme_override_colors/font_color = Color(0.380392, 0.380392, 0.380392, 1)
-theme_override_font_sizes/font_size = 14
-text = ""
 
 [node name="SearchRow" type="HBoxContainer" parent="Panel/CenterRow/ContentColumn/Panels/CraftingPanel/CraftingCard/Padding/Content"]
 layout_mode = 2
@@ -725,7 +805,7 @@ size_flags_horizontal = 3
 placeholder_text = "Filter recipes by name"
 
 [node name="RecipesScroll" type="ScrollContainer" parent="Panel/CenterRow/ContentColumn/Panels/CraftingPanel/CraftingCard/Padding/Content"]
-custom_minimum_size = Vector2(0, 300)
+custom_minimum_size = Vector2(0, 276)
 layout_mode = 2
 size_flags_vertical = 3
 vertical_scroll_mode = 1
@@ -741,6 +821,16 @@ theme_override_constants/v_separation = 12
 layout_mode = 2
 theme_override_font_sizes/font_size = 14
 text = "Installed camp items: None"
+autowrap_mode = 3
+
+[node name="CraftingStatusLabel" type="Label" parent="Panel/CenterRow/ContentColumn/Panels/CraftingPanel/CraftingCard/Padding/Content" unique_id=1526464754]
+custom_minimum_size = Vector2(0, 40)
+layout_mode = 2
+theme_override_colors/font_color = Color(0.380392, 0.380392, 0.380392, 1)
+theme_override_font_sizes/font_size = 18
+text = ""
+horizontal_alignment = 1
+vertical_alignment = 1
 autowrap_mode = 3
 
 [node name="RightSpacer" type="Control" parent="Panel/CenterRow" unique_id=1610261696]

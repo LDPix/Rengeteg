@@ -33,3 +33,56 @@ grow_vertical = 2
 horizontal_alignment = 1
 vertical_alignment = 1
 text = "E  CHALLENGE"
+
+[node name="ConfirmPanel" type="PanelContainer" parent="."]
+visible = false
+offset_left = -190.0
+offset_top = -160.0
+offset_right = 190.0
+offset_bottom = -18.0
+
+[node name="ConfirmPadding" type="MarginContainer" parent="ConfirmPanel"]
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+theme_override_constants/margin_left = 16
+theme_override_constants/margin_top = 16
+theme_override_constants/margin_right = 16
+theme_override_constants/margin_bottom = 16
+
+[node name="ConfirmContent" type="VBoxContainer" parent="ConfirmPanel/ConfirmPadding"]
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+theme_override_constants/separation = 12
+
+[node name="ConfirmTitle" type="Label" parent="ConfirmPanel/ConfirmPadding/ConfirmContent"]
+layout_mode = 2
+text = "Dangerous Enemy"
+horizontal_alignment = 1
+
+[node name="ConfirmBody" type="Label" parent="ConfirmPanel/ConfirmPadding/ConfirmContent"]
+layout_mode = 2
+text = "This enemy looks dangerous. Do you still want to proceed?"
+horizontal_alignment = 1
+autowrap_mode = 3
+
+[node name="ConfirmButtons" type="HBoxContainer" parent="ConfirmPanel/ConfirmPadding/ConfirmContent"]
+layout_mode = 2
+theme_override_constants/separation = 12
+
+[node name="CancelButton" type="Button" parent="ConfirmPanel/ConfirmPadding/ConfirmContent/ConfirmButtons"]
+custom_minimum_size = Vector2(0, 40)
+layout_mode = 2
+size_flags_horizontal = 3
+text = "Not Yet"
+
+[node name="ProceedButton" type="Button" parent="ConfirmPanel/ConfirmPadding/ConfirmContent/ConfirmButtons"]
+custom_minimum_size = Vector2(0, 40)
+layout_mode = 2
+size_flags_horizontal = 3
+text = "Proceed"

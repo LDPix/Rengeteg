@@ -188,7 +188,7 @@ theme_override_colors/font_color = Color(0.129412, 0.129412, 0.129412, 1)
 theme_override_colors/font_hover_color = Color(0.129412, 0.129412, 0.129412, 1)
 theme_override_colors/font_pressed_color = Color(0.129412, 0.129412, 0.129412, 1)
 theme_override_font_sizes/font_size = 20
-text = "Capture"
+text = "Bind"
 
 [node name="RunButton" type="Button" parent="OuterMargin/Root/ActionsCard/ActionsPadding/ActionsVBox/ButtonsRow"]
 size_flags_horizontal = 3
@@ -213,8 +213,50 @@ theme_override_constants/margin_bottom = 16
 theme_override_constants/separation = 12
 
 [node name="SealChooserTitle" type="Label" parent="OuterMargin/Root/ActionsCard/ActionsPadding/ActionsVBox/SealChooserPanel/SealChooserPadding/SealChooserVBox"]
-text = "Choose a seal"
+text = "Choose a binding seal"
 theme_override_font_sizes/font_size = 18
 
 [node name="SealOptions" type="VBoxContainer" parent="OuterMargin/Root/ActionsCard/ActionsPadding/ActionsVBox/SealChooserPanel/SealChooserPadding/SealChooserVBox"]
 theme_override_constants/separation = 10
+
+[node name="TutorialPopup" type="PanelContainer" parent="."]
+visible = false
+anchors_preset = 8
+anchor_left = 0.5
+anchor_top = 0.5
+anchor_right = 0.5
+anchor_bottom = 0.5
+offset_left = -300.0
+offset_top = -132.0
+offset_right = 300.0
+offset_bottom = 132.0
+grow_horizontal = 2
+grow_vertical = 2
+
+[node name="PopupPadding" type="MarginContainer" parent="TutorialPopup"]
+layout_mode = 2
+theme_override_constants/margin_left = 24
+theme_override_constants/margin_top = 22
+theme_override_constants/margin_right = 24
+theme_override_constants/margin_bottom = 22
+
+[node name="PopupContent" type="VBoxContainer" parent="TutorialPopup/PopupPadding"]
+layout_mode = 2
+theme_override_constants/separation = 16
+
+[node name="PopupTitle" type="Label" parent="TutorialPopup/PopupPadding/PopupContent"]
+layout_mode = 2
+theme_override_font_sizes/font_size = 26
+text = "Try Again"
+
+[node name="PopupBody" type="Label" parent="TutorialPopup/PopupPadding/PopupContent"]
+layout_mode = 2
+theme_override_font_sizes/font_size = 18
+text = "That seal nearly took hold. Try binding it again while it is still weakened."
+autowrap_mode = 3
+
+[node name="PopupButton" type="Button" parent="TutorialPopup/PopupPadding/PopupContent"]
+custom_minimum_size = Vector2(0, 54)
+layout_mode = 2
+theme_override_font_sizes/font_size = 18
+text = "Continue"

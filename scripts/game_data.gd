@@ -19,8 +19,18 @@ const ITEM_CATEGORY_CAMP := "camp"
 const OBJECTIVE_TYPE_GATHER := "gather"
 const OBJECTIVE_TYPE_CRAFT := "craft"
 const OBJECTIVE_TYPE_CAPTURE := "capture"
+const OBJECTIVE_TYPE_TUTORIAL_BIND := "tutorial_bind"
 const OBJECTIVE_TYPE_BATTLE_WIN := "battle_win"
+const OBJECTIVE_TYPE_EQUIP_HELD_ITEM := "equip_held_item"
 const OBJECTIVE_TYPE_BOSS_DEFEAT := "boss_defeat"
+const OBJECTIVE_TYPE_ENTER_GRASS := "enter_grass"
+const OBJECTIVE_TYPE_GATHER_MULTI := "gather_multi"
+
+const POI_TYPE_RICH_GROVE := "rich_grove"
+const POI_TYPE_PREDATOR_NEST := "predator_nest"
+const POI_TYPE_SHRINE := "shrine"
+const POI_TYPE_EXPEDITION_CACHE := "expedition_cache"
+const POI_TYPE_SHORTCUT := "shortcut"
 
 var materials_meta := {
 	"wood": {"name": "Wood"},
@@ -30,6 +40,178 @@ var materials_meta := {
 	"core_shard": {"name": "Core Shard"},
 	"species_mat": {"name": "Species Material"},
 }
+
+var poi_definitions := {
+	"verdant_entry_cache": {
+		"poi_type": POI_TYPE_EXPEDITION_CACHE,
+		"title": "Abandoned Supply Satchel",
+		"prompt_label": "SCAVENGE",
+		"result_text": "You sort through a weathered satchel.",
+		"ui_variant": "wood",
+		"immediate_rewards": {
+			"materials": {"wood": 2, "herb": 1},
+			"items": {"basic_seal": 1},
+		},
+	},
+	"verdant_waystone_shrine": {
+		"poi_type": POI_TYPE_SHRINE,
+		"title": "Waystone Shrine",
+		"prompt_label": "ATTUNE",
+		"result_text": "The shrine's moss-lit runes stir your party onward.",
+		"ui_variant": "crystal",
+		"effects": [
+			{"type": "heal_party", "ratio": 0.35},
+			{"type": "restore_party_mp", "ratio": 0.5},
+			{"type": "run_bonus", "stat": "capture_chance_bonus", "amount": 0.12, "label": "Bind chance"},
+		],
+	},
+	"verdant_rich_grove": {
+		"poi_type": POI_TYPE_RICH_GROVE,
+		"title": "Overgrown Grove",
+		"prompt_label": "FORAGE",
+		"result_text": "The grove is rich, but something prowls beneath the roots.",
+		"ui_variant": "verdant",
+		"encounter": {
+			"encounter_tag": "high_risk_patch",
+			"message": "You push into the grove and startle a territorial creature!",
+			"ui_variant": "verdant",
+			"level_bonus": 1,
+			"stat_multiplier": 1.12,
+			"exp_multiplier": 1.12,
+			"reward_bundle": {
+				"materials": {"herb": 4, "wood": 2, "species_mat": 1},
+			},
+		},
+	},
+	"verdant_predator_nest": {
+		"poi_type": POI_TYPE_PREDATOR_NEST,
+		"title": "Predator Nest",
+		"prompt_label": "PROVOKE",
+		"result_text": "Tracks, broken bark, and old bones mark a hunting den.",
+		"ui_variant": "ember",
+		"encounter": {
+			"pool": ["shellhorn", "cinder_pup", "cinder_pup"],
+			"message": "The nest erupts as an alpha predator lunges at you!",
+			"ui_variant": "ember",
+			"level_bonus": 2,
+			"stat_multiplier": 1.2,
+			"exp_multiplier": 1.2,
+			"reward_bundle": {
+				"materials": {"species_mat": 2, "wood": 1, "core_shard": 1},
+			},
+		},
+	},
+	}
+
+var global_objective_sequence := [
+	[
+		{
+			"id": "global_first_binding_lesson",
+			"type": OBJECTIVE_TYPE_TUTORIAL_BIND,
+			"title": "Walk through tall grass and try binding a creature.",
+			"description": "Step into tall grass, then bind a creature with a magical seal.",
+			"target_amount": 2,
+			"is_primary": true,
+		},
+	],
+		[
+			{
+				"id": "global_gather_wood",
+				"type": OBJECTIVE_TYPE_GATHER,
+				"title": "Gather 4 Wood",
+				"description": "Gather 4 wood for your first crafts.",
+				"target_id": "wood",
+				"target_amount": 4,
+				"is_primary": true,
+			},
+		],
+	[
+		{
+			"id": "global_gather_herb",
+			"type": OBJECTIVE_TYPE_GATHER,
+			"title": "Gather Herbs",
+			"description": "Gather 3 herbs for your first craft.",
+			"target_id": "herb",
+			"target_amount": 3,
+			"is_primary": true,
+		},
+	],
+	[
+		{
+			"id": "global_craft_small_potion",
+			"type": OBJECTIVE_TYPE_CRAFT,
+			"title": "Return to camp and craft a Small Potion",
+			"description": "Leave the wilds, open Crafting at camp, and craft your first Small Potion.",
+			"target_id": "small_potion",
+			"target_amount": 1,
+			"is_primary": true,
+		},
+	],
+		[
+			{
+				"id": "global_win_verdant_battle",
+				"type": OBJECTIVE_TYPE_BATTLE_WIN,
+				"title": "Venture into Verdant Wilds again and win a battle",
+				"description": "Head back into Verdant Wilds and win a battle.",
+				"target_amount": 1,
+				"target_map_id": "verdant_wilds",
+				"is_primary": true,
+			},
+		],
+		[
+			{
+				"id": "global_craft_sharp_fang",
+				"type": OBJECTIVE_TYPE_CRAFT,
+				"title": "Return to camp and craft Sharp Fang",
+				"description": "Head back to camp, open Crafting, switch to Held Items, and craft Sharp Fang.",
+				"target_id": "sharp_fang",
+				"target_amount": 1,
+				"is_primary": true,
+			},
+		],
+		[
+			{
+				"id": "global_equip_sharp_fang",
+				"type": OBJECTIVE_TYPE_EQUIP_HELD_ITEM,
+				"title": "Equip Sharp Fang on one of your creatures",
+				"description": "Open Creature Collection, choose Sharp Fang, and equip it to one of your creatures.",
+				"target_id": "sharp_fang",
+				"target_amount": 1,
+				"is_primary": true,
+			},
+		],
+		[
+			{
+				"id": "global_gather_tent_mats",
+				"type": OBJECTIVE_TYPE_GATHER_MULTI,
+				"title": "Gather materials for Party Tent",
+				"description": "Gather wood, herbs, and stone to craft a Party Tent.",
+				"target_materials": {"wood": 5, "herb": 2, "stone": 2},
+				"is_primary": true,
+			},
+		],
+		[
+			{
+				"id": "global_craft_party_tent",
+				"type": OBJECTIVE_TYPE_CRAFT,
+				"title": "Return to camp and craft a Party Tent",
+				"description": "Head back to camp, open Crafting, switch to Camp Items, and craft a Party Tent.",
+				"target_id": "party_tent",
+				"target_amount": 1,
+				"is_primary": true,
+			},
+		],
+		[
+			{
+				"id": "global_defeat_boss",
+			"type": OBJECTIVE_TYPE_BOSS_DEFEAT,
+			"title": "Face the Mossking",
+			"description": "A powerful creature guards the heart of Verdant Wilds. Challenge the Mossking whenever you feel ready — prepare your team, stock up on supplies, and head in on your own terms.",
+			"target_amount": 1,
+			"is_primary": true,
+		},
+	],
+]
 
 var item_categories := {
 	ITEM_CATEGORY_CONSUMABLE: {
@@ -50,7 +232,7 @@ var items := {
 	"basic_seal": {
 		"id": "basic_seal",
 		"name": "Basic Seal",
-		"description": "A capture seal used to bind weakened wild creatures.",
+		"description": "A binding seal used to bind weakened wild creatures.",
 		"category": ITEM_CATEGORY_CONSUMABLE,
 		"tags": ["capture", "utility"],
 		"rarity": "common",
@@ -110,7 +292,7 @@ var items := {
 		"held_effects": [{"type": "flat_stat", "stat": "hp_max", "amount": 10}],
 		"recipe": {"herb": 4, "species_mat": 1},
 	},
-	"sharp_fang": {
+		"sharp_fang": {
 		"id": "sharp_fang",
 		"name": "Sharp Fang",
 		"description": "A carved fang that sharpens attacks.",
@@ -123,8 +305,8 @@ var items := {
 		"variant": "ember",
 		"icon_path": "res://assets/items/sharp_fang.svg",
 		"held_effects": [{"type": "flat_stat", "stat": "atk", "amount": 3}],
-		"recipe": {"wood": 2, "core_shard": 2, "species_mat": 1},
-	},
+			"recipe": {"wood": 3, "core_shard": 1},
+		},
 	"stone_ring": {
 		"id": "stone_ring",
 		"name": "Stone Ring",
@@ -310,7 +492,7 @@ var creatures := {
 		"passive_id": "verdant_focus",
 		"abilities": ["leaf_strike"],
 		"base_exp_reward": 12,
-		"sprite_path": "res://assets/creatures/mossling.png",
+		"sprite_path": "res://assets/creatures/mossling.svg",
 	},
 	"cinder_pup": {
 		"name": "Cinder Pup",
@@ -323,7 +505,7 @@ var creatures := {
 		"passive_id": "ember_instinct",
 		"abilities": ["ember_bite"],
 		"base_exp_reward": 14,
-		"sprite_path": "res://assets/creatures/cinder_pup.png",
+		"sprite_path": "res://assets/creatures/cinder_pup.svg",
 	},
 	"shellhorn": {
 		"name": "Shellhorn",
@@ -336,7 +518,20 @@ var creatures := {
 		"passive_id": "stonehide",
 		"abilities": ["horn_bash"],
 		"base_exp_reward": 16,
-		"sprite_path": "res://assets/creatures/shellhorn.png",
+		"sprite_path": "res://assets/creatures/shellhorn.svg",
+	},
+	"mossking": {
+		"name": "Mossking",
+		"element": "grass",
+		"base_hp": 42,
+		"base_mp": 16,
+		"base_atk": 11,
+		"base_def": 9,
+		"base_spd": 7,
+		"passive_id": "verdant_focus",
+		"abilities": ["leaf_strike"],
+		"base_exp_reward": 24,
+		"sprite_path": "res://assets/creatures/mossking.svg",
 	},
 }
 
@@ -344,19 +539,28 @@ var maps := {
 	"verdant_wilds": {
 		"display_name": "Verdant Wilds",
 		"scene_path": "res://scenes/overworld/Overworld_Verdant.tscn",
+		"unlock_condition": {
+			"type": "always",
+		},
 		"wild_level_range": Vector2i(1, 4),
 		"wild_pool": ["mossling", "shellhorn", "cinder_pup"],
 		"encounter_pools": {
 			"forest": ["mossling", "mossling", "shellhorn", "cinder_pup"],
 			"high_risk_patch": ["shellhorn", "cinder_pup", "cinder_pup"],
 		},
-		"run_config": {
-			"resource_counts": {
-				"wood": 4,
-				"herb": 3,
-				"stone": 1,
-			},
-			"resource_node_encounters": {
+			"run_config": {
+				"resource_counts": {
+					"wood": 4,
+					"herb": 3,
+					"stone": 1,
+				},
+				"poi_spawns": [
+					{"spawn_id": "entry_cache", "poi_id": "verdant_entry_cache"},
+					{"spawn_id": "waystone_shrine", "poi_id": "verdant_waystone_shrine"},
+					{"spawn_id": "rich_grove", "poi_id": "verdant_rich_grove"},
+					{"spawn_id": "predator_nest", "poi_id": "verdant_predator_nest"},
+				],
+				"resource_node_encounters": {
 				"wood": {
 					"chance": 0.18,
 					"pool": ["mossling", "mossling", "shellhorn"],
@@ -365,7 +569,7 @@ var maps := {
 				},
 				"herb": {
 					"chance": 0.14,
-					"pool": ["mossling", "mossling"],
+					"pool": ["mossling", "mossling", "shellhorn"],
 					"message": "A creature was disturbed in the herb patch!",
 					"ui_variant": "verdant",
 				},
@@ -382,17 +586,14 @@ var maps := {
 					"ui_variant": "crystal",
 					"exp_multiplier": 1.1,
 				},
-				"core_shard": {
-					"chance": 0.4,
-					"pool": ["cinder_pup", "shellhorn", "cinder_pup"],
-					"message": "A guardian creature appeared from the shard's energy!",
-					"ui_variant": "ember",
-					"level_bonus": 1,
-					"stat_multiplier": 1.1,
-					"exp_multiplier": 1.15,
+				"species_mat": {
+					"chance": 0.20,
+					"pool": ["mossling", "shellhorn"],
+					"message": "Disturbing the remains drew something near!",
+					"ui_variant": "verdant",
 				},
-			},
-			"active_patch_count": 2,
+				},
+			"active_patch_count": 1,
 			"resource_rare_drops": {
 				"wood": [
 					{"material": "species_mat", "min": 1, "max": 1, "chance": 0.08},
@@ -402,144 +603,76 @@ var maps := {
 					{"material": "herb", "min": 1, "max": 2, "chance": 0.16},
 				],
 			},
-			"battle_rewards": {
-				"capture": [
-					{"material": "core_shard", "min": 1, "max": 1},
-					{"material": "species_mat", "min": 1, "max": 2},
-					{"material": "wood", "min": 1, "max": 2},
-				],
-				"victory": [
-					{"material": "core_shard", "min": 1, "max": 2},
-					{"material": "species_mat", "min": 1, "max": 2},
-					{"material": "wood", "min": 2, "max": 3},
-					{"material": "herb", "min": 1, "max": 2},
+				"battle_rewards": {
+					"capture": [
+						{"material": "species_mat", "min": 1, "max": 2},
+						{"material": "wood", "min": 1, "max": 2},
+					],
+					"victory": [
+						{"material": "species_mat", "min": 1, "max": 2},
+						{"material": "wood", "min": 2, "max": 3},
+						{"material": "herb", "min": 1, "max": 2},
 				],
 				"rare": [
 					{"material": "species_mat", "min": 1, "max": 1, "chance": 0.1},
 					{"material": "herb", "min": 1, "max": 2, "chance": 0.18},
 				],
-				"boss_capture": [
-					{"material": "core_shard", "min": 2, "max": 2},
-					{"material": "species_mat", "min": 2, "max": 3},
-					{"material": "wood", "min": 2, "max": 4},
-					{"material": "herb", "min": 2, "max": 3},
-				],
-				"boss_victory": [
-					{"material": "core_shard", "min": 2, "max": 3},
-					{"material": "species_mat", "min": 2, "max": 4},
-					{"material": "wood", "min": 3, "max": 5},
-					{"material": "herb", "min": 2, "max": 4},
+					"boss_capture": [
+						{"material": "species_mat", "min": 2, "max": 3},
+						{"material": "wood", "min": 2, "max": 4},
+						{"material": "herb", "min": 2, "max": 3},
+					],
+					"boss_victory": [
+						{"material": "species_mat", "min": 2, "max": 4},
+						{"material": "wood", "min": 3, "max": 5},
+						{"material": "herb", "min": 2, "max": 4},
 				],
 				"boss_rare": [
 					{"material": "species_mat", "min": 1, "max": 2, "chance": 0.4},
 				],
-			},
-			"boss": {
-				"creature_id": "mossling",
-				"display_name": "Alpha Mossling",
-				"sprite_path": "res://assets/creatures/alpha_mossling.svg",
-				"level_bonus": 2,
-				"stat_multiplier": 1.35,
-				"exp_multiplier": 1.8,
+				},
+				"boss": {
+					"creature_id": "mossking",
+					"display_name": "Mossking",
+					"sprite_path": "res://assets/creatures/mossking.svg",
+					"level_bonus": 2,
+					"stat_multiplier": 1.35,
+					"exp_multiplier": 1.8,
 				"disable_run": true,
 				"ui_variant": "verdant",
 				"ring_color": Color("f0d36c"),
 				"body_color": Color("47633f"),
 			},
 		},
-		"objective_sets": {
-			"starter_sequence": [
-				[
-					{
-						"id": "verdant_gather_wood",
-						"type": OBJECTIVE_TYPE_GATHER,
-						"title": "Gather Wood",
-						"description": "Gather 3 wood in Verdant Wilds.",
-						"target_id": "wood",
-						"target_amount": 3,
-						"is_primary": true,
-					},
-				],
-				[
-					{
-						"id": "verdant_craft_basic_seal",
-						"type": OBJECTIVE_TYPE_CRAFT,
-						"title": "Craft Basic Seal",
-						"description": "Craft 1 Basic Seal at camp before your next clear.",
-						"target_id": "basic_seal",
-						"target_amount": 1,
-						"is_primary": true,
-					},
-				],
-				[
-					{
-						"id": "verdant_capture_creature",
-						"type": OBJECTIVE_TYPE_CAPTURE,
-						"title": "Capture Creature",
-						"description": "Capture 1 creature in Verdant Wilds.",
-						"target_amount": 1,
-						"is_primary": true,
-					},
-				],
-				[
-					{
-						"id": "verdant_defeat_boss",
-						"type": OBJECTIVE_TYPE_BOSS_DEFEAT,
-						"title": "Defeat the Boss",
-						"description": "Defeat the Verdant Wilds boss.",
-						"target_id": "verdant_wilds",
-						"target_amount": 1,
-						"is_primary": true,
-					},
-				],
-			],
-			"default_run": [
-				{
-					"id": "verdant_repeat_boss",
-					"type": OBJECTIVE_TYPE_BOSS_DEFEAT,
-					"title": "Defeat the Boss",
-					"description": "Defeat the Verdant Wilds boss.",
-					"target_id": "verdant_wilds",
-					"target_amount": 1,
-					"is_primary": true,
-				},
-				{
-					"id": "verdant_bonus_battles",
-					"type": OBJECTIVE_TYPE_BATTLE_WIN,
-					"title": "Win 2 Battles",
-					"description": "Win 2 battles during this venture.",
-					"target_amount": 2,
-					"is_primary": false,
-					"is_bonus": true,
-				},
-			],
-		},
 	},
 	"ember_caves": {
 		"display_name": "Ember Caves",
 		"scene_path": "res://scenes/overworld/Overworld_Ember.tscn",
+		"unlock_condition": {
+			"type": "map_boss_defeated",
+			"map_id": "verdant_wilds",
+		},
 		"wild_level_range": Vector2i(2, 6),
 		"wild_pool": ["cinder_pup", "cinder_pup", "shellhorn"],
 		"encounter_pools": {
 			"cave": ["cinder_pup", "cinder_pup", "shellhorn"],
 			"high_risk_patch": ["shellhorn", "cinder_pup", "shellhorn"],
 		},
-		"run_config": {
-			"resource_counts": {
-				"stone": 4,
-				"crystal": 2,
-				"core_shard": 1,
-			},
-			"resource_node_encounters": {
+			"run_config": {
+				"resource_counts": {
+					"stone": 4,
+					"crystal": 2,
+				},
+				"resource_node_encounters": {
 				"wood": {
 					"chance": 0.16,
-					"pool": ["cinder_pup"],
+					"pool": ["cinder_pup", "shellhorn"],
 					"message": "Something skittered out of the charred roots!",
 					"ui_variant": "ember",
 				},
 				"herb": {
 					"chance": 0.18,
-					"pool": ["cinder_pup"],
+					"pool": ["cinder_pup", "cinder_pup", "shellhorn"],
 					"message": "A cave creature was feeding on the fungi!",
 					"ui_variant": "ember",
 				},
@@ -557,60 +690,44 @@ var maps := {
 					"level_bonus": 1,
 					"exp_multiplier": 1.1,
 				},
-				"core_shard": {
-					"chance": 0.48,
-					"pool": ["cinder_pup", "shellhorn", "shellhorn"],
-					"message": "A guardian was drawn to the core shard!",
+				"species_mat": {
+					"chance": 0.20,
+					"pool": ["cinder_pup", "shellhorn"],
+					"message": "Something was prowling near the creature remains!",
 					"ui_variant": "ember",
-					"level_bonus": 1,
-					"stat_multiplier": 1.15,
-					"exp_multiplier": 1.2,
 				},
-			},
-			"active_patch_count": 2,
-			"resource_rare_drops": {
-				"stone": [
-					{"material": "core_shard", "min": 1, "max": 1, "chance": 0.08},
-				],
-				"crystal": [
-					{"material": "crystal", "min": 1, "max": 2, "chance": 0.18},
-				],
-				"core_shard": [
-					{"material": "species_mat", "min": 1, "max": 1, "chance": 0.08},
-				],
-			},
-			"battle_rewards": {
-				"capture": [
-					{"material": "core_shard", "min": 1, "max": 2},
-					{"material": "species_mat", "min": 1, "max": 2},
-					{"material": "stone", "min": 1, "max": 2},
-				],
-				"victory": [
-					{"material": "core_shard", "min": 1, "max": 2},
-					{"material": "species_mat", "min": 1, "max": 2},
-					{"material": "stone", "min": 2, "max": 3},
-					{"material": "crystal", "min": 1, "max": 2},
-				],
-				"rare": [
-					{"material": "core_shard", "min": 1, "max": 1, "chance": 0.12},
-					{"material": "species_mat", "min": 1, "max": 1, "chance": 0.1},
-				],
-				"boss_capture": [
-					{"material": "core_shard", "min": 2, "max": 3},
-					{"material": "species_mat", "min": 2, "max": 3},
-					{"material": "stone", "min": 2, "max": 4},
-					{"material": "crystal", "min": 2, "max": 3},
-				],
-				"boss_victory": [
-					{"material": "core_shard", "min": 3, "max": 4},
-					{"material": "species_mat", "min": 2, "max": 4},
-					{"material": "stone", "min": 3, "max": 5},
-					{"material": "crystal", "min": 2, "max": 4},
-				],
-				"boss_rare": [
-					{"material": "core_shard", "min": 1, "max": 2, "chance": 0.45},
-				],
-			},
+				},
+				"active_patch_count": 2,
+				"resource_rare_drops": {
+					"crystal": [
+						{"material": "crystal", "min": 1, "max": 2, "chance": 0.18},
+					],
+				},
+				"battle_rewards": {
+					"capture": [
+						{"material": "species_mat", "min": 1, "max": 2},
+						{"material": "stone", "min": 1, "max": 2},
+					],
+					"victory": [
+						{"material": "species_mat", "min": 1, "max": 2},
+						{"material": "stone", "min": 2, "max": 3},
+						{"material": "crystal", "min": 1, "max": 2},
+					],
+					"rare": [
+						{"material": "species_mat", "min": 1, "max": 1, "chance": 0.1},
+					],
+					"boss_capture": [
+						{"material": "species_mat", "min": 2, "max": 3},
+						{"material": "stone", "min": 2, "max": 4},
+						{"material": "crystal", "min": 2, "max": 3},
+					],
+					"boss_victory": [
+						{"material": "species_mat", "min": 2, "max": 4},
+						{"material": "stone", "min": 3, "max": 5},
+						{"material": "crystal", "min": 2, "max": 4},
+					],
+					"boss_rare": [],
+				},
 			"boss": {
 				"creature_id": "cinder_pup",
 				"display_name": "Alpha Cinder Pup",
@@ -623,29 +740,6 @@ var maps := {
 				"ring_color": Color("ffb35c"),
 				"body_color": Color("6b2e26"),
 			},
-		},
-		"objective_sets": {
-			"default_run": [
-				{
-					"id": "ember_defeat_boss",
-					"type": OBJECTIVE_TYPE_BOSS_DEFEAT,
-					"title": "Defeat the Boss",
-					"description": "Defeat the Ember Caves boss.",
-					"target_id": "ember_caves",
-					"target_amount": 1,
-					"is_primary": true,
-				},
-				{
-					"id": "ember_bonus_crystal",
-					"type": OBJECTIVE_TYPE_GATHER,
-					"title": "Gather Crystal",
-					"description": "Gather 2 crystal during this venture.",
-					"target_id": "crystal",
-					"target_amount": 2,
-					"is_primary": false,
-					"is_bonus": true,
-				},
-			],
 		},
 	},
 }
@@ -663,6 +757,20 @@ func pick_wild_for_map(map_id: String, encounter_tag: String = "") -> String:
 func get_map_run_config(map_id: String) -> Dictionary:
 	var map_data: Dictionary = maps.get(map_id, {})
 	return map_data.get("run_config", {})
+
+
+func get_map_unlock_condition(map_id: String) -> Dictionary:
+	var map_data: Dictionary = maps.get(map_id, {})
+	return map_data.get("unlock_condition", {"type": "always"})
+
+
+func get_poi_definition(poi_id: String) -> Dictionary:
+	var poi_data: Dictionary = poi_definitions.get(poi_id, {})
+	if poi_data.is_empty():
+		return {}
+	var resolved := poi_data.duplicate(true)
+	resolved["poi_id"] = poi_id
+	return resolved
 
 
 func get_boss_config(map_id: String) -> Dictionary:
@@ -720,7 +828,10 @@ func get_battle_reward_roll(map_id: String, captured: bool, battle_context: Dict
 		primary_key = "boss_capture" if captured else "boss_victory"
 	var rare_key := "boss_rare" if is_boss else "rare"
 	var rewards := roll_material_table(reward_config.get(primary_key, []))
-	return merge_materials(rewards, roll_material_table(reward_config.get(rare_key, [])))
+	rewards = merge_materials(rewards, roll_material_table(reward_config.get(rare_key, [])))
+	if not captured:
+		rewards["core_shard"] = int(rewards.get("core_shard", 0)) + 1
+	return rewards
 
 
 func merge_materials(base_materials: Dictionary, extra_materials: Dictionary) -> Dictionary:
@@ -747,6 +858,27 @@ func roll_material_table(entries: Array) -> Dictionary:
 		var amount := randi_range(min_amount, max(min_amount, max_amount))
 		rewards[material] = int(rewards.get(material, 0)) + amount
 	return rewards
+
+
+func format_reward_bundle(reward_bundle: Dictionary) -> String:
+	if reward_bundle.is_empty():
+		return ""
+	var parts: Array[String] = []
+	var materials: Dictionary = reward_bundle.get("materials", {})
+	for material_id in materials.keys():
+		var amount := int(materials.get(material_id, 0))
+		if amount <= 0:
+			continue
+		var material_name := str(materials_meta.get(material_id, {}).get("name", material_id.capitalize()))
+		parts.append("%d %s" % [amount, material_name])
+	var items_awarded: Dictionary = reward_bundle.get("items", {})
+	for item_id in items_awarded.keys():
+		var item_amount := int(items_awarded.get(item_id, 0))
+		if item_amount <= 0:
+			continue
+		var item_name := str(get_item_data(str(item_id)).get("name", item_id))
+		parts.append("%d %s" % [item_amount, item_name])
+	return ", ".join(parts)
 
 
 func get_creature_data(creature_id: String) -> Dictionary:
@@ -829,22 +961,19 @@ func get_material_display_name(material_id: String) -> String:
 	return str(meta.get("name", material_id.capitalize()))
 
 
-func get_objective_set_for_map(map_id: String, progression_index: int = 0) -> Dictionary:
-	var map_data: Dictionary = maps.get(map_id, {})
-	var objective_sets: Dictionary = map_data.get("objective_sets", {})
-	var starter_sequence: Array = objective_sets.get("starter_sequence", [])
-	if progression_index >= 0 and progression_index < starter_sequence.size():
+func get_global_objective_set(progression_index: int = 0, current_map_id: String = "") -> Dictionary:
+	if progression_index >= 0 and progression_index < global_objective_sequence.size():
 		return {
-			"id": "%s_starter_%d" % [map_id, progression_index],
-			"source": "starter_sequence",
+			"id": "global_sequence_%d" % progression_index,
+			"source": "global_sequence",
 			"progression_index": progression_index,
-			"objectives": _duplicate_objectives(starter_sequence[progression_index]),
+			"objectives": _duplicate_objectives(global_objective_sequence[progression_index]),
 		}
 	return {
-		"id": "%s_default" % map_id,
-		"source": "default_run",
+		"id": "global_repeatable",
+		"source": "global_repeatable",
 		"progression_index": progression_index,
-		"objectives": _duplicate_objectives(objective_sets.get("default_run", [])),
+		"objectives": _duplicate_objectives(_build_repeatable_global_objectives(current_map_id)),
 	}
 
 
@@ -858,6 +987,10 @@ func build_objective_definition(raw_objective: Dictionary) -> Dictionary:
 	objective["target_amount"] = max(1, int(objective.get("target_amount", 1)))
 	objective["is_primary"] = bool(objective.get("is_primary", false))
 	objective["is_bonus"] = bool(objective.get("is_bonus", false))
+	if str(objective["type"]) == OBJECTIVE_TYPE_GATHER_MULTI:
+		var target_mats: Dictionary = objective.get("target_materials", {}).duplicate(true)
+		objective["target_materials"] = target_mats
+		objective["target_amount"] = target_mats.size()
 	return objective
 
 
@@ -879,6 +1012,29 @@ func _duplicate_objectives(raw_objectives: Array) -> Array:
 		if raw_objective is Dictionary:
 			objectives.append(build_objective_definition(raw_objective))
 	return objectives
+
+
+func _build_repeatable_global_objectives(current_map_id: String) -> Array:
+	var map_name := str(maps.get(current_map_id, {}).get("display_name", "Current Map"))
+	return [
+		{
+			"id": "global_repeatable_boss",
+			"type": OBJECTIVE_TYPE_BOSS_DEFEAT,
+			"title": "Defeat %s Boss" % map_name,
+			"description": "Defeat the boss on your current venture.",
+			"target_amount": 1,
+			"is_primary": true,
+		},
+		{
+			"id": "global_repeatable_battles",
+			"type": OBJECTIVE_TYPE_BATTLE_WIN,
+			"title": "Win 2 Battles",
+			"description": "Win 2 battles during this venture.",
+			"target_amount": 2,
+			"is_primary": false,
+			"is_bonus": true,
+		},
+	]
 
 
 func get_item_recipe(item_id: String) -> Dictionary:
@@ -915,7 +1071,7 @@ func get_item_effect_summary(item_id: String) -> String:
 			"restore_mp":
 				parts.append("Restore %d MP" % int(effect.get("amount", 0)))
 			"capture_tool":
-				parts.append("Used for capture")
+				parts.append("Used for binding")
 	for effect in item_data.get("camp_effects", []):
 		if not (effect is Dictionary):
 			continue

@@ -16,13 +16,25 @@ var battle_return_scene_path: String = ""
 var battle_return_map_id: String = ""
 var has_battle_return_position := false
 var camp_notice: String = ""
+var intro_popup_seen_this_session := false
 var map_run_active := false
 var map_run_materials_snapshot := {}
 var current_map_run := {}
 var pending_battle_context := {}
 var map_completion_state := {}
 var objective_completion_history := {}
-var map_objective_progression := {}
+var global_objective_progression := 0
+var first_defeat_explainer_shown := false
+var pending_first_defeat_popup := false
+var first_boss_warning_shown := false
+var ember_unlock_notification_shown := false
+var pending_ember_unlock_notification := false
+var tutorial_state := {
+	"opening_bind_battle_started": false,
+	"opening_bind_attempts": 0,
+	"opening_bind_completed": false,
+	"battle_abilities_popup_shown": false,
+}
 
 const BASE_PARTY_LIMIT := 2
 const PARTY_MAX := 3
@@ -110,7 +122,11 @@ func to_save_dict() -> Dictionary:
 		"camp_items": owned_camp_items.keys(),
 		"map_completion_state": map_completion_state,
 		"objective_completion_history": objective_completion_history,
-		"map_objective_progression": map_objective_progression,
+		"global_objective_progression": global_objective_progression,
+		"first_defeat_explainer_shown": first_defeat_explainer_shown,
+		"first_boss_warning_shown": first_boss_warning_shown,
+		"ember_unlock_notification_shown": ember_unlock_notification_shown,
+		"tutorial_state": tutorial_state,
 	}
 
 func from_save_dict(d: Dictionary) -> void:
@@ -136,7 +152,24 @@ func from_save_dict(d: Dictionary) -> void:
 		owned_camp_items[resolved_item_id] = true
 	map_completion_state = d.get("map_completion_state", {}).duplicate(true)
 	objective_completion_history = d.get("objective_completion_history", {}).duplicate(true)
-	map_objective_progression = d.get("map_objective_progression", {}).duplicate(true)
+	global_objective_progression = int(d.get("global_objective_progression", 0))
+	first_defeat_explainer_shown = bool(d.get("first_defeat_explainer_shown", false))
+	first_boss_warning_shown = bool(d.get("first_boss_warning_shown", false))
+	ember_unlock_notification_shown = bool(d.get("ember_unlock_notification_shown", false))
+	pending_first_defeat_popup = false
+	pending_ember_unlock_notification = false
+	tutorial_state = _default_tutorial_state()
+	var saved_tutorial_state: Dictionary = d.get("tutorial_state", {})
+	for key in saved_tutorial_state.keys():
+		tutorial_state[str(key)] = saved_tutorial_state[key]
+	if global_objective_progression <= 0:
+		var legacy_progression: Dictionary = d.get("map_objective_progression", {})
+		global_objective_progression = maxi(
+			int(legacy_progression.get("verdant_wilds", 0)),
+			int(legacy_progression.get("ember_caves", 0))
+		)
+	if global_objective_progression > 0:
+		tutorial_state["opening_bind_completed"] = true
 	_normalize_creature_array(party)
 	_normalize_creature_array(box)
 	_enforce_party_limit()
@@ -609,6 +642,34 @@ func consume_camp_notice() -> String:
 	return message
 
 
+func queue_first_defeat_popup() -> void:
+	if first_defeat_explainer_shown:
+		return
+	pending_first_defeat_popup = true
+
+
+func consume_first_defeat_popup() -> bool:
+	if not pending_first_defeat_popup:
+		return false
+	pending_first_defeat_popup = false
+	first_defeat_explainer_shown = true
+	return true
+
+
+func queue_ember_unlock_notification() -> void:
+	if ember_unlock_notification_shown:
+		return
+	pending_ember_unlock_notification = true
+
+
+func consume_ember_unlock_notification() -> bool:
+	if not pending_ember_unlock_notification:
+		return false
+	pending_ember_unlock_notification = false
+	ember_unlock_notification_shown = true
+	return true
+
+
 func set_current_map_run(map_id: String, run_data: Dictionary) -> void:
 	var previous_objectives: Array = current_map_run.get("objectives", []).duplicate(true)
 	var previous_metadata: Dictionary = current_map_run.get("objective_metadata", {}).duplicate(true)
@@ -618,6 +679,12 @@ func set_current_map_run(map_id: String, run_data: Dictionary) -> void:
 		current_map_run["harvested_spawn_ids"] = []
 	if not current_map_run.has("cleared_boss_ids"):
 		current_map_run["cleared_boss_ids"] = []
+	if not current_map_run.has("interacted_poi_ids"):
+		current_map_run["interacted_poi_ids"] = []
+	if not current_map_run.has("run_flags"):
+		current_map_run["run_flags"] = {}
+	if not current_map_run.has("run_bonuses"):
+		current_map_run["run_bonuses"] = {}
 	if previous_objectives.is_empty():
 		start_objectives_for_map(map_id)
 	else:
@@ -662,6 +729,50 @@ func is_boss_cleared(boss_spawn_id: String) -> bool:
 	return cleared.has(boss_spawn_id)
 
 
+func mark_poi_interacted(poi_id: String) -> void:
+	if poi_id.is_empty():
+		return
+	var interacted: Array = current_map_run.get("interacted_poi_ids", [])
+	if not interacted.has(poi_id):
+		interacted.append(poi_id)
+		current_map_run["interacted_poi_ids"] = interacted
+
+
+func is_poi_interacted(poi_id: String) -> bool:
+	var interacted: Array = current_map_run.get("interacted_poi_ids", [])
+	return interacted.has(poi_id)
+
+
+func set_run_flag(flag_id: String, value) -> void:
+	if flag_id.is_empty():
+		return
+	var flags: Dictionary = current_map_run.get("run_flags", {}).duplicate(true)
+	flags[flag_id] = value
+	current_map_run["run_flags"] = flags
+
+
+func get_run_flag(flag_id: String, default_value = null):
+	var flags: Dictionary = current_map_run.get("run_flags", {})
+	return flags.get(flag_id, default_value)
+
+
+func has_run_flag(flag_id: String) -> bool:
+	return bool(get_run_flag(flag_id, false))
+
+
+func add_run_bonus(bonus_id: String, amount: float) -> void:
+	if bonus_id.is_empty() or absf(amount) <= 0.001:
+		return
+	var bonuses: Dictionary = current_map_run.get("run_bonuses", {}).duplicate(true)
+	bonuses[bonus_id] = float(bonuses.get(bonus_id, 0.0)) + amount
+	current_map_run["run_bonuses"] = bonuses
+
+
+func get_run_bonus(bonus_id: String, default_value: float = 0.0) -> float:
+	var bonuses: Dictionary = current_map_run.get("run_bonuses", {})
+	return float(bonuses.get(bonus_id, default_value))
+
+
 func set_pending_battle(wild_id: String, context: Dictionary = {}) -> void:
 	pending_wild_id = wild_id
 	pending_battle_context = context.duplicate(true)
@@ -686,6 +797,30 @@ func award_gathered_materials(material_drops: Dictionary) -> void:
 			notify_material_gathered(str(material), amount)
 
 
+func award_reward_bundle(reward_bundle: Dictionary) -> Dictionary:
+	var awarded := {
+		"materials": {},
+		"items": {},
+	}
+	if reward_bundle.is_empty():
+		return awarded
+	var material_drops: Dictionary = reward_bundle.get("materials", {})
+	if not material_drops.is_empty():
+		award_gathered_materials(material_drops)
+		awarded["materials"] = material_drops.duplicate(true)
+	var item_drops: Dictionary = reward_bundle.get("items", {})
+	if not item_drops.is_empty():
+		var awarded_items: Dictionary = {}
+		for item_id in item_drops.keys():
+			var amount: int = maxi(0, int(item_drops.get(item_id, 0)))
+			if amount <= 0:
+				continue
+			if add_item(str(item_id), amount):
+				awarded_items[str(item_id)] = amount
+		awarded["items"] = awarded_items
+	return awarded
+
+
 func claim_resource_node_reward(reward_data: Dictionary) -> Dictionary:
 	if reward_data.is_empty():
 		return {}
@@ -699,8 +834,8 @@ func claim_resource_node_reward(reward_data: Dictionary) -> Dictionary:
 
 
 func start_objectives_for_map(map_id: String) -> void:
-	var progression_index := get_map_objective_progression(map_id)
-	var objective_set := GameData.get_objective_set_for_map(map_id, progression_index)
+	var progression_index := get_global_objective_progression()
+	var objective_set := GameData.get_global_objective_set(progression_index, map_id)
 	var objectives: Array = []
 	for definition in objective_set.get("objectives", []):
 		if not (definition is Dictionary):
@@ -709,6 +844,18 @@ func start_objectives_for_map(map_id: String) -> void:
 		objective["current_amount"] = 0
 		objective["completed"] = false
 		objective["completed_at"] = ""
+		if str(objective.get("type", "")) == GameData.OBJECTIVE_TYPE_GATHER_MULTI:
+			var target_mats: Dictionary = objective.get("target_materials", {})
+			var current_mats: Dictionary = {}
+			var satisfied: int = 0
+			for mat in target_mats:
+				var mat_str := str(mat)
+				var have: int = mini(int(target_mats.get(mat_str, 0)), int(materials.get(mat_str, 0)))
+				current_mats[mat_str] = have
+				if have >= int(target_mats.get(mat_str, 0)):
+					satisfied += 1
+			objective["current_materials"] = current_mats
+			objective["current_amount"] = satisfied
 		objectives.append(objective)
 	current_map_run["objectives"] = objectives
 	current_map_run["objective_metadata"] = {
@@ -716,6 +863,11 @@ func start_objectives_for_map(map_id: String) -> void:
 		"source": str(objective_set.get("source", "")),
 		"progression_index": progression_index,
 	}
+	for i in range(objectives.size()):
+		var obj: Dictionary = objectives[i]
+		if str(obj.get("type", "")) == GameData.OBJECTIVE_TYPE_GATHER_MULTI:
+			if int(obj.get("current_amount", 0)) >= int(obj.get("target_amount", 1)):
+				_complete_objective_at_index(i, obj)
 	emit_signal("objectives_started", get_current_objectives())
 	_emit_objectives_updated()
 
@@ -756,7 +908,7 @@ func get_objective_display_text(objective: Dictionary) -> String:
 	var current_amount := int(objective.get("current_amount", 0))
 	var target_amount: int = maxi(1, int(objective.get("target_amount", 1)))
 	var objective_type := str(objective.get("type", ""))
-	if objective_type == GameData.OBJECTIVE_TYPE_BOSS_DEFEAT:
+	if objective_type == GameData.OBJECTIVE_TYPE_BOSS_DEFEAT or objective_type == GameData.OBJECTIVE_TYPE_ENTER_GRASS or objective_type == GameData.OBJECTIVE_TYPE_TUTORIAL_BIND or objective_type == GameData.OBJECTIVE_TYPE_GATHER_MULTI:
 		return "%s%s" % [title, " Complete" if bool(objective.get("completed", false)) else ""]
 	return "%s %d/%d%s" % [
 		title,
@@ -795,8 +947,17 @@ func notify_item_crafted(item_id: String, amount: int) -> void:
 
 
 func notify_creature_captured(creature_data: Dictionary) -> void:
+	if is_opening_bind_tutorial_active():
+		tutorial_state["opening_bind_completed"] = true
 	update_objective_progress("creature_captured", {
 		"creature_id": str(creature_data.get("id", "")),
+		"amount": 1,
+	})
+
+
+func notify_entered_grass(encounter_tag: String) -> void:
+	update_objective_progress("entered_grass", {
+		"encounter_tag": encounter_tag,
 		"amount": 1,
 	})
 
@@ -806,6 +967,19 @@ func notify_battle_won(battle_result: Dictionary = {}) -> void:
 		"amount": int(battle_result.get("amount", 1)),
 		"is_boss": bool(battle_result.get("is_boss", false)),
 		"map_id": str(battle_result.get("map_id", current_map_id)),
+	})
+
+
+func notify_held_item_equipped(item_id: String, creature_data: Dictionary = {}) -> void:
+	update_objective_progress("held_item_equipped", {
+		"amount": 1,
+		"item_id": item_id,
+		"creature_id": str(creature_data.get("id", "")),
+	})
+	_try_advance_off_run_objective("held_item_equipped", {
+		"amount": 1,
+		"item_id": item_id,
+		"creature_id": str(creature_data.get("id", "")),
 	})
 
 
@@ -831,6 +1005,25 @@ func update_objective_progress(event_type: String, payload: Dictionary = {}) -> 
 		var previous_amount := int(objective.get("current_amount", 0))
 		var target_amount: int = int(objective.get("target_amount", 1))
 		var next_amount: int = mini(target_amount, previous_amount + int(payload.get("amount", 1)))
+		if str(objective.get("type", "")) == GameData.OBJECTIVE_TYPE_GATHER_MULTI:
+			var mat_id := str(payload.get("material_id", ""))
+			var target_mats: Dictionary = objective.get("target_materials", {})
+			var current_mats: Dictionary = objective.get("current_materials", {}).duplicate(true)
+			var mat_target: int = int(target_mats.get(mat_id, 0))
+			var mat_current: int = int(current_mats.get(mat_id, 0))
+			current_mats[mat_id] = mini(mat_target, mat_current + int(payload.get("amount", 1)))
+			objective["current_materials"] = current_mats
+			var satisfied: int = 0
+			for mat in target_mats:
+				if int(current_mats.get(str(mat), 0)) >= int(target_mats.get(str(mat), 0)):
+					satisfied += 1
+			next_amount = satisfied
+		if str(objective.get("type", "")) == GameData.OBJECTIVE_TYPE_TUTORIAL_BIND:
+			next_amount = _get_tutorial_bind_progress(objective, event_type)
+			if event_type == "entered_grass":
+				objective["entered_grass_done"] = true
+			elif event_type == "creature_captured":
+				objective["bound_creature_done"] = true
 		objective["current_amount"] = next_amount
 		objectives[index] = objective
 		changed = changed or next_amount != previous_amount
@@ -846,8 +1039,8 @@ func has_completed_objective_before(objective_id: String) -> bool:
 	return int(objective_completion_history.get(objective_id, 0)) > 0
 
 
-func get_map_objective_progression(map_id: String) -> int:
-	return max(0, int(map_objective_progression.get(map_id, 0)))
+func get_global_objective_progression() -> int:
+	return maxi(0, global_objective_progression)
 
 
 func is_map_completed(map_id: String) -> bool:
@@ -859,26 +1052,81 @@ func has_completed_map_boss_before(map_id: String) -> bool:
 	return is_map_completed(map_id)
 
 
-func get_next_map_objective(map_id: String) -> Dictionary:
-	var objective_set := GameData.get_objective_set_for_map(map_id, get_map_objective_progression(map_id))
+func is_map_unlocked(map_id: String) -> bool:
+	var unlock_condition: Dictionary = GameData.get_map_unlock_condition(map_id)
+	match str(unlock_condition.get("type", "always")):
+		"always":
+			return true
+		"map_boss_defeated":
+			return has_completed_map_boss_before(str(unlock_condition.get("map_id", "")))
+	return true
+
+
+func get_unlocked_map_ids() -> Array[String]:
+	var unlocked: Array[String] = []
+	for map_id in GameData.maps.keys():
+		var resolved_map_id := str(map_id)
+		if is_map_unlocked(resolved_map_id):
+			unlocked.append(resolved_map_id)
+	return unlocked
+
+
+func ensure_current_map_is_unlocked() -> void:
+	if is_map_unlocked(current_map_id):
+		return
+	var unlocked_maps := get_unlocked_map_ids()
+	current_map_id = "verdant_wilds" if unlocked_maps.is_empty() else unlocked_maps[0]
+
+
+func get_next_global_objective() -> Dictionary:
+	var objective_set := GameData.get_global_objective_set(get_global_objective_progression(), current_map_id)
 	var objectives: Array = objective_set.get("objectives", [])
 	if objectives.is_empty():
 		return {}
 	return GameData.build_objective_definition(objectives[0])
 
 
+func get_active_or_next_primary_objective() -> Dictionary:
+	if map_run_active:
+		var current_primary := get_primary_objective()
+		if not current_primary.is_empty():
+			return current_primary
+	return get_next_global_objective()
+
+
+func should_suppress_resource_node_encounter(resource_type: String) -> bool:
+	var primary := get_active_or_next_primary_objective()
+	if str(primary.get("type", "")) != GameData.OBJECTIVE_TYPE_GATHER:
+		return false
+	var target_id := str(primary.get("target_id", ""))
+	return (target_id == "wood" and resource_type == "wood") or (target_id == "herb" and resource_type == "herb")
+
+
 func _objective_matches_event(objective: Dictionary, event_type: String, payload: Dictionary) -> bool:
 	match str(objective.get("type", "")):
 		GameData.OBJECTIVE_TYPE_GATHER:
 			return event_type == "material_gathered" and str(objective.get("target_id", "")) == str(payload.get("material_id", ""))
+		GameData.OBJECTIVE_TYPE_GATHER_MULTI:
+			return event_type == "material_gathered" and objective.get("target_materials", {}).has(str(payload.get("material_id", "")))
 		GameData.OBJECTIVE_TYPE_CRAFT:
 			return event_type == "item_crafted" and str(objective.get("target_id", "")) == str(payload.get("item_id", ""))
+		GameData.OBJECTIVE_TYPE_EQUIP_HELD_ITEM:
+			return event_type == "held_item_equipped" and str(objective.get("target_id", "")) == str(payload.get("item_id", ""))
 		GameData.OBJECTIVE_TYPE_CAPTURE:
 			return event_type == "creature_captured"
+		GameData.OBJECTIVE_TYPE_TUTORIAL_BIND:
+			return event_type == "entered_grass" or event_type == "creature_captured"
+		GameData.OBJECTIVE_TYPE_ENTER_GRASS:
+			return event_type == "entered_grass"
 		GameData.OBJECTIVE_TYPE_BATTLE_WIN:
-			return event_type == "battle_won" and not bool(payload.get("is_boss", false))
+			return event_type == "battle_won" \
+				and not bool(payload.get("is_boss", false)) \
+				and (
+					str(objective.get("target_map_id", "")).is_empty() \
+					or str(objective.get("target_map_id", "")) == str(payload.get("map_id", current_map_id))
+				)
 		GameData.OBJECTIVE_TYPE_BOSS_DEFEAT:
-			return event_type == "boss_defeated" and str(objective.get("target_id", current_map_id)) == str(payload.get("map_id", current_map_id))
+			return event_type == "boss_defeated"
 	return false
 
 
@@ -897,16 +1145,29 @@ func _complete_objective_at_index(index: int, objective: Dictionary) -> void:
 	if bool(objective.get("is_primary", false)):
 		advance_objective_progression_for_current_run()
 		emit_signal("primary_objective_completed", objective.duplicate(true))
+		if map_run_active:
+			call_deferred("_start_next_objective_set_for_active_run")
+
+
+func _start_next_objective_set_for_active_run() -> void:
+	if not map_run_active:
+		return
+	var map_id := str(current_map_run.get("map_id", current_map_id))
+	if map_id.is_empty():
+		map_id = current_map_id
+	var next_set := GameData.get_global_objective_set(get_global_objective_progression(), map_id)
+	if str(next_set.get("source", "")) != "global_sequence":
+		return
+	start_objectives_for_map(map_id)
 
 
 func advance_objective_progression_for_current_run() -> void:
 	var metadata: Dictionary = current_map_run.get("objective_metadata", {})
-	if str(metadata.get("source", "")) != "starter_sequence":
+	if str(metadata.get("source", "")) != "global_sequence":
 		return
-	var map_id := str(current_map_run.get("map_id", current_map_id))
 	var next_index := int(metadata.get("progression_index", 0)) + 1
-	if next_index > get_map_objective_progression(map_id):
-		map_objective_progression[map_id] = next_index
+	if next_index > get_global_objective_progression():
+		global_objective_progression = next_index
 
 
 func _mark_map_completed(map_id: String) -> void:
@@ -921,6 +1182,8 @@ func _mark_map_completed(map_id: String) -> void:
 	map_completion_state[map_id] = state
 	if not was_completed:
 		emit_signal("map_completion_changed", map_id, true)
+		if map_id == "verdant_wilds":
+			queue_ember_unlock_notification()
 
 
 func _emit_objectives_updated() -> void:
@@ -930,8 +1193,7 @@ func _emit_objectives_updated() -> void:
 func _try_advance_off_run_objective(event_type: String, payload: Dictionary) -> void:
 	if map_run_active:
 		return
-	var map_id := current_map_id
-	var objective := get_next_map_objective(map_id)
+	var objective := get_next_global_objective()
 	if objective.is_empty():
 		return
 	if not bool(objective.get("is_primary", false)):
@@ -941,7 +1203,7 @@ func _try_advance_off_run_objective(event_type: String, payload: Dictionary) -> 
 	var objective_id := str(objective.get("id", ""))
 	if not objective_id.is_empty():
 		objective_completion_history[objective_id] = int(objective_completion_history.get(objective_id, 0)) + 1
-	map_objective_progression[map_id] = get_map_objective_progression(map_id) + 1
+	global_objective_progression = get_global_objective_progression() + 1
 
 
 func _sanitize_held_item_id(item_id: String) -> String:
@@ -951,6 +1213,72 @@ func _sanitize_held_item_id(item_id: String) -> String:
 	if item_data.is_empty():
 		return ""
 	return item_id if str(item_data.get("category", "")) == GameData.ITEM_CATEGORY_HELD else ""
+
+
+func is_opening_bind_tutorial_active() -> bool:
+	return get_global_objective_progression() == 0 and not bool(tutorial_state.get("opening_bind_completed", false))
+
+
+func should_show_battle_abilities_tutorial_popup() -> bool:
+	var primary := get_primary_objective()
+	return (
+		not bool(tutorial_state.get("battle_abilities_popup_shown", false))
+		and str(primary.get("id", "")) == "global_win_verdant_battle"
+		and not bool(primary.get("completed", false))
+	)
+
+
+func mark_battle_abilities_tutorial_popup_shown() -> void:
+	tutorial_state["battle_abilities_popup_shown"] = true
+
+
+func should_show_battle_rewards_tutorial_popup() -> bool:
+	var primary := get_primary_objective()
+	return (
+		not bool(tutorial_state.get("battle_rewards_popup_shown", false))
+		and str(primary.get("id", "")) == "global_win_verdant_battle"
+		and not bool(primary.get("completed", false))
+	)
+
+
+func mark_battle_rewards_tutorial_popup_shown() -> void:
+	tutorial_state["battle_rewards_popup_shown"] = true
+
+
+func is_battle_abilities_tutorial_active() -> bool:
+	var primary := get_primary_objective()
+	return str(primary.get("id", "")) == "global_win_verdant_battle" and not bool(primary.get("completed", false))
+
+
+func note_opening_bind_battle_started() -> void:
+	if is_opening_bind_tutorial_active():
+		tutorial_state["opening_bind_battle_started"] = true
+
+
+func resolve_opening_bind_attempt() -> String:
+	if not is_opening_bind_tutorial_active():
+		return "normal"
+	var attempts := int(tutorial_state.get("opening_bind_attempts", 0)) + 1
+	tutorial_state["opening_bind_attempts"] = attempts
+	if attempts <= 1:
+		return "forced_fail"
+	tutorial_state["opening_bind_completed"] = true
+	return "forced_success"
+
+
+func _default_tutorial_state() -> Dictionary:
+	return {
+		"opening_bind_battle_started": false,
+		"opening_bind_attempts": 0,
+		"opening_bind_completed": false,
+		"battle_abilities_popup_shown": false,
+	}
+
+
+func _get_tutorial_bind_progress(objective: Dictionary, event_type: String) -> int:
+	var entered_grass_done := bool(objective.get("entered_grass_done", false)) or event_type == "entered_grass"
+	var bound_creature_done := bool(objective.get("bound_creature_done", false)) or event_type == "creature_captured"
+	return int(entered_grass_done) + int(bound_creature_done)
 
 
 func _adjust_creature_resources_after_loadout_change(creature: Dictionary, previous_hp_max: int, previous_mp_max: int) -> void:

@@ -2,16 +2,16 @@
 
 importer="texture"
 type="CompressedTexture2D"
-uid="uid://dnwe1egmad2xj"
-path="res://.godot/imported/index.icon.png-b92c9a802ad4b78e247784454a6b506f.ctex"
+uid="uid://b1rx88hxdlu2n"
+path="res://.godot/imported/cinder_pup.svg-577b760cfff2cda2d678d9530d3185b9.ctex"
 metadata={
 "vram_texture": false
 }
 
 [deps]
 
-source_file="res://docs/index.icon.png"
-dest_files=["res://.godot/imported/index.icon.png-b92c9a802ad4b78e247784454a6b506f.ctex"]
+source_file="res://assets/creatures/cinder_pup.svg"
+dest_files=["res://.godot/imported/cinder_pup.svg-577b760cfff2cda2d678d9530d3185b9.ctex"]
 
 [params]
 
@@ -38,3 +38,6 @@ process/hdr_as_srgb=false
 process/hdr_clamp_exposure=false
 process/size_limit=0
 detect_3d/compress_to=1
+svg/scale=1.0
+editor/scale_with_editor_scale=false
+editor/convert_colors_with_editor_theme=false

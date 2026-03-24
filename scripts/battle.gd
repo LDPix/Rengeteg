@@ -5,6 +5,14 @@ const MIN_HIT_CHANCE := 35.0
 const MAX_HIT_CHANCE := 95.0
 const DEFENSE_SCALING := 25.0
 const CRIT_MULTIPLIER := 2
+const TUTORIAL_BIND_RETRY_TITLE := "Binding Failed"
+const TUTORIAL_BIND_RETRY_BODY := "The creature broke free of the seal. Try binding it again with your Basic Seal."
+const TUTORIAL_ABILITIES_TITLE := "Use Abilities"
+const TUTORIAL_ABILITIES_BODY := "Use your creature's abilities during battle to deal damage and win the fight."
+const TUTORIAL_BATTLE_REWARDS_TITLE := "Battle Rewards"
+const TUTORIAL_BATTLE_REWARDS_BODY := "Defeating wild creatures earns your party Exp and drops materials you can use for crafting."
+const OBJECTIVE_HIGHLIGHT_COLOR := Color(1.0, 1.0, 0.82, 1.0)
+const OBJECTIVE_HIGHLIGHT_BORDER_COLOR := Color(0.82, 0.25, 0.18, 1.0)
 
 @onready var background: ColorRect = $Background
 @onready var title_label: Label = $OuterMargin/Root/TopBar/TitleLabel
@@ -15,7 +23,11 @@ const CRIT_MULTIPLIER := 2
 @onready var btn_run: Button = $OuterMargin/Root/ActionsCard/ActionsPadding/ActionsVBox/ButtonsRow/RunButton
 @onready var seal_chooser_panel: PanelContainer = $OuterMargin/Root/ActionsCard/ActionsPadding/ActionsVBox/SealChooserPanel
 @onready var seal_chooser_title: Label = $OuterMargin/Root/ActionsCard/ActionsPadding/ActionsVBox/SealChooserPanel/SealChooserPadding/SealChooserVBox/SealChooserTitle
-@onready var seal_options: VBoxContainer = $OuterMargin/Root/ActionsCard/ActionsPadding/ActionsVBox/SealChooserPanel/SealChooserPadding/SealChooserVBox/SealOptions
+@onready var seal_options: Container = $OuterMargin/Root/ActionsCard/ActionsPadding/ActionsVBox/SealChooserPanel/SealChooserPadding/SealChooserVBox/SealOptions
+@onready var tutorial_popup: PanelContainer = $TutorialPopup
+@onready var tutorial_popup_title: Label = $TutorialPopup/PopupPadding/PopupContent/PopupTitle
+@onready var tutorial_popup_body: Label = $TutorialPopup/PopupPadding/PopupContent/PopupBody
+@onready var tutorial_popup_button: Button = $TutorialPopup/PopupPadding/PopupContent/PopupButton
 @onready var player_card = $OuterMargin/Root/BattleCard/Padding/CreaturesRow/PlayerCard
 @onready var enemy_card = $OuterMargin/Root/BattleCard/Padding/CreaturesRow/EnemyCard
 
@@ -29,6 +41,9 @@ var battle_bonuses: Dictionary = {
 
 var active_index := 0
 var participant_indices: Dictionary = {}
+var bind_highlight_time := 0.0
+var highlighted_seal_button: Button = null
+var showing_seal_chooser := false
 
 
 func _ready() -> void:
@@ -47,16 +62,22 @@ func _ready() -> void:
 		return
 	GameState.ensure_combat_fields(wild_mon)
 	_mark_participant(active_index)
+	GameState.note_opening_bind_battle_started()
 
 	btn_switch.pressed.connect(_on_switch)
 	btn_capture.pressed.connect(_on_capture)
 	btn_run.pressed.connect(_on_run)
+	tutorial_popup_button.pressed.connect(_hide_tutorial_popup)
 
 	_update_ui()
 	await _apply_battle_start_passives()
 	var intro_message := str(battle_context.get("intro_message", ""))
 	if not intro_message.is_empty():
 		info.text = intro_message
+	if GameState.should_show_battle_abilities_tutorial_popup():
+		GameState.mark_battle_abilities_tutorial_popup_shown()
+		_show_tutorial_popup(TUTORIAL_ABILITIES_TITLE, TUTORIAL_ABILITIES_BODY)
+	set_process(true)
 
 
 func _apply_world_ui() -> void:
@@ -66,12 +87,16 @@ func _apply_world_ui() -> void:
 	WorldUI.apply_panel($OuterMargin/Root/BattleCard, "stone", true)
 	WorldUI.apply_panel($OuterMargin/Root/ActionsCard, "battle", true)
 	WorldUI.apply_panel(seal_chooser_panel, "stone", true)
+	WorldUI.apply_panel(tutorial_popup, "battle", true)
 	WorldUI.apply_label(seal_chooser_title, "title", "crystal")
+	WorldUI.apply_label(tutorial_popup_title, "title", "crystal")
+	WorldUI.apply_label(tutorial_popup_body, "body", "verdant")
 	player_card.apply_variant("wood")
 	enemy_card.apply_variant("stone")
 	WorldUI.apply_button(btn_switch, "stone")
 	WorldUI.apply_button(btn_capture, "ember", true)
 	WorldUI.apply_button(btn_run, "battle")
+	WorldUI.apply_button(tutorial_popup_button, "verdant", true)
 
 
 func _update_ui() -> void:
@@ -107,7 +132,7 @@ func _refresh_capture_ui() -> void:
 	var total_seals := 0
 	for item_id in capture_items:
 		total_seals += GameState.get_item_count(item_id)
-	btn_capture.text = "Capture" if total_seals > 0 else "Capture (No Seals)"
+	btn_capture.text = "Bind" if total_seals > 0 else "Bind (No Seals)"
 	btn_capture.disabled = capture_items.is_empty()
 	if capture_items.is_empty():
 		_hide_seal_chooser()
@@ -116,6 +141,9 @@ func _refresh_capture_ui() -> void:
 func _rebuild_ability_buttons() -> void:
 	for child in abilities_list.get_children():
 		child.queue_free()
+	if showing_seal_chooser:
+		_rebuild_seal_buttons()
+		return
 
 	var abilities: Array[String] = GameState.get_creature_abilities(player_mon)
 	for ability_id in abilities:
@@ -131,6 +159,31 @@ func _rebuild_ability_buttons() -> void:
 		abilities_list.add_child(button)
 
 
+func _rebuild_seal_buttons() -> void:
+	highlighted_seal_button = null
+	var capture_items := _get_available_capture_items()
+	for item_id in capture_items:
+		var item_data := GameData.get_item_data(item_id)
+		var count := GameState.get_item_count(item_id)
+		var button: Button = ABILITY_BUTTON_SCENE.instantiate()
+		button.text = "%s x%d" % [str(item_data.get("name", item_id)), count]
+		button.tooltip_text = str(item_data.get("description", ""))
+		var icon_path := GameData.get_item_icon_path(item_id)
+		if not icon_path.is_empty():
+			button.icon = load(icon_path)
+			button.expand_icon = true
+		WorldUI.apply_button(button, str(item_data.get("variant", "ember")), true)
+		button.pressed.connect(_use_capture_item.bind(item_id))
+		abilities_list.add_child(button)
+		if GameState.is_opening_bind_tutorial_active() and item_id == "basic_seal":
+			highlighted_seal_button = button
+	var cancel_button: Button = ABILITY_BUTTON_SCENE.instantiate()
+	cancel_button.text = "Cancel"
+	WorldUI.apply_button(cancel_button, "battle")
+	cancel_button.pressed.connect(_hide_seal_chooser)
+	abilities_list.add_child(cancel_button)
+
+
 func _format_ability_button_text(ability_id: String) -> String:
 	var ability: Dictionary = GameData.get_ability_data(ability_id)
 	if ability.is_empty():
@@ -139,15 +192,19 @@ func _format_ability_button_text(ability_id: String) -> String:
 
 
 func _on_ability_pressed(ability_id: String) -> void:
+	if tutorial_popup.visible:
+		return
 	if not GameState.can_use_ability(player_mon, ability_id):
 		info.text = "%s does not have enough MP." % str(player_mon.get("name", "Creature"))
 		_rebuild_ability_buttons()
 		return
+	_set_actions_locked(true)
 	var player_action: Dictionary = {"type": "ability", "ability_id": ability_id}
 	var enemy_action: Dictionary = _choose_enemy_action(wild_mon)
 	if not await _process_round(player_action, enemy_action):
 		return
 	_update_ui()
+	_set_actions_locked(false)
 
 
 func _choose_enemy_action(creature: Dictionary) -> Dictionary:
@@ -328,10 +385,14 @@ func _show_battle_messages(lines: Array, delay: float = 0.55) -> void:
 
 
 func _on_switch() -> void:
+	if tutorial_popup.visible:
+		return
+	_set_actions_locked(true)
 	if GameState.party.size() <= 1:
 		info.text = "No other creatures to switch to."
 		await get_tree().create_timer(0.5).timeout
 		_update_ui()
+		_set_actions_locked(false)
 		return
 
 	var next := _find_next_alive_index(active_index)
@@ -339,6 +400,7 @@ func _on_switch() -> void:
 		info.text = "No healthy creatures left!"
 		await get_tree().create_timer(0.5).timeout
 		_update_ui()
+		_set_actions_locked(false)
 		return
 
 	active_index = next
@@ -351,6 +413,7 @@ func _on_switch() -> void:
 	if not await _process_round({"type": "switch"}, _choose_enemy_action(wild_mon)):
 		return
 	_update_ui()
+	_set_actions_locked(false)
 
 
 func _find_next_alive_index(from_index: int) -> int:
@@ -372,11 +435,13 @@ func _find_first_alive_index() -> int:
 
 
 func _on_capture() -> void:
+	if tutorial_popup.visible:
+		return
 	if _get_available_capture_items().is_empty():
-		info.text = "No capture seals left. Craft more at camp."
+		info.text = "No binding seals left. Craft more at camp."
 		_refresh_capture_ui()
 		return
-	if seal_chooser_panel.visible:
+	if _is_seal_chooser_open():
 		_hide_seal_chooser()
 	else:
 		_show_seal_chooser()
@@ -394,26 +459,38 @@ func _use_capture_item(item_id: String) -> void:
 
 	var hp_ratio: float = float(wild_mon["hp"]) / float(max(1, GameState.get_effective_creature_stat(wild_mon, "hp_max")))
 	var chance: float = clampf(0.25 + (0.60 * (1.0 - hp_ratio)), 0.25, 0.85)
+	chance = clampf(chance + GameState.get_run_bonus("capture_chance_bonus", 0.0), 0.25, 0.95)
+	var tutorial_result := GameState.resolve_opening_bind_attempt()
+	if tutorial_result == "forced_fail":
+		chance = -1.0
+	elif tutorial_result == "forced_success":
+		chance = 2.0
+	_set_actions_locked(true)
 	if randf() < chance:
 		var went_to_party: bool = GameState.add_creature_to_collection(wild_mon)
 		GameState.notify_creature_captured(wild_mon)
 		var item_name := str(GameData.get_item_data(item_id).get("name", item_id))
 		if went_to_party:
-			info.text = "Captured %s! Added to team. 1 %s used." % [wild_mon["name"], item_name]
+			info.text = "Bound %s! Added to team. 1 %s used." % [wild_mon["name"], item_name]
 		else:
-			info.text = "Captured %s! Sent to storage. 1 %s used." % [wild_mon["name"], item_name]
+			info.text = "Bound %s! Sent to storage. 1 %s used." % [wild_mon["name"], item_name]
 		await get_tree().create_timer(0.8).timeout
 		_award_drops(true)
 		_back_to_overworld()
 	else:
-		info.text = "Capture failed! 1 %s was used." % str(GameData.get_item_data(item_id).get("name", item_id))
+		info.text = "Binding failed! 1 %s was used." % str(GameData.get_item_data(item_id).get("name", item_id))
 		await get_tree().create_timer(0.4).timeout
 		if not await _process_round({"type": "none"}, _choose_enemy_action(wild_mon)):
 			return
 		_update_ui()
+		_set_actions_locked(false)
+		if tutorial_result == "forced_fail":
+			_show_tutorial_popup(TUTORIAL_BIND_RETRY_TITLE, TUTORIAL_BIND_RETRY_BODY)
 
 
 func _on_run() -> void:
+	if tutorial_popup.visible:
+		return
 	if bool(battle_context.get("disable_run", false)):
 		info.text = "You cannot flee from a boss encounter."
 		return
@@ -423,13 +500,20 @@ func _on_run() -> void:
 func _win_battle() -> void:
 	info.text = "You defeated %s!" % wild_mon["name"]
 	await get_tree().create_timer(0.8).timeout
+	var show_rewards_popup := GameState.should_show_battle_rewards_tutorial_popup()
+	if show_rewards_popup:
+		GameState.mark_battle_rewards_tutorial_popup_shown()
 	GameState.notify_battle_won({
 		"is_boss": _is_boss_battle(),
 		"map_id": GameState.current_map_id,
 	})
 	await _award_victory_exp()
 	_award_drops(false)
-	await get_tree().create_timer(1.0).timeout
+	if show_rewards_popup:
+		_show_tutorial_popup(TUTORIAL_BATTLE_REWARDS_TITLE, TUTORIAL_BATTLE_REWARDS_BODY)
+		await tutorial_popup_button.pressed
+	else:
+		await get_tree().create_timer(1.0).timeout
 	_back_to_overworld()
 
 
@@ -437,6 +521,7 @@ func _lose_battle() -> void:
 	info.text = "Your %s fainted..." % player_mon["name"]
 	await get_tree().create_timer(0.8).timeout
 	GameState.forfeit_current_map_run()
+	GameState.queue_first_defeat_popup()
 	GameState.set_camp_notice("Your whole team fainted. You were carried back to camp and lost all resources gathered on that run.")
 	get_tree().change_scene_to_file("res://scenes/Camp.tscn")
 
@@ -446,11 +531,21 @@ func _award_drops(captured: bool) -> void:
 	GameState.award_materials(rewards)
 	var node_rewards := GameState.claim_resource_node_reward(battle_context.get("resource_node_reward", {}))
 	var total_rewards := GameData.merge_materials(rewards, node_rewards)
+	var bonus_bundle: Dictionary = battle_context.get("bonus_reward_bundle", {})
+	var bonus_rewards_text := ""
+	if not bonus_bundle.is_empty():
+		var awarded_bonus := GameState.award_reward_bundle(bonus_bundle)
+		bonus_rewards_text = GameData.format_reward_bundle(awarded_bonus)
 	if _is_boss_battle():
 		GameState.mark_boss_cleared(str(battle_context.get("boss_spawn_id", "")))
 		GameState.notify_boss_defeated(GameState.current_map_id)
 	var outcome: String = "Boss capture rewards" if captured and _is_boss_battle() else "Boss victory rewards" if _is_boss_battle() else "Capture rewards" if captured else "Victory rewards"
-	info.text = "%s: %s" % [outcome, _format_material_rewards(total_rewards)]
+	if captured:
+		outcome = "Boss bind rewards" if _is_boss_battle() else "Bind rewards"
+	var reward_text := _format_material_rewards(total_rewards)
+	if not bonus_rewards_text.is_empty():
+		reward_text = "%s | %s" % [reward_text, bonus_rewards_text] if not reward_text.is_empty() else bonus_rewards_text
+	info.text = "%s: %s" % [outcome, reward_text]
 
 
 func _auto_switch_if_needed() -> bool:
@@ -531,17 +626,25 @@ func _is_resource_node_battle() -> bool:
 	return str(battle_context.get("encounter_source", "")) == "resource_node"
 
 
+func _is_poi_battle() -> bool:
+	return str(battle_context.get("encounter_source", "")) == "poi"
+
+
 func _battle_title() -> String:
 	if _is_boss_battle():
 		return "Boss Encounter"
 	if _is_resource_node_battle():
 		return "Node Encounter"
+	if _is_poi_battle():
+		return "Point of Interest"
 	return "Wild Encounter"
 
 
 func _default_battle_prompt() -> String:
 	if _is_resource_node_battle():
 		return "A disturbed creature attacks!"
+	if _is_poi_battle():
+		return "A point of interest turns dangerous."
 	return "Choose an ability."
 
 
@@ -557,37 +660,120 @@ func _get_available_capture_items() -> Array[String]:
 
 
 func _show_seal_chooser() -> void:
-	for child in seal_options.get_children():
-		child.queue_free()
 	var capture_items := _get_available_capture_items()
 	if capture_items.is_empty():
-		info.text = "No capture seals left. Craft more at camp."
+		info.text = "No binding seals left. Craft more at camp."
 		_hide_seal_chooser()
 		return
-	seal_chooser_panel.visible = true
-	seal_chooser_title.text = "Choose a seal"
-	for item_id in capture_items:
-		var item_data := GameData.get_item_data(item_id)
-		var count := GameState.get_item_count(item_id)
-		var button := Button.new()
-		button.text = "%s x%d" % [str(item_data.get("name", item_id)), count]
-		button.tooltip_text = str(item_data.get("description", ""))
-		var icon_path := GameData.get_item_icon_path(item_id)
-		if not icon_path.is_empty():
-			button.icon = load(icon_path)
-			button.expand_icon = true
-		WorldUI.apply_button(button, str(item_data.get("variant", "ember")), true)
-		button.pressed.connect(_use_capture_item.bind(item_id))
-		seal_options.add_child(button)
-	var cancel_button := Button.new()
-	cancel_button.text = "Cancel"
-	WorldUI.apply_button(cancel_button, "battle")
-	cancel_button.pressed.connect(_hide_seal_chooser)
-	seal_options.add_child(cancel_button)
+	showing_seal_chooser = true
+	_rebuild_ability_buttons()
+	info.text = "Choose a binding seal."
 
 
 func _hide_seal_chooser() -> void:
-	seal_chooser_panel.visible = false
+	showing_seal_chooser = false
+	highlighted_seal_button = null
+	_rebuild_ability_buttons()
+
+
+func _is_seal_chooser_open() -> bool:
+	return showing_seal_chooser
+
+
+func _set_actions_locked(locked: bool) -> void:
+	btn_switch.disabled = locked
+	btn_run.disabled = locked or bool(battle_context.get("disable_run", false))
+	if locked:
+		btn_capture.disabled = true
+		for child in abilities_list.get_children():
+			if child is Button:
+				(child as Button).disabled = true
+
+
+func _show_tutorial_popup(title: String, body: String) -> void:
+	tutorial_popup_title.text = title
+	tutorial_popup_body.text = body
+	tutorial_popup.visible = true
+
+
+func _hide_tutorial_popup() -> void:
+	tutorial_popup.visible = false
+
+
+func _should_highlight_bind_tutorial() -> bool:
+	return GameState.is_opening_bind_tutorial_active() and not _is_seal_chooser_open() and not tutorial_popup.visible
+
+
+func _should_highlight_ability_tutorial() -> bool:
+	return GameState.is_battle_abilities_tutorial_active() and not _is_seal_chooser_open() and not tutorial_popup.visible
+
+
+func _process(delta: float) -> void:
+	bind_highlight_time += delta
+	var pulse := 1.0 + sin(bind_highlight_time * 4.4) * 0.04
+	var highlight_color := OBJECTIVE_HIGHLIGHT_COLOR
+	if _should_highlight_bind_tutorial():
+		_set_objective_highlight(btn_capture, true, pulse)
+	else:
+		_set_objective_highlight(btn_capture, false)
+	if _should_highlight_ability_tutorial():
+		for child in abilities_list.get_children():
+			if child is Button:
+				var ability_button: Button = child
+				_set_objective_highlight(ability_button, true, pulse)
+	else:
+		for child in abilities_list.get_children():
+			if child is Button:
+				var idle_button: Button = child
+				if idle_button != highlighted_seal_button:
+					_set_objective_highlight(idle_button, false)
+	if highlighted_seal_button != null and is_instance_valid(highlighted_seal_button):
+		_set_objective_highlight(highlighted_seal_button, true, pulse)
+
+
+func _set_objective_highlight(button: Button, enabled: bool, pulse: float = 1.0) -> void:
+	if enabled:
+		button.scale = Vector2.ONE * pulse
+		button.modulate = Color(1.0, 1.0, 1.0, 1.0).lerp(OBJECTIVE_HIGHLIGHT_COLOR, 0.28)
+		_apply_objective_border(button)
+	else:
+		button.scale = Vector2.ONE
+		button.modulate = Color(1, 1, 1, 1)
+		_restore_objective_border(button)
+
+
+func _apply_objective_border(button: Button) -> void:
+	if bool(button.get_meta("_objective_border_active", false)):
+		return
+	var original_styles := {}
+	for style_name in ["normal", "hover", "pressed", "focus", "disabled"]:
+		var style_box := button.get_theme_stylebox(style_name)
+		if style_box == null:
+			continue
+		original_styles[style_name] = style_box
+		if style_box is StyleBoxFlat:
+			var highlighted_style: StyleBoxFlat = (style_box as StyleBoxFlat).duplicate()
+			highlighted_style.border_width_left = 3
+			highlighted_style.border_width_top = 3
+			highlighted_style.border_width_right = 3
+			highlighted_style.border_width_bottom = 3
+			highlighted_style.border_color = OBJECTIVE_HIGHLIGHT_BORDER_COLOR
+			button.add_theme_stylebox_override(style_name, highlighted_style)
+	button.set_meta("_objective_original_styles", original_styles)
+	button.set_meta("_objective_border_active", true)
+
+
+func _restore_objective_border(button: Button) -> void:
+	if not bool(button.get_meta("_objective_border_active", false)):
+		return
+	var original_styles: Dictionary = button.get_meta("_objective_original_styles", {})
+	for style_name in ["normal", "hover", "pressed", "focus", "disabled"]:
+		if original_styles.has(style_name):
+			button.add_theme_stylebox_override(style_name, original_styles[style_name])
+		else:
+			button.remove_theme_stylebox_override(style_name)
+	button.set_meta("_objective_original_styles", {})
+	button.set_meta("_objective_border_active", false)
 
 
 func _format_material_rewards(rewards: Dictionary) -> String:
