@@ -62,7 +62,7 @@ theme_override_constants/separation = 12
 
 [node name="ConfirmTitle" type="Label" parent="ConfirmPanel/ConfirmPadding/ConfirmContent"]
 layout_mode = 2
-text = "Dangerous Enemy"
+text = "DANGEROUS ENEMY"
 horizontal_alignment = 1
 
 [node name="ConfirmBody" type="Label" parent="ConfirmPanel/ConfirmPadding/ConfirmContent"]
@@ -79,10 +79,10 @@ theme_override_constants/separation = 12
 custom_minimum_size = Vector2(0, 40)
 layout_mode = 2
 size_flags_horizontal = 3
-text = "Not Yet"
+text = "NOT YET"
 
 [node name="ProceedButton" type="Button" parent="ConfirmPanel/ConfirmPadding/ConfirmContent/ConfirmButtons"]
 custom_minimum_size = Vector2(0, 40)
 layout_mode = 2
 size_flags_horizontal = 3
-text = "Proceed"
+text = "PROCEED"

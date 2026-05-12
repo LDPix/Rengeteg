@@ -6,6 +6,15 @@ signal harvested(resource_type: String, amount: int)
 signal harvest_feedback_requested(resource_type: String, feedback_profile: String, world_position: Vector2)
 
 const RESOURCE_TEXTURES := {
+	"wood": "res://assets/resources/wood_node.png",
+	"herb": "res://assets/resources/herb_node.png",
+	"stone": "res://assets/resources/stone_node.png",
+	"crystal": "res://assets/resources/crystal_node.png",
+	"core_shard": "res://assets/resources/core_shard_node.png",
+	"species_mat": "res://assets/resources/species_mat_node.png",
+}
+
+const RESOURCE_TEXTURES_FALLBACK := {
 	"wood": "res://assets/resources/wood_node.svg",
 	"herb": "res://assets/resources/herb_node.svg",
 	"stone": "res://assets/resources/stone_node.svg",
@@ -14,7 +23,48 @@ const RESOURCE_TEXTURES := {
 	"species_mat": "res://assets/resources/species_mat_node.svg",
 }
 
+const VARIANT_TEXTURE_POOLS := {
+	"flower_patch": [
+		"res://assets/resources/herb_flower_patch.png",
+		"res://assets/resources/herb_flower_patch_0.png",
+		"res://assets/resources/herb_flower_patch_1.png",
+		"res://assets/resources/herb_flower_patch_2.png",
+		"res://assets/resources/herb_flower_patch_3.png",
+		"res://assets/resources/herb_flower_patch_4.png",
+		"res://assets/resources/herb_flower_patch_5.png",
+		"res://assets/resources/herb_flower_patch_6.png",
+		"res://assets/resources/herb_flower_patch_7.png",
+		"res://assets/resources/herb_flower_patch_8.png",
+		"res://assets/resources/herb_flower_patch_9.png",
+		"res://assets/resources/herb_flower_patch_10.png",
+		"res://assets/resources/herb_flower_patch_11.png",
+		"res://assets/resources/herb_flower_patch_12.png",
+		"res://assets/resources/herb_flower_patch_13.png",
+		"res://assets/resources/herb_flower_patch_14.png",
+		"res://assets/resources/herb_flower_patch_15.png",
+	],
+}
+
 const VARIANT_TEXTURES := {
+	"stump": "res://assets/resources/wood_stump.png",
+	"branch_pile": "res://assets/resources/wood_branch_pile.png",
+	"leaf_cluster": "res://assets/resources/herb_node.png",
+	"flower_patch": "res://assets/resources/herb_flower_patch.png",
+	"fungus": "res://assets/resources/herb_fungus.png",
+	"rock_pile": "res://assets/resources/stone_node.png",
+	"mossy_rocks": "res://assets/resources/stone_mossy.png",
+	"basalt": "res://assets/resources/stone_basalt.png",
+	"shard_cluster": "res://assets/resources/crystal_node.png",
+	"overgrown_crystal": "res://assets/resources/crystal_overgrown.png",
+	"lava_crystal": "res://assets/resources/crystal_lava.png",
+	"floating_relic": "res://assets/resources/core_shard_relic.png",
+	"ember_relic": "res://assets/resources/core_shard_relic.png",
+	"organic_remains": "res://assets/resources/species_mat_node.png",
+	"moss_cocoon": "res://assets/resources/species_mat_cocoon.png",
+	"ember_residue": "res://assets/resources/species_mat_node.png",
+}
+
+const VARIANT_TEXTURES_FALLBACK := {
 	"stump": "res://assets/resources/wood_stump.svg",
 	"branch_pile": "res://assets/resources/wood_branch_pile.svg",
 	"leaf_cluster": "res://assets/resources/herb_node.svg",
@@ -77,6 +127,10 @@ const RESOURCE_DEFAULTS := {
 		"default_yield": Vector2i(1, 3),
 	},
 }
+
+const RESOURCE_UI_LAYER := 80
+const HINT_PANEL_RAISE := 2.0
+const HINT_PANEL_ANCHOR_RATIO := 0.48
 
 const RARITY_PRESETS := {
 	"common": {
@@ -266,8 +320,12 @@ var _glint_accumulator := 0.0
 var _pulse_accumulator := 0.0
 var _cached_config: Dictionary = {}
 var _objective_highlighted := false
+var _hint_layer: CanvasLayer = null
 
 func _ready() -> void:
+	_hint_layer = _build_world_ui_layer("ResourceHintLayer")
+	remove_child(hint_panel)
+	_hint_layer.add_child(hint_panel)
 	_configure_hint_label()
 	_apply_default_yield_range()
 	_refresh_configuration()
@@ -322,6 +380,7 @@ func _unhandled_input(event: InputEvent) -> void:
 		GameState.award_gathered_materials(gathered_rewards)
 		if not spawn_id.is_empty():
 			GameState.mark_resource_spawn_harvested(spawn_id)
+		_play_resource_sfx(resource_type)
 		emit_signal("harvested", resource_type, amount)
 		emit_signal("harvest_feedback_requested", resource_type, _harvest_feedback_key(), feedback_anchor.global_position)
 		queue_free()
@@ -333,6 +392,12 @@ func _roll_rare_drops() -> Dictionary:
 		var rare_tables: Dictionary = map_config.get("resource_rare_drops", {})
 		return GameData.roll_material_table(rare_tables.get(rare_drop_table_id, []))
 	return GameData.get_resource_rare_drops(GameState.current_map_id, resource_type)
+
+
+func _play_resource_sfx(resource_id: String) -> void:
+	var sfx := get_node_or_null("/root/Sfx")
+	if sfx != null:
+		sfx.call("play_resource", resource_id)
 
 
 func _try_trigger_node_encounter(gathered_rewards: Dictionary) -> bool:
@@ -453,6 +518,8 @@ func _harvest_feedback_key() -> String:
 
 func _configure_hint_label() -> void:
 	WorldUI.apply_hint(hint_panel, hint, "verdant" if _resolved_biome() == "verdant_wilds" else "stone")
+	hint_panel.custom_minimum_size = Vector2(280.0, 72.0)
+	hint.add_theme_font_size_override("font_size", 24)
 	hint_panel.visible = false
 	_update_hint_text()
 
@@ -464,7 +531,7 @@ func _update_prompt_visibility() -> void:
 
 
 func _update_prompt_position() -> void:
-	hint_panel.position = hint_anchor.position + prompt_offset
+	hint_panel.global_position = _position_panel_around_world(hint_panel, hint_anchor.global_position + prompt_offset, HINT_PANEL_RAISE, HINT_PANEL_ANCHOR_RATIO)
 
 
 func _update_hint_text() -> void:
@@ -479,7 +546,31 @@ func _update_hint_presentation() -> void:
 	var lift := sin(_presentation_time * 3.2) * 1.2
 	hint_panel.modulate = Color(1.0, 1.0, 1.0, visibility)
 	hint_panel.scale = Vector2.ONE * (0.94 + visibility * 0.06)
-	hint_panel.position = hint_anchor.position + prompt_offset + Vector2(0, -4.0 - visibility * 6.0 + lift * visibility)
+	var extra_raise := 4.0 + visibility * 6.0 - lift * visibility
+	hint_panel.global_position = _position_panel_around_world(hint_panel, hint_anchor.global_position + prompt_offset, HINT_PANEL_RAISE + extra_raise, HINT_PANEL_ANCHOR_RATIO)
+
+
+func _build_world_ui_layer(layer_name: String) -> CanvasLayer:
+	var layer := CanvasLayer.new()
+	layer.name = layer_name
+	layer.layer = RESOURCE_UI_LAYER
+	add_child(layer)
+	return layer
+
+
+func _world_to_ui_position(world_position: Vector2) -> Vector2:
+	return get_viewport().get_canvas_transform() * world_position
+
+
+func _position_panel_around_world(panel: Control, world_position: Vector2, raise_amount: float, anchor_ratio: float) -> Vector2:
+	var ui_position := _world_to_ui_position(world_position)
+	var panel_size := panel.size
+	if panel_size.x <= 0.0 or panel_size.y <= 0.0:
+		panel_size = panel.get_combined_minimum_size()
+	return Vector2(
+		ui_position.x - panel_size.x * 0.5,
+		ui_position.y - panel_size.y * anchor_ratio - raise_amount
+	)
 
 
 func _apply_sprite_presentation() -> void:
@@ -487,7 +578,19 @@ func _apply_sprite_presentation() -> void:
 		return
 	var config: Dictionary = _cached_config if not _cached_config.is_empty() else _resolve_visual_config()
 	var variant := str(config.get("variant", ""))
-	var texture_path := str(VARIANT_TEXTURES.get(variant, RESOURCE_TEXTURES.get(resource_type, RESOURCE_TEXTURES["stone"])))
+	var pool: Array = VARIANT_TEXTURE_POOLS.get(variant, [])
+	var preferred_path: String
+	if not pool.is_empty():
+		var available: Array[String] = []
+		for p: String in pool:
+			if ResourceLoader.exists(p):
+				available.append(p)
+		preferred_path = available[randi() % available.size()] if not available.is_empty() \
+			else str(VARIANT_TEXTURES.get(variant, RESOURCE_TEXTURES.get(resource_type, RESOURCE_TEXTURES["stone"])))
+	else:
+		preferred_path = str(VARIANT_TEXTURES.get(variant, RESOURCE_TEXTURES.get(resource_type, RESOURCE_TEXTURES["stone"])))
+	var texture_path := preferred_path if ResourceLoader.exists(preferred_path) \
+		else str(VARIANT_TEXTURES_FALLBACK.get(variant, RESOURCE_TEXTURES_FALLBACK.get(resource_type, RESOURCE_TEXTURES_FALLBACK["stone"])))
 	sprite.texture = load(texture_path)
 	sprite.texture_filter = CanvasItem.TEXTURE_FILTER_NEAREST
 	sprite.centered = true

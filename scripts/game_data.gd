@@ -1,6 +1,6 @@
 extends Node
 
-const DEFAULT_LEVEL := 1
+const DEFAULT_LEVEL := 4
 const MAX_LEVEL := 50
 const HP_PER_LEVEL := 6
 const MP_PER_LEVEL := 2
@@ -15,6 +15,18 @@ const DEFAULT_CRIT := 5
 const ITEM_CATEGORY_CONSUMABLE := "consumable"
 const ITEM_CATEGORY_HELD := "held"
 const ITEM_CATEGORY_CAMP := "camp"
+
+const RARITY_COMMON := "common"
+const RARITY_UNCOMMON := "uncommon"
+const RARITY_RARE := "rare"
+const RARITY_LEGENDARY := "legendary"
+
+const RARITY_COLORS := {
+	"common": Color("909090"),
+	"uncommon": Color("4ab840"),
+	"rare": Color("4868e0"),
+	"legendary": Color("d4a020"),
+}
 
 const OBJECTIVE_TYPE_GATHER := "gather"
 const OBJECTIVE_TYPE_CRAFT := "craft"
@@ -31,6 +43,7 @@ const POI_TYPE_PREDATOR_NEST := "predator_nest"
 const POI_TYPE_SHRINE := "shrine"
 const POI_TYPE_EXPEDITION_CACHE := "expedition_cache"
 const POI_TYPE_SHORTCUT := "shortcut"
+const POI_TYPE_ANCIENT_TABLET := "ancient_tablet"
 
 var materials_meta := {
 	"wood": {"name": "Wood"},
@@ -45,12 +58,29 @@ var poi_definitions := {
 	"verdant_entry_cache": {
 		"poi_type": POI_TYPE_EXPEDITION_CACHE,
 		"title": "Abandoned Supply Satchel",
-		"prompt_label": "SCAVENGE",
-		"result_text": "You sort through a weathered satchel.",
+		"prompt_label": "APPROACH",
 		"ui_variant": "wood",
-		"immediate_rewards": {
-			"materials": {"wood": 2, "herb": 1},
-			"items": {"basic_seal": 1},
+		"risk_choice": {
+			"safe": {
+				"prompt": "GRAB QUICKLY",
+				"result_text": "You snatch what's reachable and move on.",
+				"rewards": {"materials": {"wood": 1}},
+			},
+			"risky": {
+				"prompt": "SEARCH THOROUGHLY",
+				"encounter": {
+					"encounter_tag": "zone",
+					"message": "Something was lurking in the satchel's hiding spot!",
+					"ui_variant": "wood",
+					"level_bonus": 0,
+					"stat_multiplier": 1.05,
+					"exp_multiplier": 1.1,
+					"reward_bundle": {
+						"materials": {"wood": 2, "herb": 1},
+						"items": {"basic_seal": 1},
+					},
+				},
+			},
 		},
 	},
 	"verdant_waystone_shrine": {
@@ -100,6 +130,40 @@ var poi_definitions := {
 				"materials": {"species_mat": 2, "wood": 1, "core_shard": 1},
 			},
 		},
+	},
+	"verdant_ancient_tablet": {
+		"poi_type": POI_TYPE_ANCIENT_TABLET,
+		"title": "Ancient Tablet",
+		"prompt_label": "READ",
+		"ui_variant": "crystal",
+		"first_time_recipe": "moss_charm",
+		"first_time_text": "Glowing runes stir beneath your touch. The tablet reveals ancient knowledge — the craft of the Moss Charm.",
+		"tablet_option_pool": [
+			{
+				"label": "FURY RUNES",
+				"description": "A battle-hunger seeps into the wilds. Creatures grow fiercer, but their remains hold greater bounty.",
+				"enemy_buff": {"stat_multiplier_delta": 0.15},
+				"reward_upgrade": {"species_mat": 1},
+			},
+			{
+				"label": "WARDEN'S MARK",
+				"description": "An ancient guardian spirit empowers the creatures here. They grow stronger — and leave behind richer spoils.",
+				"enemy_buff": {"level_bonus": 1},
+				"reward_upgrade": {"core_shard": 1},
+			},
+			{
+				"label": "ANCIENT HUNGER",
+				"description": "A primal hunger stirs through the roots. Wild creatures become relentless — their essence more potent.",
+				"enemy_buff": {"stat_multiplier_delta": 0.10},
+				"reward_upgrade": {"herb": 1, "species_mat": 1},
+			},
+			{
+				"label": "PREDATOR'S OATH",
+				"description": "The land swears its creatures to the hunt. They become apex predators — and their quarry yields richer wood.",
+				"enemy_buff": {"stat_multiplier_delta": 0.05, "level_bonus": 1},
+				"reward_upgrade": {"wood": 2},
+			},
+		],
 	},
 	}
 
@@ -243,7 +307,7 @@ var items := {
 		"icon_path": "res://assets/resources/magical_seal.svg",
 		"use_contexts": ["battle_capture"],
 		"use_effects": [{"type": "capture_tool"}],
-		"recipe": {"core_shard": 2, "crystal": 1},
+		"recipe": {"core_shard": 2, "species_mat": 3},
 	},
 	"small_potion": {
 		"id": "small_potion",
@@ -257,12 +321,13 @@ var items := {
 		"max_stack": 20,
 		"variant": "verdant",
 		"icon_path": "res://assets/items/small_potion.svg",
-		"use_contexts": ["camp_creature"],
+		"use_contexts": ["camp_creature", "battle_active_creature"],
 		"use_effects": [{"type": "restore_hp", "amount": 18}],
 		"recipe": {"herb": 3, "wood": 1},
 	},
 	"focus_tonic": {
 		"id": "focus_tonic",
+		"requires_recipe": true,
 		"name": "Focus Tonic",
 		"description": "Restore a little MP to one creature.",
 		"category": ITEM_CATEGORY_CONSUMABLE,
@@ -273,12 +338,13 @@ var items := {
 		"max_stack": 20,
 		"variant": "crystal",
 		"icon_path": "res://assets/items/focus_tonic.svg",
-		"use_contexts": ["camp_creature"],
+		"use_contexts": ["camp_creature", "battle_active_creature"],
 		"use_effects": [{"type": "restore_mp", "amount": 8}],
 		"recipe": {"herb": 1, "crystal": 2},
 	},
 	"moss_charm": {
 		"id": "moss_charm",
+		"requires_recipe": true,
 		"name": "Moss Charm",
 		"description": "A soft charm that raises max HP.",
 		"category": ITEM_CATEGORY_HELD,
@@ -309,6 +375,7 @@ var items := {
 		},
 	"stone_ring": {
 		"id": "stone_ring",
+		"requires_recipe": true,
 		"name": "Stone Ring",
 		"description": "A heavy ring that improves defense.",
 		"category": ITEM_CATEGORY_HELD,
@@ -324,6 +391,7 @@ var items := {
 	},
 	"fleet_feather": {
 		"id": "fleet_feather",
+		"requires_recipe": true,
 		"name": "Fleet Feather",
 		"description": "A light feather that raises speed.",
 		"category": ITEM_CATEGORY_HELD,
@@ -339,11 +407,12 @@ var items := {
 	},
 	"hunter_lens": {
 		"id": "hunter_lens",
+		"requires_recipe": true,
 		"name": "Hunter Lens",
 		"description": "A polished lens that improves accuracy.",
 		"category": ITEM_CATEGORY_HELD,
 		"tags": ["utility"],
-		"rarity": "uncommon",
+		"rarity": "common",
 		"sort_order": 150,
 		"stackable": true,
 		"max_stack": 10,
@@ -354,11 +423,12 @@ var items := {
 	},
 	"mist_cloak": {
 		"id": "mist_cloak",
+		"requires_recipe": true,
 		"name": "Mist Cloak",
 		"description": "A thin shroud that improves evasion.",
 		"category": ITEM_CATEGORY_HELD,
 		"tags": ["defensive", "utility"],
-		"rarity": "uncommon",
+		"rarity": "common",
 		"sort_order": 160,
 		"stackable": true,
 		"max_stack": 10,
@@ -369,11 +439,12 @@ var items := {
 	},
 	"ember_idol": {
 		"id": "ember_idol",
+		"requires_recipe": true,
 		"name": "Ember Idol",
 		"description": "A fired idol that slightly raises crit chance.",
 		"category": ITEM_CATEGORY_HELD,
 		"tags": ["offensive", "crit"],
-		"rarity": "uncommon",
+		"rarity": "common",
 		"sort_order": 170,
 		"stackable": true,
 		"max_stack": 10,
@@ -384,11 +455,12 @@ var items := {
 	},
 	"mana_bead": {
 		"id": "mana_bead",
+		"requires_recipe": true,
 		"name": "Mana Bead",
 		"description": "A humming bead that raises max MP.",
 		"category": ITEM_CATEGORY_HELD,
 		"tags": ["mp_restore", "utility"],
-		"rarity": "uncommon",
+		"rarity": "common",
 		"sort_order": 180,
 		"stackable": true,
 		"max_stack": 10,
@@ -399,11 +471,12 @@ var items := {
 	},
 	"party_tent": {
 		"id": "party_tent",
+		"requires_recipe": true,
 		"name": "Party Tent",
 		"description": "A larger expedition tent that raises the active party limit by 1.",
 		"category": ITEM_CATEGORY_CAMP,
 		"tags": ["expedition", "party"],
-		"rarity": "uncommon",
+		"rarity": "common",
 		"sort_order": 210,
 		"stackable": false,
 		"max_stack": 1,
@@ -447,6 +520,7 @@ var abilities := {
 		"power": 5.0,
 		"accuracy": 95.0,
 		"target": "enemy",
+		"icon_path": "res://assets/ui/abilities/strike_icon.svg",
 	},
 	"leaf_strike": {
 		"id": "leaf_strike",
@@ -457,6 +531,7 @@ var abilities := {
 		"power": 7.0,
 		"accuracy": 95.0,
 		"target": "enemy",
+		"icon_path": "res://assets/ui/abilities/leaf_strike_icon.svg",
 	},
 	"ember_bite": {
 		"id": "ember_bite",
@@ -467,6 +542,7 @@ var abilities := {
 		"power": 8.0,
 		"accuracy": 92.0,
 		"target": "enemy",
+		"icon_path": "res://assets/ui/abilities/ember_bite_icon.svg",
 	},
 	"horn_bash": {
 		"id": "horn_bash",
@@ -477,6 +553,7 @@ var abilities := {
 		"power": 9.0,
 		"accuracy": 90.0,
 		"target": "enemy",
+		"icon_path": "res://assets/ui/abilities/horn_bash_icon.svg",
 	},
 }
 
@@ -538,6 +615,7 @@ var creatures := {
 var maps := {
 	"verdant_wilds": {
 		"display_name": "Verdant Wilds",
+		"icon_path": "res://assets/ui/maps/verdant_wilds_icon.png",
 		"scene_path": "res://scenes/overworld/Overworld_Verdant.tscn",
 		"unlock_condition": {
 			"type": "always",
@@ -550,15 +628,15 @@ var maps := {
 		},
 			"run_config": {
 				"resource_counts": {
-					"wood": 4,
-					"herb": 3,
-					"stone": 1,
+					"wood": 5,
+					"herb": 8,
+					"stone": 4,
 				},
 				"poi_spawns": [
-					{"spawn_id": "entry_cache", "poi_id": "verdant_entry_cache"},
-					{"spawn_id": "waystone_shrine", "poi_id": "verdant_waystone_shrine"},
-					{"spawn_id": "rich_grove", "poi_id": "verdant_rich_grove"},
-					{"spawn_id": "predator_nest", "poi_id": "verdant_predator_nest"},
+					{"poi_id": "verdant_entry_cache"},
+					{"poi_id": "verdant_ancient_tablet"},
+					{"poi_id": "verdant_rich_grove"},
+					{"poi_id": "verdant_predator_nest"},
 				],
 				"resource_node_encounters": {
 				"wood": {
@@ -593,7 +671,7 @@ var maps := {
 					"ui_variant": "verdant",
 				},
 				},
-			"active_patch_count": 1,
+			"active_patch_count": 2,
 			"resource_rare_drops": {
 				"wood": [
 					{"material": "species_mat", "min": 1, "max": 1, "chance": 0.08},
@@ -647,6 +725,7 @@ var maps := {
 	},
 	"ember_caves": {
 		"display_name": "Ember Caves",
+		"icon_path": "res://assets/ui/maps/ember_caves_icon.png",
 		"scene_path": "res://scenes/overworld/Overworld_Ember.tscn",
 		"unlock_condition": {
 			"type": "map_boss_defeated",
@@ -878,7 +957,36 @@ func format_reward_bundle(reward_bundle: Dictionary) -> String:
 			continue
 		var item_name := str(get_item_data(str(item_id)).get("name", item_id))
 		parts.append("%d %s" % [item_amount, item_name])
+	var recipes_unlocked: Array = reward_bundle.get("recipes", [])
+	for recipe_id in recipes_unlocked:
+		var item_name := str(get_item_data(str(recipe_id)).get("name", str(recipe_id).capitalize()))
+		parts.append("Recipe: %s" % item_name)
 	return ", ".join(parts)
+
+
+func get_map_creature_ids(map_id: String) -> Array[String]:
+	var map_data: Dictionary = maps.get(map_id, {})
+	if map_data.is_empty():
+		return []
+	var seen: Dictionary = {}
+	var result: Array[String] = []
+	for creature_id in map_data.get("wild_pool", []):
+		var cid := str(creature_id)
+		if not seen.has(cid) and creatures.has(cid):
+			seen[cid] = true
+			result.append(cid)
+	var enc_pools: Dictionary = map_data.get("encounter_pools", {})
+	for pool_key in enc_pools:
+		for creature_id in enc_pools[pool_key]:
+			var cid := str(creature_id)
+			if not seen.has(cid) and creatures.has(cid):
+				seen[cid] = true
+				result.append(cid)
+	var boss: Dictionary = map_data.get("run_config", {}).get("boss", {})
+	var boss_id := str(boss.get("creature_id", ""))
+	if not boss_id.is_empty() and not seen.has(boss_id) and creatures.has(boss_id):
+		result.append(boss_id)
+	return result
 
 
 func get_creature_data(creature_id: String) -> Dictionary:
@@ -895,6 +1003,14 @@ func get_passive_data(passive_id: String) -> Dictionary:
 
 func get_item_data(item_id: String) -> Dictionary:
 	return items.get(item_id, {})
+
+
+func get_item_rarity(item_id: String) -> String:
+	return str(get_item_data(item_id).get("rarity", RARITY_COMMON))
+
+
+func get_item_rarity_color(item_id: String) -> Color:
+	return RARITY_COLORS.get(get_item_rarity(item_id), RARITY_COLORS[RARITY_COMMON])
 
 
 func get_all_items() -> Dictionary:

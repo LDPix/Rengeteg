@@ -6,8 +6,8 @@
 script = ExtResource("1_script")
 offset_left = 16.0
 offset_top = 16.0
-offset_right = 236.0
-offset_bottom = 112.0
+offset_right = 564.0
+offset_bottom = 244.0
 
 [node name="Panel" type="PanelContainer" parent="."]
 layout_mode = 2
@@ -25,19 +25,19 @@ theme_override_constants/separation = 4
 
 [node name="SectionLabel" type="Label" parent="Panel/Padding/Content"]
 layout_mode = 2
-text = "Current Objective"
-theme_override_font_sizes/font_size = 12
+text = "CURRENT OBJECTIVE"
+theme_override_font_sizes/font_size = 18
 
 [node name="PrimaryLabel" type="Label" parent="Panel/Padding/Content"]
 layout_mode = 2
-text = "Defeat the Boss"
+text = "DEFEAT THE BOSS"
 autowrap_mode = 3
-theme_override_font_sizes/font_size = 14
+theme_override_font_sizes/font_size = 18
 
 [node name="SecondaryLabel" type="Label" parent="Panel/Padding/Content"]
 layout_mode = 2
-text = "Bonus Objectives"
-theme_override_font_sizes/font_size = 11
+text = "BONUS OBJECTIVES"
+theme_override_font_sizes/font_size = 18
 
 [node name="SecondaryList" type="VBoxContainer" parent="Panel/Padding/Content"]
 layout_mode = 2

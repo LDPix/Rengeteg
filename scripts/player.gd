@@ -2,6 +2,7 @@ extends CharacterBody2D
 
 @export var tile_size := 32
 @export var move_speed := 10.0 # higher = snappier
+@export var world_sort_origin := 21
 
 var _moving := false
 var _target_pos := Vector2.ZERO

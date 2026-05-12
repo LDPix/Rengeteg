@@ -3,6 +3,8 @@ extends Node
 signal objectives_started(objectives: Array)
 signal objectives_updated(objectives: Array)
 signal primary_objective_completed(objective: Dictionary)
+
+const NEXT_OBJECTIVE_DELAY_SECONDS := 2.2
 signal map_completion_changed(map_id: String, completed: bool)
 
 # Party: array of creature instances (dicts).
@@ -19,6 +21,7 @@ var camp_notice: String = ""
 var intro_popup_seen_this_session := false
 var map_run_active := false
 var map_run_materials_snapshot := {}
+var map_run_items_snapshot := {}
 var current_map_run := {}
 var pending_battle_context := {}
 var map_completion_state := {}
@@ -29,15 +32,26 @@ var pending_first_defeat_popup := false
 var first_boss_warning_shown := false
 var ember_unlock_notification_shown := false
 var pending_ember_unlock_notification := false
+var crafting_unlocked := false
+var pending_crafting_unlock_notification := false
+var maps_menu_unlocked := false
+var collection_unlocked := false
 var tutorial_state := {
 	"opening_bind_battle_started": false,
 	"opening_bind_attempts": 0,
 	"opening_bind_completed": false,
 	"battle_abilities_popup_shown": false,
+	"battle_mechanics_tutorial_shown": false,
+	"resource_node_tutorial_shown": false,
+	"camp_realm_intro_shown": false,
+	"camp_collection_intro_shown": false,
+	"camp_maps_intro_shown": false,
+	"camp_crafting_intro_shown": false,
 }
 
 const BASE_PARTY_LIMIT := 2
 const PARTY_MAX := 3
+const DEFAULT_UNLOCKED_RECIPES := ["party_tent"]
 var box: Array = [] # extra captured creatures
 
 # Materials (drops/crafting)
@@ -54,6 +68,8 @@ var item_inventory := {
 	"basic_seal": 5,
 }
 var owned_camp_items := {}
+var unlocked_recipes: Array = DEFAULT_UNLOCKED_RECIPES.duplicate()
+var encountered_creatures: Array = []
 
 func ensure_starter() -> void:
 	if starter_given:
@@ -90,11 +106,13 @@ func new_wild_creature_instance(id: String, map_id: String = "") -> Dictionary:
 func build_wild_creature_instance(id: String, map_id: String = "", context: Dictionary = {}) -> Dictionary:
 	if map_id.is_empty():
 		map_id = current_map_id
-	var level := get_wild_level_for_map(map_id) + int(context.get("level_bonus", 0))
+	var tablet_level_bonus := int(round(get_run_bonus("tablet_enemy_level_bonus", 0.0)))
+	var level := get_wild_level_for_map(map_id) + int(context.get("level_bonus", 0)) + tablet_level_bonus
 	var creature := new_creature_instance(id, clampi(level, GameData.DEFAULT_LEVEL, GameData.MAX_LEVEL))
 	if creature.is_empty():
 		return creature
-	var stat_multiplier := float(context.get("stat_multiplier", 1.0))
+	var tablet_stat_delta := get_run_bonus("tablet_enemy_stat_multiplier", 0.0)
+	var stat_multiplier := float(context.get("stat_multiplier", 1.0)) * (1.0 + tablet_stat_delta)
 	if stat_multiplier > 0.0 and absf(stat_multiplier - 1.0) > 0.001:
 		creature["hp_max"] = max(1, int(round(float(creature["hp_max"]) * stat_multiplier)))
 		creature["mp_max"] = max(1, int(round(float(creature.get("mp_max", GameData.get_default_mp())) * stat_multiplier)))
@@ -120,12 +138,17 @@ func to_save_dict() -> Dictionary:
 		"materials": materials,
 		"items": item_inventory,
 		"camp_items": owned_camp_items.keys(),
+		"unlocked_recipes": unlocked_recipes,
+		"encountered_creatures": encountered_creatures,
 		"map_completion_state": map_completion_state,
 		"objective_completion_history": objective_completion_history,
 		"global_objective_progression": global_objective_progression,
 		"first_defeat_explainer_shown": first_defeat_explainer_shown,
 		"first_boss_warning_shown": first_boss_warning_shown,
 		"ember_unlock_notification_shown": ember_unlock_notification_shown,
+		"crafting_unlocked": crafting_unlocked,
+		"maps_menu_unlocked": maps_menu_unlocked,
+		"collection_unlocked": collection_unlocked,
 		"tutorial_state": tutorial_state,
 	}
 
@@ -150,14 +173,27 @@ func from_save_dict(d: Dictionary) -> void:
 		if resolved_item_id == "healing_tent":
 			resolved_item_id = "party_tent"
 		owned_camp_items[resolved_item_id] = true
+	unlocked_recipes = Array(d.get("unlocked_recipes", []))
+	_ensure_default_unlocked_recipes()
+	encountered_creatures = Array(d.get("encountered_creatures", []))
 	map_completion_state = d.get("map_completion_state", {}).duplicate(true)
 	objective_completion_history = d.get("objective_completion_history", {}).duplicate(true)
 	global_objective_progression = int(d.get("global_objective_progression", 0))
 	first_defeat_explainer_shown = bool(d.get("first_defeat_explainer_shown", false))
 	first_boss_warning_shown = bool(d.get("first_boss_warning_shown", false))
 	ember_unlock_notification_shown = bool(d.get("ember_unlock_notification_shown", false))
+	crafting_unlocked = bool(d.get("crafting_unlocked", false))
+	if not crafting_unlocked:
+		crafting_unlocked = _derive_crafting_unlocked_from_progression()
+	maps_menu_unlocked = bool(d.get("maps_menu_unlocked", false))
+	if not maps_menu_unlocked:
+		maps_menu_unlocked = get_unlocked_map_ids().size() >= 2
+	collection_unlocked = bool(d.get("collection_unlocked", false))
+	if not collection_unlocked:
+		collection_unlocked = bool(tutorial_state.get("opening_bind_completed", false))
 	pending_first_defeat_popup = false
 	pending_ember_unlock_notification = false
+	pending_crafting_unlock_notification = false
 	tutorial_state = _default_tutorial_state()
 	var saved_tutorial_state: Dictionary = d.get("tutorial_state", {})
 	for key in saved_tutorial_state.keys():
@@ -193,6 +229,31 @@ func load_game() -> bool:
 		return false
 	from_save_dict(parsed)
 	return true
+
+
+func unlock_recipe(recipe_id: String) -> void:
+	if recipe_id.is_empty() or unlocked_recipes.has(recipe_id):
+		return
+	unlocked_recipes.append(recipe_id)
+
+
+func _ensure_default_unlocked_recipes() -> void:
+	for recipe_id in DEFAULT_UNLOCKED_RECIPES:
+		unlock_recipe(recipe_id)
+
+
+func has_recipe(recipe_id: String) -> bool:
+	return unlocked_recipes.has(recipe_id)
+
+
+func mark_creature_encountered(creature_id: String) -> void:
+	if creature_id.is_empty() or encountered_creatures.has(creature_id):
+		return
+	encountered_creatures.append(creature_id)
+
+
+func has_encountered_creature(creature_id: String) -> bool:
+	return encountered_creatures.has(creature_id)
 
 
 func ensure_creature_progression_fields(creature: Dictionary) -> void:
@@ -405,6 +466,32 @@ func remove_item(item_id: String, amount: int = 1) -> bool:
 	return true
 
 
+func _build_inventory_snapshot() -> Dictionary:
+	var snapshot := {}
+	for item_id in item_inventory.keys():
+		snapshot[str(item_id)] = get_item_count(str(item_id))
+	for item_id in owned_camp_items.keys():
+		snapshot[str(item_id)] = get_item_count(str(item_id))
+	return snapshot
+
+
+func _restore_inventory_snapshot(snapshot: Dictionary) -> void:
+	item_inventory = {}
+	owned_camp_items = {}
+	for item_id in snapshot.keys():
+		var resolved_item_id := str(item_id)
+		var amount: int = maxi(0, int(snapshot.get(item_id, 0)))
+		if amount <= 0:
+			continue
+		var item_data := get_item_data(resolved_item_id)
+		if item_data.is_empty():
+			continue
+		if str(item_data.get("category", "")) == GameData.ITEM_CATEGORY_CAMP:
+			owned_camp_items[resolved_item_id] = true
+		else:
+			item_inventory[resolved_item_id] = amount
+
+
 func get_recipe(item_id: String) -> Dictionary:
 	return GameData.get_item_recipe(item_id)
 
@@ -414,6 +501,8 @@ func can_craft(item_id: String) -> bool:
 	if item_data.is_empty():
 		return false
 	if str(item_data.get("category", "")) == GameData.ITEM_CATEGORY_CAMP and owned_camp_items.has(item_id):
+		return false
+	if bool(item_data.get("requires_recipe", false)) and not has_recipe(item_id):
 		return false
 	var recipe := get_recipe(item_id)
 	if recipe.is_empty():
@@ -610,6 +699,7 @@ func clear_battle_return() -> void:
 func begin_map_run() -> void:
 	map_run_active = true
 	map_run_materials_snapshot = materials.duplicate(true)
+	map_run_items_snapshot = _build_inventory_snapshot()
 	current_map_run = {}
 	pending_battle_context = {}
 	clear_battle_return()
@@ -619,6 +709,7 @@ func begin_map_run() -> void:
 func end_map_run() -> void:
 	map_run_active = false
 	map_run_materials_snapshot = {}
+	map_run_items_snapshot = {}
 	current_map_run = {}
 	pending_battle_context = {}
 	clear_battle_return()
@@ -629,7 +720,35 @@ func end_map_run() -> void:
 func forfeit_current_map_run() -> void:
 	if map_run_active:
 		materials = map_run_materials_snapshot.duplicate(true)
+		_restore_inventory_snapshot(map_run_items_snapshot)
 	end_map_run()
+
+
+func get_run_material_delta() -> Dictionary:
+	var snapshot: Dictionary = map_run_materials_snapshot if map_run_active else {}
+	var delta := {}
+	for material_id in materials.keys():
+		var gained := int(materials.get(material_id, 0)) - int(snapshot.get(material_id, 0))
+		if gained > 0:
+			delta[str(material_id)] = gained
+	return delta
+
+
+func get_run_item_delta() -> Dictionary:
+	var snapshot: Dictionary = map_run_items_snapshot if map_run_active else {}
+	var delta := {}
+	var item_ids := {}
+	for item_id in item_inventory.keys():
+		item_ids[str(item_id)] = true
+	for item_id in owned_camp_items.keys():
+		item_ids[str(item_id)] = true
+	for item_id in snapshot.keys():
+		item_ids[str(item_id)] = true
+	for item_id in item_ids.keys():
+		var gained := get_item_count(str(item_id)) - int(snapshot.get(item_id, 0))
+		if gained > 0:
+			delta[str(item_id)] = gained
+	return delta
 
 
 func set_camp_notice(message: String) -> void:
@@ -668,6 +787,33 @@ func consume_ember_unlock_notification() -> bool:
 	pending_ember_unlock_notification = false
 	ember_unlock_notification_shown = true
 	return true
+
+
+func consume_crafting_unlock_notification() -> bool:
+	if not pending_crafting_unlock_notification:
+		return false
+	pending_crafting_unlock_notification = false
+	return true
+
+
+func _check_crafting_unlock() -> void:
+	if crafting_unlocked:
+		return
+	var next_set := GameData.get_global_objective_set(get_global_objective_progression())
+	for obj: Dictionary in next_set.get("objectives", []):
+		if str(obj.get("type", "")) == GameData.OBJECTIVE_TYPE_CRAFT:
+			crafting_unlocked = true
+			pending_crafting_unlock_notification = true
+			return
+
+
+func _derive_crafting_unlocked_from_progression() -> bool:
+	for i: int in range(get_global_objective_progression() + 1):
+		var set_data := GameData.get_global_objective_set(i)
+		for obj: Dictionary in set_data.get("objectives", []):
+			if str(obj.get("type", "")) == GameData.OBJECTIVE_TYPE_CRAFT:
+				return true
+	return false
 
 
 func set_current_map_run(map_id: String, run_data: Dictionary) -> void:
@@ -801,6 +947,7 @@ func award_reward_bundle(reward_bundle: Dictionary) -> Dictionary:
 	var awarded := {
 		"materials": {},
 		"items": {},
+		"recipes": [],
 	}
 	if reward_bundle.is_empty():
 		return awarded
@@ -818,6 +965,14 @@ func award_reward_bundle(reward_bundle: Dictionary) -> Dictionary:
 			if add_item(str(item_id), amount):
 				awarded_items[str(item_id)] = amount
 		awarded["items"] = awarded_items
+	var recipe_drops: Array = reward_bundle.get("recipes", [])
+	var newly_unlocked: Array = []
+	for recipe_id in recipe_drops:
+		var rid := str(recipe_id)
+		if not has_recipe(rid):
+			unlock_recipe(rid)
+			newly_unlocked.append(rid)
+	awarded["recipes"] = newly_unlocked
 	return awarded
 
 
@@ -844,18 +999,7 @@ func start_objectives_for_map(map_id: String) -> void:
 		objective["current_amount"] = 0
 		objective["completed"] = false
 		objective["completed_at"] = ""
-		if str(objective.get("type", "")) == GameData.OBJECTIVE_TYPE_GATHER_MULTI:
-			var target_mats: Dictionary = objective.get("target_materials", {})
-			var current_mats: Dictionary = {}
-			var satisfied: int = 0
-			for mat in target_mats:
-				var mat_str := str(mat)
-				var have: int = mini(int(target_mats.get(mat_str, 0)), int(materials.get(mat_str, 0)))
-				current_mats[mat_str] = have
-				if have >= int(target_mats.get(mat_str, 0)):
-					satisfied += 1
-			objective["current_materials"] = current_mats
-			objective["current_amount"] = satisfied
+		_sync_material_objective_progress(objective)
 		objectives.append(objective)
 	current_map_run["objectives"] = objectives
 	current_map_run["objective_metadata"] = {
@@ -865,7 +1009,8 @@ func start_objectives_for_map(map_id: String) -> void:
 	}
 	for i in range(objectives.size()):
 		var obj: Dictionary = objectives[i]
-		if str(obj.get("type", "")) == GameData.OBJECTIVE_TYPE_GATHER_MULTI:
+		var objective_type := str(obj.get("type", ""))
+		if objective_type == GameData.OBJECTIVE_TYPE_GATHER or objective_type == GameData.OBJECTIVE_TYPE_GATHER_MULTI:
 			if int(obj.get("current_amount", 0)) >= int(obj.get("target_amount", 1)):
 				_complete_objective_at_index(i, obj)
 	emit_signal("objectives_started", get_current_objectives())
@@ -949,6 +1094,7 @@ func notify_item_crafted(item_id: String, amount: int) -> void:
 func notify_creature_captured(creature_data: Dictionary) -> void:
 	if is_opening_bind_tutorial_active():
 		tutorial_state["opening_bind_completed"] = true
+	collection_unlocked = true
 	update_objective_progress("creature_captured", {
 		"creature_id": str(creature_data.get("id", "")),
 		"amount": 1,
@@ -1000,25 +1146,20 @@ func update_objective_progress(event_type: String, payload: Dictionary = {}) -> 
 		var objective: Dictionary = objectives[index]
 		if bool(objective.get("completed", false)):
 			continue
-		if not _objective_matches_event(objective, event_type, payload):
+		var objective_type := str(objective.get("type", ""))
+		var should_sync_materials := objective_type == GameData.OBJECTIVE_TYPE_GATHER \
+			or objective_type == GameData.OBJECTIVE_TYPE_GATHER_MULTI
+		var matches_event := _objective_matches_event(objective, event_type, payload)
+		if not matches_event and not (should_sync_materials and event_type == "item_crafted"):
 			continue
 		var previous_amount := int(objective.get("current_amount", 0))
 		var target_amount: int = int(objective.get("target_amount", 1))
-		var next_amount: int = mini(target_amount, previous_amount + int(payload.get("amount", 1)))
-		if str(objective.get("type", "")) == GameData.OBJECTIVE_TYPE_GATHER_MULTI:
-			var mat_id := str(payload.get("material_id", ""))
-			var target_mats: Dictionary = objective.get("target_materials", {})
-			var current_mats: Dictionary = objective.get("current_materials", {}).duplicate(true)
-			var mat_target: int = int(target_mats.get(mat_id, 0))
-			var mat_current: int = int(current_mats.get(mat_id, 0))
-			current_mats[mat_id] = mini(mat_target, mat_current + int(payload.get("amount", 1)))
-			objective["current_materials"] = current_mats
-			var satisfied: int = 0
-			for mat in target_mats:
-				if int(current_mats.get(str(mat), 0)) >= int(target_mats.get(str(mat), 0)):
-					satisfied += 1
-			next_amount = satisfied
-		if str(objective.get("type", "")) == GameData.OBJECTIVE_TYPE_TUTORIAL_BIND:
+		var next_amount := previous_amount
+		if should_sync_materials:
+			next_amount = _sync_material_objective_progress(objective)
+		else:
+			next_amount = mini(target_amount, previous_amount + int(payload.get("amount", 1)))
+		if objective_type == GameData.OBJECTIVE_TYPE_TUTORIAL_BIND:
 			next_amount = _get_tutorial_bind_progress(objective, event_type)
 			if event_type == "entered_grass":
 				objective["entered_grass_done"] = true
@@ -1046,6 +1187,28 @@ func get_global_objective_progression() -> int:
 func is_map_completed(map_id: String) -> bool:
 	var state: Dictionary = map_completion_state.get(map_id, {})
 	return bool(state.get("completed", false))
+
+
+func has_interacted_with_map_tablet(map_id: String) -> bool:
+	var state: Dictionary = map_completion_state.get(map_id, {})
+	return bool(state.get("ancient_tablet_visited", false))
+
+
+func mark_map_tablet_interacted(map_id: String) -> void:
+	if map_id.is_empty():
+		return
+	var state: Dictionary = map_completion_state.get(map_id, {}).duplicate(true)
+	state["ancient_tablet_visited"] = true
+	map_completion_state[map_id] = state
+
+
+func get_tablet_reward_bonus() -> Dictionary:
+	var result: Dictionary = {}
+	for material_id: String in ["wood", "herb", "stone", "crystal", "core_shard", "species_mat"]:
+		var amount := int(round(get_run_bonus("tablet_reward_%s" % material_id, 0.0)))
+		if amount > 0:
+			result[material_id] = amount
+	return result
 
 
 func has_completed_map_boss_before(map_id: String) -> bool:
@@ -1083,7 +1246,8 @@ func get_next_global_objective() -> Dictionary:
 	var objectives: Array = objective_set.get("objectives", [])
 	if objectives.is_empty():
 		return {}
-	return GameData.build_objective_definition(objectives[0])
+	var objective := GameData.build_objective_definition(objectives[0])
+	return _build_objective_preview(objective)
 
 
 func get_active_or_next_primary_objective() -> Dictionary:
@@ -1146,7 +1310,12 @@ func _complete_objective_at_index(index: int, objective: Dictionary) -> void:
 		advance_objective_progression_for_current_run()
 		emit_signal("primary_objective_completed", objective.duplicate(true))
 		if map_run_active:
-			call_deferred("_start_next_objective_set_for_active_run")
+			call_deferred("_start_next_objective_set_for_active_run_after_delay")
+
+
+func _start_next_objective_set_for_active_run_after_delay() -> void:
+	await get_tree().create_timer(NEXT_OBJECTIVE_DELAY_SECONDS).timeout
+	_start_next_objective_set_for_active_run()
 
 
 func _start_next_objective_set_for_active_run() -> void:
@@ -1168,6 +1337,7 @@ func advance_objective_progression_for_current_run() -> void:
 	var next_index := int(metadata.get("progression_index", 0)) + 1
 	if next_index > get_global_objective_progression():
 		global_objective_progression = next_index
+		_check_crafting_unlock()
 
 
 func _mark_map_completed(map_id: String) -> void:
@@ -1184,6 +1354,8 @@ func _mark_map_completed(map_id: String) -> void:
 		emit_signal("map_completion_changed", map_id, true)
 		if map_id == "verdant_wilds":
 			queue_ember_unlock_notification()
+		if not maps_menu_unlocked and get_unlocked_map_ids().size() >= 2:
+			maps_menu_unlocked = true
 
 
 func _emit_objectives_updated() -> void:
@@ -1204,6 +1376,47 @@ func _try_advance_off_run_objective(event_type: String, payload: Dictionary) -> 
 	if not objective_id.is_empty():
 		objective_completion_history[objective_id] = int(objective_completion_history.get(objective_id, 0)) + 1
 	global_objective_progression = get_global_objective_progression() + 1
+	_check_crafting_unlock()
+
+
+func _sync_material_objective_progress(objective: Dictionary) -> int:
+	var objective_type := str(objective.get("type", ""))
+	if objective_type == GameData.OBJECTIVE_TYPE_GATHER:
+		var target_id := str(objective.get("target_id", ""))
+		var target_amount := maxi(1, int(objective.get("target_amount", 1)))
+		var synced_amount := mini(target_amount, max(0, int(materials.get(target_id, 0))))
+		objective["current_amount"] = synced_amount
+		return synced_amount
+	if objective_type == GameData.OBJECTIVE_TYPE_GATHER_MULTI:
+		var target_mats: Dictionary = objective.get("target_materials", {})
+		var current_mats: Dictionary = {}
+		var satisfied := 0
+		for mat in target_mats:
+			var mat_str := str(mat)
+			var need := int(target_mats.get(mat_str, 0))
+			var have := mini(need, max(0, int(materials.get(mat_str, 0))))
+			current_mats[mat_str] = have
+			if have >= need:
+				satisfied += 1
+		objective["current_materials"] = current_mats
+		objective["current_amount"] = satisfied
+		return satisfied
+	return int(objective.get("current_amount", 0))
+
+
+func _build_objective_preview(objective: Dictionary) -> Dictionary:
+	if objective.is_empty():
+		return {}
+	var preview := objective.duplicate(true)
+	preview["completed"] = bool(preview.get("completed", false))
+	preview["completed_at"] = str(preview.get("completed_at", ""))
+	preview["current_amount"] = int(preview.get("current_amount", 0))
+	var objective_type := str(preview.get("type", ""))
+	if objective_type == GameData.OBJECTIVE_TYPE_GATHER or objective_type == GameData.OBJECTIVE_TYPE_GATHER_MULTI:
+		_sync_material_objective_progress(preview)
+	elif objective_type == GameData.OBJECTIVE_TYPE_TUTORIAL_BIND:
+		preview["current_amount"] = _get_tutorial_bind_progress(preview, "")
+	return preview
 
 
 func _sanitize_held_item_id(item_id: String) -> String:
@@ -1266,13 +1479,69 @@ func resolve_opening_bind_attempt() -> String:
 	return "forced_success"
 
 
+func should_show_battle_mechanics_tutorial() -> bool:
+	return not bool(tutorial_state.get("battle_mechanics_tutorial_shown", false))
+
+
+func mark_battle_mechanics_tutorial_shown() -> void:
+	tutorial_state["battle_mechanics_tutorial_shown"] = true
+
+
 func _default_tutorial_state() -> Dictionary:
 	return {
 		"opening_bind_battle_started": false,
 		"opening_bind_attempts": 0,
 		"opening_bind_completed": false,
 		"battle_abilities_popup_shown": false,
+		"battle_mechanics_tutorial_shown": false,
+		"resource_node_tutorial_shown": false,
+		"resource_node_tutorial_compact_shown": false,
+		"camp_realm_intro_shown": false,
+		"camp_collection_intro_shown": false,
+		"camp_maps_intro_shown": false,
+		"camp_crafting_intro_shown": false,
 	}
+
+
+func should_show_resource_node_tutorial() -> bool:
+	return not bool(tutorial_state.get("resource_node_tutorial_compact_shown", false))
+
+
+func mark_resource_node_tutorial_shown() -> void:
+	tutorial_state["resource_node_tutorial_shown"] = true
+	tutorial_state["resource_node_tutorial_compact_shown"] = true
+
+
+func should_show_camp_realm_intro() -> bool:
+	return not bool(tutorial_state.get("camp_realm_intro_shown", false))
+
+
+func mark_camp_realm_intro_shown() -> void:
+	tutorial_state["camp_realm_intro_shown"] = true
+
+
+func should_show_camp_collection_intro() -> bool:
+	return not bool(tutorial_state.get("camp_collection_intro_shown", false))
+
+
+func mark_camp_collection_intro_shown() -> void:
+	tutorial_state["camp_collection_intro_shown"] = true
+
+
+func should_show_camp_maps_intro() -> bool:
+	return not bool(tutorial_state.get("camp_maps_intro_shown", false))
+
+
+func mark_camp_maps_intro_shown() -> void:
+	tutorial_state["camp_maps_intro_shown"] = true
+
+
+func should_show_camp_crafting_intro() -> bool:
+	return not bool(tutorial_state.get("camp_crafting_intro_shown", false))
+
+
+func mark_camp_crafting_intro_shown() -> void:
+	tutorial_state["camp_crafting_intro_shown"] = true
 
 
 func _get_tutorial_bind_progress(objective: Dictionary, event_type: String) -> int:

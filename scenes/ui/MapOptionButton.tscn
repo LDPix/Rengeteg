@@ -8,4 +8,4 @@ theme = ExtResource("2_theme")
 size_flags_horizontal = 3
 custom_minimum_size = Vector2(0, 52)
 script = ExtResource("1_script")
-text = "Map"
+text = "MAP"

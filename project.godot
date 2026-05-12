@@ -19,12 +19,21 @@ config/icon="res://icon.svg"
 
 GameData="*uid://bbm6tbiypeknx"
 GameState="*uid://cil02siil4k8w"
+Sfx="*res://scripts/sfx.gd"
 
 [display]
 
 window/size/viewport_width=1600
 window/size/viewport_height=900
 window/stretch/mode="canvas_items"
+
+[editor_plugins]
+
+enabled=PackedStringArray("res://addons/AsepriteWizard/plugin.cfg")
+
+[gui]
+
+theme/custom="res://ui/theme.tres"
 
 [input]
 

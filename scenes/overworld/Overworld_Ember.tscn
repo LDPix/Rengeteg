@@ -70,9 +70,9 @@ color = Color(0.843137, 0.803922, 0.784314, 0.18)
 polygon = PackedVector2Array(-190, 66, -152, -16, -64, -60, 44, -68, 140, -28, 210, 36, 228, 106, 158, 146, 28, 154, -104, 120)
 
 [node name="TileMap_Background" type="TileMapLayer" parent="."]
-position = Vector2(-320, -224)
+position = Vector2(-768, -672)
 script = ExtResource("2_tile_layer")
-layout_rows = PackedStringArray("wwwwwwwwwwwwwwwwwwww", "wwwwwwwwwwwwwwwwwwww", "wwwwwwwwwwwwwwwwwwww", "wwwwwwwwwwwwwwwwwwww", "wwwwwwwwwwwwwwwwwwww", "wwwwwwwwwwwwwwwwwwww", "wwwwwwwwwwwwwwwwwwww", "wwwwwwwwwwwwwwwwwwww", "wwwwwwwwwwwwwwwwwwww", "wwwwwwwwwwwwwwwwwwww", "wwwwwwwwwwwwwwwwwwww", "wwwwwwwwwwwwwwwwwwww", "wwwwwwwwwwwwwwwwwwww", "wwwwwwwwwwwwwwwwwwww", "wwwwwwwwwwwwwwwwwwww")
+layout_rows = PackedStringArray("wwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwww", "wwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwww", "wwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwww", "wwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwww", "wwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwww", "wwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwww", "wwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwww", "wwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwww", "wwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwww", "wwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwww", "wwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwww", "wwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwww", "wwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwww", "wwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwww", "wwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwww", "wwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwww", "wwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwww", "wwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwww", "wwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwww", "wwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwww", "wwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwww", "wwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwww", "wwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwww", "wwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwww", "wwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwww", "wwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwww", "wwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwww", "wwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwww", "wwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwww", "wwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwww", "wwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwww", "wwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwww", "wwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwww", "wwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwww", "wwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwww", "wwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwww", "wwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwww", "wwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwww", "wwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwww", "wwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwww", "wwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwww", "wwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwww", "wwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwww")
 tile_paths = {
 "w": "res://assets/tiles/cave_wall.png"
 }
@@ -82,17 +82,17 @@ position = Vector2(-320, -224)
 script = ExtResource("2_tile_layer")
 layout_rows = PackedStringArray("....................", "....................", ".........scccs......", "......sccccccccss...", ".....scc......cccs..", "....scc.........cs..", "...scc...sc......cs.", "..scc..sccccs.....s.", ".scc..sccccccs....s.", ".sc..sccccccccs...s.", ".sc...sccccccss..cs.", "..sc...sccccss..ccs.", "...sccccccccs..cccs.", "....sccccccccccccs..", ".....ssccccccccss...")
 tile_paths = {
-"c": "res://assets/tiles/stone_encounter.svg",
+"c": "res://assets/tiles/stone.png",
 "s": "res://assets/tiles/stone.png"
 }
 
 [node name="TileMap_Encounter" type="TileMapLayer" parent="."]
 position = Vector2(-320, -224)
 script = ExtResource("2_tile_layer")
-layout_rows = PackedStringArray("....................", "....................", "....................", "....................", "....................", "....................", "....................", "....................", "....................", "....................", "....................", "....................", "....................", "....................", "....................")
+layout_rows = PackedStringArray("....................", "....................", "....................", "....................", "....................", "....................", "..........hhhhhh....", "..........hhhhhh....", "..........hhhhhh....", "..........hhhhhh....", "....................", "....................", "....................", "....................", "....................")
 tile_paths = {
-"c": "res://assets/tiles/stone_encounter.svg",
-"h": "res://assets/tiles/stone_encounter.svg"
+"c": "res://assets/tiles/stone.png",
+"h": "res://assets/tiles/lava.png"
 }
 tile_tags = {
 "c": "cave",
@@ -104,9 +104,9 @@ preview_colors = {
 }
 
 [node name="TileMap_Objects" type="TileMapLayer" parent="."]
-position = Vector2(-320, -224)
+position = Vector2(-768, -672)
 script = ExtResource("2_tile_layer")
-layout_rows = PackedStringArray("wwwww..wwwwww..wwwww", "ww..............w..w", "w......lll.........w", "w.....lllll........w", "w....lllllll.......w", "w..................w", "w........lll.......w", "w.......lllll......w", "w......lllllll.....w", "w..................w", "w..............lll.w", "w............lllll.w", "ww...........lllllww", "www.........lllllwww", "wwwww..wwwwww..wwwww")
+layout_rows = PackedStringArray("wwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwww", "wwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwww", "www...wwwww.ww.w.wwwwwwwwww.ww.wwwwwwwwww.w..www", "wwwwwwwwwwwwww..wwwww.wwwwwww..wwwwwwww..wwww.ww", "wwww..w.wwwwww..ww.wwwww.ww..www...wwww.wwwww.ww", "ww..www.w.wwwwwww.wwww.w.www.w.w.ww.wwwwwwwww.ww", "wwwwwwwwwww.wwwwwwww.w.wwww..wwww.wwww......wwww", "ww.ww.wwww.wwwwwww..wwwww..ww.www.www..www.wwwww", "wwww.w.wwwwww.w.www..www....ww.wwwwwwwww.ww.wwww", "wwwwww.wwwww.wwwwwwwwwwww..wwww.w.ww.ww.w.ww.www", "wwwwww.wwwww.wwww.ww.ww.ww..w.www.w..w.www.wwwww", "www.w.ww...wwwwwww.ww...wwwww.wwww.www.wwwwwwwww", "wwwwwwwwwww.wwwwwwwwwwwww.www.ww.ww.w.wwwwwwwwww", "wwww.wwwww..wwwwwwwwwwww.www.wwww.wwwwww.wwwwwww", "wwww.www.w.ww.wwwww..ww.www...wwwwww..www..w.www", "www.ww.w.wwwwwww..............w..w.w.www.wwww.ww", "ww.ww.www.wwwww......lll.........wwwww.w.w..wwww", "wwwwwwwww.wwww......lllll........w.w..ww..wwwwww", "www.wwww...wwww....lllllll.......wwww.w..ww.w.ww", "www..wwwww..w.w..................w.w.w.ww.wwwwww", "www.wwwwwww.w.w........lll.......wwwwww.www.w.ww", "www.www.wwwww.w.......lllll......w..wwwwwww.wwww", "wwww..www.wwwww......lllllll.....wwwwww.wwwwwwww", "wwwwww.w.wwwwww....................w...ww..ww.ww", "wwww.w.wwwww..w..............lll.w.wwwwwww.ww.ww", "ww.ww.ww..ww.ww............lllll.wwwwww.wwwwwwww", "wwwwwwwww...wwww...........lllllwww.wwww...w.www", "wwww.www..wwww.ww.........lllllwwwwwwww.w.wwwwww", "ww.www.wwwwwwwww.ww...w.www..www.www.www.wwww.ww", "ww.www..wwwwww.ww.w.wwwww...wwwww..ww..w.w.ww.ww", "ww.www.wwww..w.wwww.www.w.www.w.w.wwwwww.w.wwwww", "wwwwwwwwwwwwww.w....w.ww.wwwww.www.wwww.www.wwww", "wwwwww..wwwww.wwwwwwwww.ww.wwwwww.wwwwwwwwwwwwww", "ww.wwwwwww.wwwwwwww.wwww..ww..wwww.wwwww.ww.wwww", "wwwww.wwwwww..wwwwwwwww..wwwwwwww..wwwwww.wwwwww", "ww.w.wwww.w.w.w.www.ww.wwww.wwwww.www.www.w.wwww", "wwwwwww.ww.w.ww.w.wwww.w..w.w.www.ww..www...wwww", "www.ww..w.www.wwwww..w.wwwwww.www.w.wwwwww....ww", "wwwwww.w.wwwww.wwww.wwwww.ww.w.ww.wwwwwwwww.wwww", "wwwwwwwwwwwwww.wwww..w.ww..wwww.www.w.w.wwwww.ww", "ww.ww.wwwww.w.w.ww.wwww.wwwwww.wwww.w.wwwwwww.ww", "wwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwww", "wwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwww")
 tile_paths = {
 "l": "res://assets/tiles/lava.png",
 "w": "res://assets/tiles/cave_wall.png"

@@ -111,62 +111,105 @@ theme_override_constants/margin_top = 48
 theme_override_constants/margin_right = 48
 theme_override_constants/margin_bottom = 48
 
-[node name="Root" type="VBoxContainer" parent="OuterMargin"]
-theme_override_constants/separation = 24
+[node name="MainRow" type="HBoxContainer" parent="OuterMargin"]
+theme_override_constants/separation = 16
 
-[node name="TopBar" type="VBoxContainer" parent="OuterMargin/Root"]
+[node name="PartyBar" type="PanelContainer" parent="OuterMargin/MainRow"]
+custom_minimum_size = Vector2(88, 0)
+size_flags_vertical = 3
+
+[node name="PartyBarPadding" type="MarginContainer" parent="OuterMargin/MainRow/PartyBar"]
+theme_override_constants/margin_left = 8
+theme_override_constants/margin_top = 8
+theme_override_constants/margin_right = 8
+theme_override_constants/margin_bottom = 8
+
+[node name="PartySlots" type="VBoxContainer" parent="OuterMargin/MainRow/PartyBar/PartyBarPadding"]
 theme_override_constants/separation = 8
 
-[node name="TitleLabel" type="Label" parent="OuterMargin/Root/TopBar"]
+[node name="Root" type="VBoxContainer" parent="OuterMargin/MainRow"]
+size_flags_horizontal = 3
+size_flags_vertical = 3
+theme_override_constants/separation = 24
+
+[node name="TopBar" type="VBoxContainer" parent="OuterMargin/MainRow/Root"]
+theme_override_constants/separation = 8
+
+[node name="TitleLabel" type="Label" parent="OuterMargin/MainRow/Root/TopBar"]
 text = "BATTLE"
-theme_override_font_sizes/font_size = 36
+theme_override_font_sizes/font_size = 26
 
-[node name="BattleCard" type="PanelContainer" parent="OuterMargin/Root"]
+[node name="BattleCard" type="PanelContainer" parent="OuterMargin/MainRow/Root"]
 
-[node name="Padding" type="MarginContainer" parent="OuterMargin/Root/BattleCard"]
+[node name="Padding" type="MarginContainer" parent="OuterMargin/MainRow/Root/BattleCard"]
 theme_override_constants/margin_left = 20
 theme_override_constants/margin_top = 20
 theme_override_constants/margin_right = 20
 theme_override_constants/margin_bottom = 20
 
-[node name="CreaturesRow" type="HBoxContainer" parent="OuterMargin/Root/BattleCard/Padding"]
+[node name="CreaturesRow" type="HBoxContainer" parent="OuterMargin/MainRow/Root/BattleCard/Padding"]
 theme_override_constants/separation = 24
 
-[node name="PlayerCard" parent="OuterMargin/Root/BattleCard/Padding/CreaturesRow" instance=ExtResource("3_creature_panel")]
+[node name="PlayerCard" parent="OuterMargin/MainRow/Root/BattleCard/Padding/CreaturesRow" instance=ExtResource("3_creature_panel")]
 size_flags_horizontal = 3
 theme_override_styles/panel = SubResource("1_player_panel")
 
-[node name="EnemyCard" parent="OuterMargin/Root/BattleCard/Padding/CreaturesRow" instance=ExtResource("3_creature_panel")]
+[node name="EnemyCard" parent="OuterMargin/MainRow/Root/BattleCard/Padding/CreaturesRow" instance=ExtResource("3_creature_panel")]
 size_flags_horizontal = 3
 theme_override_styles/panel = SubResource("2_enemy_panel")
 right_aligned = true
 
-[node name="ActionsCard" type="PanelContainer" parent="OuterMargin/Root"]
+[node name="ActionsCard" type="PanelContainer" parent="OuterMargin/MainRow/Root"]
+size_flags_vertical = 3
 
-[node name="ActionsPadding" type="MarginContainer" parent="OuterMargin/Root/ActionsCard"]
+[node name="ActionsPadding" type="MarginContainer" parent="OuterMargin/MainRow/Root/ActionsCard"]
 theme_override_constants/margin_left = 20
-theme_override_constants/margin_top = 20
+theme_override_constants/margin_top = 8
 theme_override_constants/margin_right = 20
-theme_override_constants/margin_bottom = 20
+theme_override_constants/margin_bottom = 8
 
-[node name="ActionsVBox" type="VBoxContainer" parent="OuterMargin/Root/ActionsCard/ActionsPadding"]
+[node name="ActionsVBox" type="HBoxContainer" parent="OuterMargin/MainRow/Root/ActionsCard/ActionsPadding"]
 theme_override_constants/separation = 20
 
-[node name="BattleLog" type="Label" parent="OuterMargin/Root/ActionsCard/ActionsPadding/ActionsVBox"]
-custom_minimum_size = Vector2(0, 24)
-theme_override_font_sizes/font_size = 16
-theme_override_colors/font_color = Color(0.380392, 0.380392, 0.380392, 1)
-text = "Choose an action."
-
-[node name="AbilitiesList" type="VBoxContainer" parent="OuterMargin/Root/ActionsCard/ActionsPadding/ActionsVBox"]
+[node name="LogColumn" type="VBoxContainer" parent="OuterMargin/MainRow/Root/ActionsCard/ActionsPadding/ActionsVBox"]
+custom_minimum_size = Vector2(340, 0)
+size_flags_horizontal = 3
+size_flags_vertical = 3
 theme_override_constants/separation = 12
 
-[node name="ButtonsRow" type="HBoxContainer" parent="OuterMargin/Root/ActionsCard/ActionsPadding/ActionsVBox"]
-theme_override_constants/separation = 24
+[node name="LogToggleButton" type="Button" parent="OuterMargin/MainRow/Root/ActionsCard/ActionsPadding/ActionsVBox/LogColumn"]
+custom_minimum_size = Vector2(0, 62)
+theme_override_font_sizes/font_size = 20
+text = "HIDE LOG"
 
-[node name="SwitchButton" type="Button" parent="OuterMargin/Root/ActionsCard/ActionsPadding/ActionsVBox/ButtonsRow"]
+[node name="BattleLog" type="RichTextLabel" parent="OuterMargin/MainRow/Root/ActionsCard/ActionsPadding/ActionsVBox/LogColumn"]
+custom_minimum_size = Vector2(340, 320)
 size_flags_horizontal = 3
-custom_minimum_size = Vector2(0, 64)
+size_flags_vertical = 3
+fit_content = false
+scroll_following = true
+bbcode_enabled = true
+theme_override_font_sizes/normal_font_size = 20
+theme_override_colors/default_color = Color(0.960784, 0.929412, 0.823529, 1)
+
+[node name="MiddleColumn" type="VBoxContainer" parent="OuterMargin/MainRow/Root/ActionsCard/ActionsPadding/ActionsVBox"]
+size_flags_horizontal = 3
+size_flags_vertical = 3
+alignment = 1
+theme_override_constants/separation = 18
+
+[node name="AbilitiesList" type="HBoxContainer" parent="OuterMargin/MainRow/Root/ActionsCard/ActionsPadding/ActionsVBox/MiddleColumn"]
+size_flags_horizontal = 4
+alignment = 1
+theme_override_constants/separation = 14
+
+[node name="ButtonsRow" type="VBoxContainer" parent="OuterMargin/MainRow/Root/ActionsCard/ActionsPadding/ActionsVBox"]
+custom_minimum_size = Vector2(250, 0)
+alignment = 1
+theme_override_constants/separation = 18
+
+[node name="CaptureButton" type="Button" parent="OuterMargin/MainRow/Root/ActionsCard/ActionsPadding/ActionsVBox/ButtonsRow"]
+custom_minimum_size = Vector2(0, 88)
 theme_override_styles/normal = SubResource("3_secondary_button")
 theme_override_styles/hover = SubResource("4_secondary_button_hover")
 theme_override_styles/pressed = SubResource("5_secondary_button_pressed")
@@ -174,49 +217,35 @@ theme_override_styles/focus = SubResource("4_secondary_button_hover")
 theme_override_colors/font_color = Color(0.129412, 0.129412, 0.129412, 1)
 theme_override_colors/font_hover_color = Color(0.129412, 0.129412, 0.129412, 1)
 theme_override_colors/font_pressed_color = Color(0.129412, 0.129412, 0.129412, 1)
-theme_override_font_sizes/font_size = 20
-text = "Switch"
+theme_override_font_sizes/font_size = 24
+text = "INVENTORY"
 
-[node name="CaptureButton" type="Button" parent="OuterMargin/Root/ActionsCard/ActionsPadding/ActionsVBox/ButtonsRow"]
-size_flags_horizontal = 3
-custom_minimum_size = Vector2(0, 64)
-theme_override_styles/normal = SubResource("3_secondary_button")
-theme_override_styles/hover = SubResource("4_secondary_button_hover")
-theme_override_styles/pressed = SubResource("5_secondary_button_pressed")
-theme_override_styles/focus = SubResource("4_secondary_button_hover")
-theme_override_colors/font_color = Color(0.129412, 0.129412, 0.129412, 1)
-theme_override_colors/font_hover_color = Color(0.129412, 0.129412, 0.129412, 1)
-theme_override_colors/font_pressed_color = Color(0.129412, 0.129412, 0.129412, 1)
-theme_override_font_sizes/font_size = 20
-text = "Bind"
-
-[node name="RunButton" type="Button" parent="OuterMargin/Root/ActionsCard/ActionsPadding/ActionsVBox/ButtonsRow"]
-size_flags_horizontal = 3
-custom_minimum_size = Vector2(0, 64)
+[node name="RunButton" type="Button" parent="OuterMargin/MainRow/Root/ActionsCard/ActionsPadding/ActionsVBox/ButtonsRow"]
+custom_minimum_size = Vector2(0, 88)
 theme_override_styles/normal = SubResource("6_danger_button")
 theme_override_styles/hover = SubResource("7_danger_button_hover")
 theme_override_styles/pressed = SubResource("8_danger_button_pressed")
 theme_override_styles/focus = SubResource("7_danger_button_hover")
-theme_override_font_sizes/font_size = 20
-text = "Run"
+theme_override_font_sizes/font_size = 24
+text = "RUN"
 
-[node name="SealChooserPanel" type="PanelContainer" parent="OuterMargin/Root/ActionsCard/ActionsPadding/ActionsVBox"]
+[node name="SealChooserPanel" type="PanelContainer" parent="OuterMargin/MainRow/Root/ActionsCard/ActionsPadding/ActionsVBox/MiddleColumn"]
 visible = false
 
-[node name="SealChooserPadding" type="MarginContainer" parent="OuterMargin/Root/ActionsCard/ActionsPadding/ActionsVBox/SealChooserPanel"]
+[node name="SealChooserPadding" type="MarginContainer" parent="OuterMargin/MainRow/Root/ActionsCard/ActionsPadding/ActionsVBox/MiddleColumn/SealChooserPanel"]
 theme_override_constants/margin_left = 16
 theme_override_constants/margin_top = 16
 theme_override_constants/margin_right = 16
 theme_override_constants/margin_bottom = 16
 
-[node name="SealChooserVBox" type="VBoxContainer" parent="OuterMargin/Root/ActionsCard/ActionsPadding/ActionsVBox/SealChooserPanel/SealChooserPadding"]
+[node name="SealChooserVBox" type="VBoxContainer" parent="OuterMargin/MainRow/Root/ActionsCard/ActionsPadding/ActionsVBox/MiddleColumn/SealChooserPanel/SealChooserPadding"]
 theme_override_constants/separation = 12
 
-[node name="SealChooserTitle" type="Label" parent="OuterMargin/Root/ActionsCard/ActionsPadding/ActionsVBox/SealChooserPanel/SealChooserPadding/SealChooserVBox"]
-text = "Choose a binding seal"
+[node name="SealChooserTitle" type="Label" parent="OuterMargin/MainRow/Root/ActionsCard/ActionsPadding/ActionsVBox/MiddleColumn/SealChooserPanel/SealChooserPadding/SealChooserVBox"]
+text = "CHOOSE A BINDING SEAL"
 theme_override_font_sizes/font_size = 18
 
-[node name="SealOptions" type="VBoxContainer" parent="OuterMargin/Root/ActionsCard/ActionsPadding/ActionsVBox/SealChooserPanel/SealChooserPadding/SealChooserVBox"]
+[node name="SealOptions" type="VBoxContainer" parent="OuterMargin/MainRow/Root/ActionsCard/ActionsPadding/ActionsVBox/MiddleColumn/SealChooserPanel/SealChooserPadding/SealChooserVBox"]
 theme_override_constants/separation = 10
 
 [node name="TutorialPopup" type="PanelContainer" parent="."]
@@ -247,7 +276,7 @@ theme_override_constants/separation = 16
 [node name="PopupTitle" type="Label" parent="TutorialPopup/PopupPadding/PopupContent"]
 layout_mode = 2
 theme_override_font_sizes/font_size = 26
-text = "Try Again"
+text = "TRY AGAIN"
 
 [node name="PopupBody" type="Label" parent="TutorialPopup/PopupPadding/PopupContent"]
 layout_mode = 2
@@ -259,4 +288,4 @@ autowrap_mode = 3
 custom_minimum_size = Vector2(0, 54)
 layout_mode = 2
 theme_override_font_sizes/font_size = 18
-text = "Continue"
+text = "CONTINUE"

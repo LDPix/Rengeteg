@@ -1,0 +1,262 @@
+{
+  "tileset_data": {
+    "tiles": [
+      {
+        "id": "0",
+        "edges": {
+          "N": "lower",
+          "E": "lower",
+          "S": "lower",
+          "W": "lower"
+        },
+        "bounding_box": {
+          "x": 0,
+          "y": 0,
+          "width": 32,
+          "height": 32
+        }
+      },
+      {
+        "id": "1",
+        "edges": {
+          "N": "lower",
+          "E": "lower",
+          "S": "lower",
+          "W": "upper"
+        },
+        "bounding_box": {
+          "x": 32,
+          "y": 0,
+          "width": 32,
+          "height": 32
+        }
+      },
+      {
+        "id": "2",
+        "edges": {
+          "N": "lower",
+          "E": "lower",
+          "S": "upper",
+          "W": "lower"
+        },
+        "bounding_box": {
+          "x": 64,
+          "y": 0,
+          "width": 32,
+          "height": 32
+        }
+      },
+      {
+        "id": "3",
+        "edges": {
+          "N": "lower",
+          "E": "lower",
+          "S": "upper",
+          "W": "upper"
+        },
+        "bounding_box": {
+          "x": 96,
+          "y": 0,
+          "width": 32,
+          "height": 32
+        }
+      },
+      {
+        "id": "4",
+        "edges": {
+          "N": "lower",
+          "E": "upper",
+          "S": "lower",
+          "W": "lower"
+        },
+        "bounding_box": {
+          "x": 0,
+          "y": 32,
+          "width": 32,
+          "height": 32
+        }
+      },
+      {
+        "id": "5",
+        "edges": {
+          "N": "lower",
+          "E": "upper",
+          "S": "lower",
+          "W": "upper"
+        },
+        "bounding_box": {
+          "x": 32,
+          "y": 32,
+          "width": 32,
+          "height": 32
+        }
+      },
+      {
+        "id": "6",
+        "edges": {
+          "N": "lower",
+          "E": "upper",
+          "S": "upper",
+          "W": "lower"
+        },
+        "bounding_box": {
+          "x": 64,
+          "y": 32,
+          "width": 32,
+          "height": 32
+        }
+      },
+      {
+        "id": "7",
+        "edges": {
+          "N": "lower",
+          "E": "upper",
+          "S": "upper",
+          "W": "upper"
+        },
+        "bounding_box": {
+          "x": 96,
+          "y": 32,
+          "width": 32,
+          "height": 32
+        }
+      },
+      {
+        "id": "8",
+        "edges": {
+          "N": "upper",
+          "E": "lower",
+          "S": "lower",
+          "W": "lower"
+        },
+        "bounding_box": {
+          "x": 0,
+          "y": 64,
+          "width": 32,
+          "height": 32
+        }
+      },
+      {
+        "id": "9",
+        "edges": {
+          "N": "upper",
+          "E": "lower",
+          "S": "lower",
+          "W": "upper"
+        },
+        "bounding_box": {
+          "x": 32,
+          "y": 64,
+          "width": 32,
+          "height": 32
+        }
+      },
+      {
+        "id": "10",
+        "edges": {
+          "N": "upper",
+          "E": "lower",
+          "S": "upper",
+          "W": "lower"
+        },
+        "bounding_box": {
+          "x": 64,
+          "y": 64,
+          "width": 32,
+          "height": 32
+        }
+      },
+      {
+        "id": "11",
+        "edges": {
+          "N": "upper",
+          "E": "lower",
+          "S": "upper",
+          "W": "upper"
+        },
+        "bounding_box": {
+          "x": 96,
+          "y": 64,
+          "width": 32,
+          "height": 32
+        }
+      },
+      {
+        "id": "12",
+        "edges": {
+          "N": "upper",
+          "E": "upper",
+          "S": "lower",
+          "W": "lower"
+        },
+        "bounding_box": {
+          "x": 0,
+          "y": 96,
+          "width": 32,
+          "height": 32
+        }
+      },
+      {
+        "id": "13",
+        "edges": {
+          "N": "upper",
+          "E": "upper",
+          "S": "lower",
+          "W": "upper"
+        },
+        "bounding_box": {
+          "x": 32,
+          "y": 96,
+          "width": 32,
+          "height": 32
+        }
+      },
+      {
+        "id": "14",
+        "edges": {
+          "N": "upper",
+          "E": "upper",
+          "S": "upper",
+          "W": "lower"
+        },
+        "bounding_box": {
+          "x": 64,
+          "y": 96,
+          "width": 32,
+          "height": 32
+        }
+      },
+      {
+        "id": "15",
+        "edges": {
+          "N": "upper",
+          "E": "upper",
+          "S": "upper",
+          "W": "upper"
+        },
+        "bounding_box": {
+          "x": 96,
+          "y": 96,
+          "width": 32,
+          "height": 32
+        }
+      }
+    ],
+    "tile_size": {
+      "width": 32,
+      "height": 32
+    },
+    "total_tiles": 16,
+    "terrain_types": [
+      "lower",
+      "upper"
+    ],
+    "autotile_kind": "edge"
+  },
+  "metadata": {
+    "terrain_prompts": {
+      "lower": "dirt path",
+      "upper": "lush grass"
+    }
+  }
+}

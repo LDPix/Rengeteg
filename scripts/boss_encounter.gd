@@ -1,6 +1,6 @@
 extends Area2D
 
-const MARKER_TEXTURE := preload("res://assets/overworld/boss_marker.svg")
+const MARKER_TEXTURE_PATH := "res://assets/overworld/boss_marker.png"
 
 @onready var hint_panel: PanelContainer = $HintPanel
 @onready var hint_label: Label = $HintPanel/HintLabel
@@ -70,7 +70,7 @@ func _apply_visuals() -> void:
 	WorldUI.apply_label(confirm_body, "body", "verdant")
 	WorldUI.apply_button(cancel_button, "stone")
 	WorldUI.apply_button(proceed_button, "ember", true)
-	marker_sprite.texture = MARKER_TEXTURE
+	marker_sprite.texture = load(MARKER_TEXTURE_PATH)
 	marker_sprite.texture_filter = CanvasItem.TEXTURE_FILTER_NEAREST
 	queue_redraw()
 

@@ -69,6 +69,21 @@ All systems must support the expedition loop.
 
 ---
 
+# 🌍 World Lore
+
+The world was once home to an advanced civilization — now dead.
+
+Its remnants appear across maps as ruins, artifacts, and fragments of ancient magic and technology. The player uncovers this history through exploration, not exposition.
+
+Two categories of POI exist based on this lore:
+
+1. **Ancient / Arcane POIs** — ruins, altars, sealed vaults, arcane constructs. Tied to the lost civilization. May yield recipes, ancient items, or lore fragments.
+2. **Environmental POIs** — biome-specific. Predator nests, resource groves, hidden caches, natural shrines. Vary by map.
+
+Both categories must create decisions. Neither is purely decorative.
+
+---
+
 # 🗺️ Map & POI Design Rules
 
 Maps must not feel like empty space.
@@ -81,24 +96,53 @@ Each map should include:
 
 ## POIs (Points of Interest)
 
-POIs are core to map design.
+POIs are core to map design. Each POI must create a meaningful decision.
 
-Each POI must:
-- create a meaningful decision
-- include risk, reward, or both
-- influence route planning
+### Risk/Reward Structure
 
-Examples of valid POIs:
-- resource grove (high yield, high risk)
-- predator nest (combat-focused)
-- shrine / altar (temporary benefit)
-- expedition cache (loot, possibly trapped)
-- shortcut / hidden path
+All POIs use an explicit **choice-based risk/reward model** (not spatial placement logic):
+
+When the player activates a POI, they are shown a choice panel:
+- **Safe option** — small guaranteed reward, no combat
+- **Risky option** — triggers an encounter; better reward if won
+- **Cancel** — leave without committing
+
+This is defined per-POI via a `risk_choice` dictionary in `game_data.gd`:
+```
+risk_choice: {
+  safe: { prompt, result_text, rewards },
+  risky: { prompt, encounter: { encounter_tag, message, ui_variant, level_bonus, stat_multiplier, exp_multiplier, reward_bundle } }
+}
+```
+
+POIs without `risk_choice` use simple `immediate_rewards` (no player choice).
+
+### Ancient POI Rewards
+
+Ancient/arcane POIs are the primary source of **crafting recipes**.
+
+- Basic items (tutorial-level) are always craftable
+- Advanced held items and utility items require a discovered recipe
+- Recipes drop from ancient POIs or boss battles
+- A recipe-locked item does not appear in the crafting menu until found
+
+### Environmental POI Examples
+- resource grove (high yield, combat risk)
+- predator nest (combat-focused, creature drops)
+- natural shrine (temporary buff)
+- hidden cache (loot, possibly guarded)
+
+### Ancient POI Examples
+- ruined vault / entry cache (artifact loot, recipe chance)
+- arcane altar (ritual encounter, stat reward)
+- sealed construct (boss-like, unique reward)
+- lore fragment site (recipe + world-building text)
 
 Avoid:
 - decorative POIs with no gameplay impact
 - uniform map layouts
 - evenly distributed rewards
+- spatial "value inside danger zone" logic — use explicit choice panels instead
 
 ---
 
@@ -131,6 +175,14 @@ Avoid:
 
 # 🎨 Asset Creation Guidelines (Paper MCP)
 
+---
+
+# 🖥️ UI Text Guidelines
+
+- All title text in the game must be uppercase.
+- When adding or updating UI, treat headings, panel titles, section titles, battle titles, popup titles, and other title-role text as all-caps by default.
+- New UI layout work should preserve readability first: clear hierarchy, clean spacing, and minimal unnecessary framing.
+
 This project uses Paper MCP for generating visual assets.
 
 When new assets are required, the agent should:
@@ -145,6 +197,10 @@ When new assets are required, the agent should:
 - creatures (for prototyping)
 - UI icons (items, materials, abilities)
 - environment props
+
+## Generation defaults:
+- Generate **one variant** per asset unless explicitly told otherwise
+- Do not generate multi-frame review packs or bulk variants without being asked
 
 ## Asset quality guidelines:
 - clear silhouette at small sizes
@@ -225,6 +281,17 @@ When adding features:
 - implement changes
 - provide a concise changelog
 - list assumptions or TODOs
+
+---
+
+# 🖼️ UI: Stat Display Rules
+
+When displaying creature stats (HP, MP, ATK, DEF, SPD, etc.) in any UI panel:
+
+- Always use a stat icon + value pair, never text abbreviations like "HP 50" or "ATK 30"
+- Stat icons are located at `res://assets/ui/stats/*_icon.svg`
+- Available icons: `hp_icon.svg`, `mp_icon.svg`, `atk_icon.svg`, `def_icon.svg`, `spd_icon.svg`, `acc_icon.svg`, `eva_icon.svg`, `crit_icon.svg`, `exp_icon.svg`
+- Each stat chip: HBoxContainer > TextureRect (icon, 18×18, TEXTURE_FILTER_NEAREST) + Label (value)
 
 ---
 

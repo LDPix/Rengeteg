@@ -3,17 +3,44 @@ extends Control
 const CREATURE_CHIP_SCENE := preload("res://scenes/ui/CreatureChip.tscn")
 const MAP_OPTION_BUTTON_SCENE := preload("res://scenes/ui/MapOptionButton.tscn")
 const SEAL_ITEM_ID := "basic_seal"
-const INTRO_TITLE_REALM := "A New Realm"
+const INTRO_TITLE_REALM := "A NEW REALM"
 const INTRO_BODY_REALM := "A newly discovered realm, rich with untapped resources and unknown life, has opened its gates to exploration.\n\nScholars from your world have developed a powerful new technology — magical seals capable of binding creatures to your command. With their help, even the wildest beings of this realm can become allies.\n\nAs one of the first expeditioners, you are sent into these uncharted lands.\nGather resources, study strange ecosystems, and build your team of bound creatures.\n\nBut the deeper you go, the more dangerous the world becomes."
-const INTRO_TITLE_CAMP := "Welcome to Camp"
-const INTRO_BODY_CAMP := "Welcome to Camp.\n\nThis will be your base of operations while we explore the newly discovered realm. From here, you can prepare your team, craft supplies, and plan your next expedition.\n\nBefore we send you deeper into the unknown, we should start with something simple.\n\nTake your first venture into the wilds. Gather some materials, familiarize yourself with the terrain, and try binding a creature.\n\nLet’s see how you handle your first expedition."
-const INTRO_DOCKED_OBJECTIVE := "Venture into Verdant Wilds!"
-const FIRST_DEFEAT_TITLE := "Driven Back to Camp"
+const INTRO_TOUR := {
+	"team": {
+		"title": "CURRENT TEAM",
+		"body": "These are the creatures ready to venture with you. Camp restores them when you return, so this is where you check who is fit for the next run.",
+	},
+	"collection": {
+		"title": "CREATURE COLLECTION",
+		"body": "Open Creature Collection to inspect captured creatures, move them between storage and the active team, use camp items, and manage held items.",
+	},
+	"selected_map": {
+		"title": "SELECTED MAP",
+		"body": "This panel shows which map your next venture will use. The selected map controls the creatures, resources, and dangers you will find.",
+	},
+	"maps": {
+		"title": "MAPS",
+		"body": "Use Maps to choose a destination. More maps unlock as you complete major objectives.",
+	},
+	"crafting": {
+		"title": "CRAFTING",
+		"body": "Use Crafting to turn gathered resources into consumables, held items, and camp upgrades before heading back out.",
+	},
+	"objective": {
+		"title": "CURRENT OBJECTIVE",
+		"body": "This shows your next goal. Follow it when you want direction, or prepare in camp first and venture when ready.",
+	},
+}
+const FIRST_DEFEAT_TITLE := "DRIVEN BACK TO CAMP"
 const FIRST_DEFEAT_BODY := "Your whole team was defeated in the wilds, so the expedition was forced to end.\n\nYou were brought back to camp safely, but any resources gathered during that venture were lost.\n\nUse camp to recover, adjust your team, and prepare before heading out again."
-const EMBER_UNLOCK_TITLE := "New Area Unlocked"
+const EMBER_UNLOCK_TITLE := "NEW AREA UNLOCKED"
 const EMBER_UNLOCK_BODY := "Defeating the Mossking has opened the path to Ember Caves — a hotter, more dangerous region with new creatures and resources to discover.\n\nHead there whenever you feel ready."
 const OBJECTIVE_HIGHLIGHT_COLOR := Color(1.0, 1.0, 0.82, 1.0)
 const OBJECTIVE_HIGHLIGHT_BORDER_COLOR := Color(0.82, 0.25, 0.18, 1.0)
+const INTRO_DIM_DEFAULT_ALPHA := 0.78
+const INTRO_DIM_TOUR_ALPHA := 0.16
+const INTRO_TOUR_PANEL_WIDTH := 430.0
+const INTRO_TOUR_MARGIN := 18.0
 
 enum CampView {
 	MAIN,
@@ -25,7 +52,12 @@ enum CampView {
 enum IntroStep {
 	NONE,
 	REALM,
-	CAMP_BRIEFING,
+	CAMP_TEAM,
+	CAMP_COLLECTION,
+	CAMP_SELECTED_MAP,
+	CAMP_MAPS,
+	CAMP_CRAFTING,
+	CAMP_OBJECTIVE,
 	FIRST_DEFEAT,
 	EMBER_UNLOCK,
 }
@@ -44,18 +76,24 @@ enum IntroStep {
 @onready var maps_panel := $Panel/CenterRow/ContentColumn/Panels/MapsPanel
 @onready var crafting_panel := $Panel/CenterRow/ContentColumn/Panels/CraftingPanel
 
-@onready var main_team_chips := $Panel/CenterRow/ContentColumn/Panels/MainCampPanel/SummaryRow/TeamCard/Padding/Content/CreatureChips
-@onready var main_selected_name_label := $Panel/CenterRow/ContentColumn/Panels/MainCampPanel/SummaryRow/TeamCard/Padding/Content/SelectedCreatureCard/Padding/SelectedCreatureContent/SelectedCreatureInfo/SelectedCreatureName
-@onready var main_selected_stats_label := $Panel/CenterRow/ContentColumn/Panels/MainCampPanel/SummaryRow/TeamCard/Padding/Content/SelectedCreatureCard/Padding/SelectedCreatureContent/SelectedCreatureInfo/SelectedCreatureStats
-@onready var main_selected_portrait := $Panel/CenterRow/ContentColumn/Panels/MainCampPanel/SummaryRow/TeamCard/Padding/Content/SelectedCreatureCard/Padding/SelectedCreatureContent/SelectedCreaturePortrait
-@onready var main_party_label := $Panel/CenterRow/ContentColumn/Panels/MainCampPanel/SummaryRow/TeamCard/Padding/Content/PartyLabel
-@onready var main_map_label := $Panel/CenterRow/ContentColumn/Panels/MainCampPanel/SummaryRow/RightColumn/MapSummaryCard/Padding/Content/MapLabel
-@onready var main_map_hint_label := $Panel/CenterRow/ContentColumn/Panels/MainCampPanel/SummaryRow/RightColumn/MapSummaryCard/Padding/Content/MapHintLabel
-@onready var main_resources_chips := $Panel/CenterRow/ContentColumn/Panels/MainCampPanel/SummaryRow/RightColumn/ResourcesCard/Padding/Content/ResourcesChips
+@onready var main_team_chips := $Panel/CenterRow/ContentColumn/Panels/MainCampPanel/SummaryRow/LeftColumn/TeamCard/Padding/Content/CreatureChips
+@onready var main_selected_name_label := $Panel/CenterRow/ContentColumn/Panels/MainCampPanel/SummaryRow/LeftColumn/TeamCard/Padding/Content/SelectedCreatureCard/Padding/SelectedCreatureContent/SelectedCreatureInfo/SelectedCreatureName
+@onready var main_selected_stats_label := $Panel/CenterRow/ContentColumn/Panels/MainCampPanel/SummaryRow/LeftColumn/TeamCard/Padding/Content/SelectedCreatureCard/Padding/SelectedCreatureContent/SelectedCreatureInfo/SelectedCreatureStats
+@onready var main_selected_portrait := $Panel/CenterRow/ContentColumn/Panels/MainCampPanel/SummaryRow/LeftColumn/TeamCard/Padding/Content/SelectedCreatureCard/Padding/SelectedCreatureContent/SelectedCreaturePortrait
+@onready var main_party_label := $Panel/CenterRow/ContentColumn/Panels/MainCampPanel/SummaryRow/LeftColumn/TeamCard/Padding/Content/PartyLabel
+@onready var main_team_card := $Panel/CenterRow/ContentColumn/Panels/MainCampPanel/SummaryRow/LeftColumn/TeamCard
+@onready var main_map_summary_card := $Panel/CenterRow/ContentColumn/Panels/MainCampPanel/SummaryRow/LeftColumn/MapSummaryCard
+@onready var main_map_label := $Panel/CenterRow/ContentColumn/Panels/MainCampPanel/SummaryRow/LeftColumn/MapSummaryCard/Padding/Content/MapNameRow/MapLabel
+@onready var main_map_hint_label := $Panel/CenterRow/ContentColumn/Panels/MainCampPanel/SummaryRow/LeftColumn/MapSummaryCard/Padding/Content/MapHintLabel
+@onready var main_map_icon: TextureRect = $Panel/CenterRow/ContentColumn/Panels/MainCampPanel/SummaryRow/LeftColumn/MapSummaryCard/Padding/Content/MapNameRow/MapIcon
+@onready var main_objective_summary_card := $Panel/CenterRow/ContentColumn/Panels/MainCampPanel/SummaryRow/RightColumn/ObjectiveSummaryCard
+@onready var main_objective_label := $Panel/CenterRow/ContentColumn/Panels/MainCampPanel/SummaryRow/RightColumn/ObjectiveSummaryCard/Padding/Content/ObjectiveLabel
+@onready var main_objective_hint_label := $Panel/CenterRow/ContentColumn/Panels/MainCampPanel/SummaryRow/RightColumn/ObjectiveSummaryCard/Padding/Content/ObjectiveHintLabel
 @onready var main_status_label := $Panel/CenterRow/ContentColumn/Panels/MainCampPanel/MainStatusLabel
-@onready var collection_nav_button := $Panel/CenterRow/ContentColumn/Panels/MainCampPanel/NavigationCard/Padding/Content/NavigationButtons/CollectionButton
-@onready var maps_nav_button := $Panel/CenterRow/ContentColumn/Panels/MainCampPanel/NavigationCard/Padding/Content/NavigationButtons/MapsButton
-@onready var crafting_nav_button := $Panel/CenterRow/ContentColumn/Panels/MainCampPanel/NavigationCard/Padding/Content/NavigationButtons/CraftingButton
+@onready var collection_nav_button := $Panel/CenterRow/ContentColumn/Panels/MainCampPanel/SummaryRow/RightColumn/NavigationCard/Padding/Content/NavigationButtons/CollectionButton
+@onready var maps_nav_button := $Panel/CenterRow/ContentColumn/Panels/MainCampPanel/SummaryRow/RightColumn/NavigationCard/Padding/Content/NavigationButtons/MapsButton
+@onready var crafting_nav_button := $Panel/CenterRow/ContentColumn/Panels/MainCampPanel/SummaryRow/RightColumn/NavigationCard/Padding/Content/NavigationButtons/CraftingButton
+@onready var navigation_card: PanelContainer = $Panel/CenterRow/ContentColumn/Panels/MainCampPanel/SummaryRow/RightColumn/NavigationCard
 @onready var venture_btn := $Panel/CenterRow/ContentColumn/Panels/MainCampPanel/ActionRow/VentureButton
 
 @onready var collection_back_button := $Panel/CenterRow/ContentColumn/Panels/CreatureCollectionPanel/Header/BackButton
@@ -109,17 +147,42 @@ var intro_step: int = IntroStep.NONE
 var intro_guidance_active := false
 var venture_highlight_time := 0.0
 var tutorial_highlight_time := 0.0
+var intro_tour_highlight_time := 0.0
+var intro_highlight_targets: Array[Control] = []
 var highlight_crafting_back_button := false
 var highlight_collection_back_button := false
+var _bestiary_panel: Node
+var main_stats_container: Control
+var collection_stats_container: Control
+var main_held_item_box: Control
+var collection_held_item_box: Control
+
+const STAT_ICONS := {
+	"atk": "res://assets/ui/stats/atk_icon.svg",
+	"def": "res://assets/ui/stats/def_icon.svg",
+	"spd": "res://assets/ui/stats/spd_icon.svg",
+	"acc": "res://assets/ui/stats/acc_icon.svg",
+	"eva": "res://assets/ui/stats/eva_icon.svg",
+	"crit": "res://assets/ui/stats/crit_icon.svg",
+}
+const HP_ICON_PATH := "res://assets/ui/stats/hp_icon.svg"
+const MP_ICON_PATH := "res://assets/ui/stats/mp_icon.svg"
+const EXP_ICON_PATH := "res://assets/ui/stats/exp_icon.svg"
+const COLLECTION_NAV_ICON_PATH := "res://assets/ui/camp/collection_icon.png"
+const MAPS_NAV_ICON_PATH := "res://assets/ui/camp/maps_icon.png"
+const CRAFTING_NAV_ICON_PATH := "res://assets/ui/camp/crafting_icon.png"
+const BESTIARY_ICON_PATH := "res://assets/ui/bestiary_book.png"
+const HP_FILL_COLOR := Color("c94040")
+const HP_BG_COLOR := Color("1a0f0a")
+const MP_FILL_COLOR := Color("4080c9")
+const MP_BG_COLOR := Color("0a0f1a")
+const EXP_FILL_COLOR := Color("7040b0")
+const EXP_BG_COLOR := Color("0f0a1a")
 
 
 func _ready() -> void:
 	_apply_world_ui()
-	if GameState.intro_popup_seen_this_session:
-		intro_overlay.visible = false
-	else:
-		intro_step = IntroStep.REALM
-		_show_intro_step()
+	intro_overlay.visible = false
 	main_status_label.visible = false
 	collection_nav_button.pressed.connect(show_creature_collection_menu)
 	maps_nav_button.pressed.connect(show_maps_menu)
@@ -136,6 +199,11 @@ func _ready() -> void:
 	if not GameState.map_completion_changed.is_connected(_on_map_completion_changed):
 		GameState.map_completion_changed.connect(_on_map_completion_changed)
 
+	main_stats_container = _replace_label_with_stats_container(main_selected_stats_label)
+	collection_stats_container = _replace_label_with_stats_container(collection_selected_stats_label)
+	main_held_item_box = _create_item_box_next_to_name(main_selected_name_label)
+	collection_held_item_box = _create_item_box_next_to_name(collection_selected_name_label)
+
 	GameState.ensure_starter()
 	GameState.ensure_current_map_is_unlocked()
 	_setup_item_browsers()
@@ -143,8 +211,10 @@ func _ready() -> void:
 	_heal_team_on_entry()
 	_maybe_show_first_defeat_popup()
 	_maybe_show_ember_unlock_popup()
+	_maybe_show_launch_intro()
 	show_main_camp()
 	_refresh()
+	_setup_bestiary()
 	set_process(true)
 
 
@@ -158,11 +228,11 @@ func _apply_world_ui() -> void:
 	WorldUI.apply_label(subtitle_label, "subtitle", "verdant")
 
 	for panel_path in [
-		"Panel/CenterRow/ContentColumn/Panels/MainCampPanel/SummaryRow/TeamCard",
-		"Panel/CenterRow/ContentColumn/Panels/MainCampPanel/SummaryRow/TeamCard/Padding/Content/SelectedCreatureCard",
-		"Panel/CenterRow/ContentColumn/Panels/MainCampPanel/SummaryRow/RightColumn/MapSummaryCard",
-		"Panel/CenterRow/ContentColumn/Panels/MainCampPanel/SummaryRow/RightColumn/ResourcesCard",
-		"Panel/CenterRow/ContentColumn/Panels/MainCampPanel/NavigationCard",
+		"Panel/CenterRow/ContentColumn/Panels/MainCampPanel/SummaryRow/LeftColumn/TeamCard",
+		"Panel/CenterRow/ContentColumn/Panels/MainCampPanel/SummaryRow/LeftColumn/TeamCard/Padding/Content/SelectedCreatureCard",
+		"Panel/CenterRow/ContentColumn/Panels/MainCampPanel/SummaryRow/LeftColumn/MapSummaryCard",
+		"Panel/CenterRow/ContentColumn/Panels/MainCampPanel/SummaryRow/RightColumn/ObjectiveSummaryCard",
+		"Panel/CenterRow/ContentColumn/Panels/MainCampPanel/SummaryRow/RightColumn/NavigationCard",
 		"Panel/CenterRow/ContentColumn/Panels/CreatureCollectionPanel/SummaryRow/TeamCard",
 		"Panel/CenterRow/ContentColumn/Panels/CreatureCollectionPanel/SummaryRow/TeamCard/Padding/Content/SelectedCreatureCard",
 		"Panel/CenterRow/ContentColumn/Panels/CreatureCollectionPanel/SummaryRow/InventoryCard",
@@ -173,11 +243,11 @@ func _apply_world_ui() -> void:
 	WorldUI.apply_panel($Panel/CenterRow/ContentColumn/Panels/MapsPanel/MapSelectionCard, "stone", true)
 
 	for label_path in [
-		"Panel/CenterRow/ContentColumn/Panels/MainCampPanel/SummaryRow/TeamCard/Padding/Content/TeamTitle",
-		"Panel/CenterRow/ContentColumn/Panels/MainCampPanel/SummaryRow/TeamCard/Padding/Content/SelectedCreatureCard/Padding/SelectedCreatureContent/SelectedCreatureInfo/SelectedCreatureName",
-		"Panel/CenterRow/ContentColumn/Panels/MainCampPanel/SummaryRow/RightColumn/MapSummaryCard/Padding/Content/MapTitle",
-		"Panel/CenterRow/ContentColumn/Panels/MainCampPanel/SummaryRow/RightColumn/ResourcesCard/Padding/Content/ResourcesTitle",
-		"Panel/CenterRow/ContentColumn/Panels/MainCampPanel/NavigationCard/Padding/Content/NavigationTitle",
+		"Panel/CenterRow/ContentColumn/Panels/MainCampPanel/SummaryRow/LeftColumn/TeamCard/Padding/Content/TeamTitle",
+		"Panel/CenterRow/ContentColumn/Panels/MainCampPanel/SummaryRow/LeftColumn/TeamCard/Padding/Content/SelectedCreatureCard/Padding/SelectedCreatureContent/SelectedCreatureInfo/SelectedCreatureName",
+		"Panel/CenterRow/ContentColumn/Panels/MainCampPanel/SummaryRow/LeftColumn/MapSummaryCard/Padding/Content/MapTitle",
+		"Panel/CenterRow/ContentColumn/Panels/MainCampPanel/SummaryRow/RightColumn/ObjectiveSummaryCard/Padding/Content/ObjectiveTitle",
+		"Panel/CenterRow/ContentColumn/Panels/MainCampPanel/SummaryRow/RightColumn/NavigationCard/Padding/Content/NavigationTitle",
 		"Panel/CenterRow/ContentColumn/Panels/CreatureCollectionPanel/SummaryRow/TeamCard/Padding/Content/TeamTitle",
 		"Panel/CenterRow/ContentColumn/Panels/CreatureCollectionPanel/SummaryRow/TeamCard/Padding/Content/SelectedCreatureCard/Padding/SelectedCreatureScroll/SelectedCreatureContent/SelectedCreatureTitle",
 		"Panel/CenterRow/ContentColumn/Panels/CreatureCollectionPanel/SummaryRow/TeamCard/Padding/Content/SelectedCreatureCard/Padding/SelectedCreatureScroll/SelectedCreatureContent/HeldItemsTitle",
@@ -191,8 +261,9 @@ func _apply_world_ui() -> void:
 	WorldUI.apply_label(crafting_search_label, "subtitle", "wood")
 
 	for label_path in [
-		"Panel/CenterRow/ContentColumn/Panels/MainCampPanel/SummaryRow/TeamCard/Padding/Content/TeamSubtitle",
-		"Panel/CenterRow/ContentColumn/Panels/MainCampPanel/SummaryRow/RightColumn/MapSummaryCard/Padding/Content/MapHintLabel",
+		"Panel/CenterRow/ContentColumn/Panels/MainCampPanel/SummaryRow/LeftColumn/TeamCard/Padding/Content/TeamSubtitle",
+		"Panel/CenterRow/ContentColumn/Panels/MainCampPanel/SummaryRow/LeftColumn/MapSummaryCard/Padding/Content/MapHintLabel",
+		"Panel/CenterRow/ContentColumn/Panels/MainCampPanel/SummaryRow/RightColumn/ObjectiveSummaryCard/Padding/Content/ObjectiveHintLabel",
 		"Panel/CenterRow/ContentColumn/Panels/CreatureCollectionPanel/SummaryRow/InventoryCard/Padding/Content/InventoryHintLabel",
 		"Panel/CenterRow/ContentColumn/Panels/CreatureCollectionPanel/Header/TitleColumn/SubtitleLabel",
 		"Panel/CenterRow/ContentColumn/Panels/MapsPanel/Header/TitleColumn/SubtitleLabel",
@@ -205,8 +276,9 @@ func _apply_world_ui() -> void:
 
 	for label_path in [
 		"Panel/CenterRow/ContentColumn/Panels/MainCampPanel/MainStatusLabel",
-		"Panel/CenterRow/ContentColumn/Panels/MainCampPanel/SummaryRow/RightColumn/MapSummaryCard/Padding/Content/MapLabel",
-		"Panel/CenterRow/ContentColumn/Panels/MainCampPanel/SummaryRow/TeamCard/Padding/Content/SelectedCreatureCard/Padding/SelectedCreatureContent/SelectedCreatureInfo/SelectedCreatureStats",
+		"Panel/CenterRow/ContentColumn/Panels/MainCampPanel/SummaryRow/LeftColumn/MapSummaryCard/Padding/Content/MapNameRow/MapLabel",
+		"Panel/CenterRow/ContentColumn/Panels/MainCampPanel/SummaryRow/RightColumn/ObjectiveSummaryCard/Padding/Content/ObjectiveLabel",
+		"Panel/CenterRow/ContentColumn/Panels/MainCampPanel/SummaryRow/LeftColumn/TeamCard/Padding/Content/SelectedCreatureCard/Padding/SelectedCreatureContent/SelectedCreatureInfo/SelectedCreatureStats",
 		"Panel/CenterRow/ContentColumn/Panels/CreatureCollectionPanel/SummaryRow/TeamCard/Padding/Content/SelectedCreatureCard/Padding/SelectedCreatureScroll/SelectedCreatureContent/SelectedCreatureRow/SelectedCreatureInfo/SelectedCreatureName",
 		"Panel/CenterRow/ContentColumn/Panels/CreatureCollectionPanel/SummaryRow/TeamCard/Padding/Content/SelectedCreatureCard/Padding/SelectedCreatureScroll/SelectedCreatureContent/SelectedCreatureRow/SelectedCreatureInfo/SelectedCreatureStats",
 		"Panel/CenterRow/ContentColumn/Panels/CreatureCollectionPanel/SummaryRow/TeamCard/Padding/Content/SelectedCreatureCard/Padding/SelectedCreatureScroll/SelectedCreatureContent/HeldItemLabel",
@@ -221,6 +293,14 @@ func _apply_world_ui() -> void:
 	main_map_hint_label.add_theme_color_override("font_outline_color", Color("4d3824"))
 	main_map_hint_label.add_theme_constant_override("outline_size", 1)
 	main_map_hint_label.add_theme_font_size_override("font_size", 15)
+	main_objective_label.add_theme_color_override("font_color", Color("fffbe8"))
+	main_objective_label.add_theme_color_override("font_outline_color", Color("5b4126"))
+	main_objective_label.add_theme_constant_override("outline_size", 1)
+	main_objective_label.add_theme_font_size_override("font_size", 20)
+	main_objective_hint_label.add_theme_color_override("font_color", Color("fff1b8"))
+	main_objective_hint_label.add_theme_color_override("font_outline_color", Color("4d3824"))
+	main_objective_hint_label.add_theme_constant_override("outline_size", 1)
+	main_objective_hint_label.add_theme_font_size_override("font_size", 15)
 
 	for label_path in [
 		"Panel/CenterRow/ContentColumn/Panels/MapsPanel/MapSelectionCard/Padding/Content/MapLabel",
@@ -242,13 +322,50 @@ func _apply_world_ui() -> void:
 		collection_unequip_button,
 	]:
 		WorldUI.apply_button(btn, "wood")
+	for btn in [collection_nav_button, maps_nav_button, crafting_nav_button]:
+		btn.set_meta("sfx_click_enabled", true)
+	_configure_nav_button_icon(collection_nav_button, COLLECTION_NAV_ICON_PATH)
+	_configure_nav_button_icon(maps_nav_button, MAPS_NAV_ICON_PATH)
+	_configure_nav_button_icon(crafting_nav_button, CRAFTING_NAV_ICON_PATH)
 
 	WorldUI.apply_button(venture_btn, "verdant", true)
 	crafting_search_box.add_theme_font_size_override("font_size", 15)
 
 
+func _configure_nav_button_icon(button: Button, icon_path: String) -> void:
+	button.alignment = HORIZONTAL_ALIGNMENT_LEFT
+	button.icon_alignment = HORIZONTAL_ALIGNMENT_LEFT
+	button.vertical_icon_alignment = VERTICAL_ALIGNMENT_CENTER
+	button.expand_icon = false
+	button.add_theme_constant_override("h_separation", 10)
+	if ResourceLoader.exists(icon_path):
+		button.icon = load(icon_path)
+
+
+const _BestiaryPanelScript := preload("res://scripts/bestiary_panel.gd")
+
+func _setup_bestiary() -> void:
+	_bestiary_panel = _BestiaryPanelScript.new()
+	add_child(_bestiary_panel)
+
+	var collection_header := collection_back_button.get_parent() as HBoxContainer
+	var bestiary_btn := Button.new()
+	bestiary_btn.text = "BESTIARY"
+	bestiary_btn.custom_minimum_size = Vector2(130, 48)
+	WorldUI.apply_button(bestiary_btn, "wood")
+	bestiary_btn.alignment = HORIZONTAL_ALIGNMENT_LEFT
+	bestiary_btn.icon_alignment = HORIZONTAL_ALIGNMENT_LEFT
+	bestiary_btn.vertical_icon_alignment = VERTICAL_ALIGNMENT_CENTER
+	bestiary_btn.expand_icon = false
+	bestiary_btn.add_theme_constant_override("h_separation", 10)
+	if ResourceLoader.exists(BESTIARY_ICON_PATH):
+		bestiary_btn.icon = load(BESTIARY_ICON_PATH)
+	bestiary_btn.pressed.connect(func() -> void: _bestiary_panel.open())
+	collection_header.add_child(bestiary_btn)
+
+
 func _setup_item_browsers() -> void:
-	collection_equip_button.text = "Change Held Item"
+	collection_equip_button.text = "CHANGE HELD ITEM"
 	collection_held_items_list.visible = false
 	collection_consumables_list.visible = false
 	collection_held_items_list.get_parent().get_node("HeldItemsTitle").visible = false
@@ -282,14 +399,14 @@ func _setup_crafting_browser() -> Dictionary:
 	content.move_child(filter_row, category_row.get_index() + 1)
 
 	var owned_toggle := Button.new()
-	owned_toggle.text = "Owned Only: Off"
+	owned_toggle.text = "OWNED ONLY: OFF"
 	owned_toggle.custom_minimum_size = Vector2(0, 34)
 	WorldUI.apply_button(owned_toggle, "wood")
 	owned_toggle.pressed.connect(_toggle_crafting_owned_only)
 	filter_row.add_child(owned_toggle)
 
 	var craftable_toggle := Button.new()
-	craftable_toggle.text = "Craftable Only: Off"
+	craftable_toggle.text = "CRAFTABLE ONLY: OFF"
 	craftable_toggle.custom_minimum_size = Vector2(0, 34)
 	WorldUI.apply_button(craftable_toggle, "verdant")
 	craftable_toggle.pressed.connect(_toggle_crafting_craftable_only)
@@ -324,7 +441,7 @@ func _setup_collection_browser() -> Dictionary:
 	search_row.name = "CollectionSearchRow"
 	search_row.add_theme_constant_override("separation", 8)
 	var search_label := Label.new()
-	search_label.text = "Search"
+	search_label.text = "SEARCH"
 	WorldUI.apply_label(search_label, "subtitle", "wood")
 	search_row.add_child(search_label)
 	var search_box := LineEdit.new()
@@ -486,6 +603,12 @@ func _build_map_buttons() -> void:
 		btn.name = "%sButton" % map_id.capitalize()
 		btn.text = display_name
 		btn.pressed.connect(_select_map.bind(map_id))
+		var icon_path := str(GameData.maps[map_id].get("icon_path", ""))
+		if not icon_path.is_empty() and ResourceLoader.exists(icon_path):
+			btn.icon = load(icon_path)
+			btn.icon_alignment = HORIZONTAL_ALIGNMENT_LEFT
+			btn.expand_icon = false
+			btn.add_theme_constant_override("h_separation", 10)
 		map_list.add_child(btn)
 
 
@@ -495,11 +618,22 @@ func _select_map(map_id: String) -> void:
 	_refresh()
 
 
+func _update_main_map_icon() -> void:
+	var map_id := GameState.current_map_id
+	var icon_path := str(GameData.maps.get(map_id, {}).get("icon_path", ""))
+	if not icon_path.is_empty() and ResourceLoader.exists(icon_path):
+		main_map_icon.texture = load(icon_path)
+		main_map_icon.visible = true
+	else:
+		main_map_icon.visible = false
+
+
 func _venture() -> void:
 	_stop_venture_highlight()
 	GameState.ensure_current_map_is_unlocked()
 	var map_id := GameState.current_map_id
 	var scene_path := str(GameData.maps[map_id].get("scene_path", ""))
+	_play_sfx("venture")
 	GameState.begin_map_run()
 
 	if scene_path == "":
@@ -533,15 +667,24 @@ func _show_intro_step() -> void:
 	intro_panel.scale = Vector2.ONE
 	intro_panel.modulate = Color(1, 1, 1, 1)
 	intro_panel.visible = true
+	_apply_intro_dialog_layout(_is_intro_tour_step(intro_step))
 	match intro_step:
 		IntroStep.REALM:
 			intro_title_label.text = INTRO_TITLE_REALM
 			intro_body_label.text = INTRO_BODY_REALM
 			intro_continue_button.text = "Continue"
-		IntroStep.CAMP_BRIEFING:
-			intro_title_label.text = INTRO_TITLE_CAMP
-			intro_body_label.text = INTRO_BODY_CAMP
-			intro_continue_button.text = "Show Objective"
+		IntroStep.CAMP_TEAM:
+			_set_intro_tour_step("team", "Next")
+		IntroStep.CAMP_COLLECTION:
+			_set_intro_tour_step("collection", "Continue")
+		IntroStep.CAMP_SELECTED_MAP:
+			_set_intro_tour_step("selected_map", "Next")
+		IntroStep.CAMP_MAPS:
+			_set_intro_tour_step("maps", "Continue")
+		IntroStep.CAMP_CRAFTING:
+			_set_intro_tour_step("crafting", "Continue")
+		IntroStep.CAMP_OBJECTIVE:
+			_set_intro_tour_step("objective", "Start")
 		IntroStep.FIRST_DEFEAT:
 			intro_title_label.text = FIRST_DEFEAT_TITLE
 			intro_body_label.text = FIRST_DEFEAT_BODY
@@ -550,6 +693,29 @@ func _show_intro_step() -> void:
 			intro_title_label.text = EMBER_UNLOCK_TITLE
 			intro_body_label.text = EMBER_UNLOCK_BODY
 			intro_continue_button.text = "Continue"
+	_refresh_intro_tour_targets()
+
+
+func _set_intro_tour_step(step_id: String, button_text: String) -> void:
+	var step_data: Dictionary = INTRO_TOUR.get(step_id, {})
+	intro_title_label.text = str(step_data.get("title", "Camp"))
+	intro_body_label.text = str(step_data.get("body", ""))
+	intro_continue_button.text = button_text
+
+
+func _apply_intro_dialog_layout(is_tour: bool) -> void:
+	intro_dim.color = Color(0.0431373, 0.0352941, 0.027451, INTRO_DIM_TOUR_ALPHA if is_tour else INTRO_DIM_DEFAULT_ALPHA)
+	intro_dim.modulate = Color(1, 1, 1, 1)
+	if is_tour:
+		intro_panel.custom_minimum_size = Vector2(INTRO_TOUR_PANEL_WIDTH, 0)
+		intro_title_label.add_theme_font_size_override("font_size", 26)
+		intro_body_label.add_theme_font_size_override("font_size", 16)
+		intro_continue_button.custom_minimum_size = Vector2(0, 42)
+	else:
+		intro_panel.custom_minimum_size = Vector2(760, 0)
+		intro_title_label.add_theme_font_size_override("font_size", 33)
+		intro_body_label.add_theme_font_size_override("font_size", 18)
+		intro_continue_button.custom_minimum_size = Vector2(0, 48)
 
 
 func _exit_tree() -> void:
@@ -593,14 +759,106 @@ func _minimize_intro_to_objectives() -> void:
 	_refresh_intro_guidance()
 
 
+func _refresh_intro_tour_targets() -> void:
+	_clear_intro_tour_highlights()
+	intro_tour_highlight_time = 0.0
+	if not _is_intro_tour_step(intro_step):
+		intro_dim.modulate = Color(1, 1, 1, 1)
+		return
+	show_main_camp()
+	match intro_step:
+		IntroStep.CAMP_TEAM:
+			intro_highlight_targets = [main_team_card]
+		IntroStep.CAMP_COLLECTION:
+			intro_highlight_targets = [collection_nav_button]
+		IntroStep.CAMP_SELECTED_MAP:
+			intro_highlight_targets = [main_map_summary_card]
+		IntroStep.CAMP_MAPS:
+			intro_highlight_targets = [maps_nav_button]
+		IntroStep.CAMP_CRAFTING:
+			intro_highlight_targets = [crafting_nav_button]
+		IntroStep.CAMP_OBJECTIVE:
+			intro_highlight_targets = [main_objective_summary_card]
+	_position_intro_panel_near_highlight()
+
+
+func _is_intro_tour_step(step: int) -> bool:
+	return step == IntroStep.CAMP_TEAM \
+		or step == IntroStep.CAMP_COLLECTION \
+		or step == IntroStep.CAMP_SELECTED_MAP \
+		or step == IntroStep.CAMP_MAPS \
+		or step == IntroStep.CAMP_CRAFTING \
+		or step == IntroStep.CAMP_OBJECTIVE
+
+
+func _clear_intro_tour_highlights() -> void:
+	for target in intro_highlight_targets:
+		if target == null:
+			continue
+		target.scale = Vector2.ONE
+		target.modulate = Color(1, 1, 1, 1)
+		_restore_highlight_border(target)
+	intro_highlight_targets.clear()
+
+
+func _position_intro_panel_near_highlight() -> void:
+	if not _is_intro_tour_step(intro_step) or intro_highlight_targets.is_empty():
+		return
+	await get_tree().process_frame
+	if not _is_intro_tour_step(intro_step) or intro_highlight_targets.is_empty():
+		return
+	var target := intro_highlight_targets[0]
+	if target == null:
+		return
+
+	intro_panel.top_level = true
+	intro_panel.size = intro_panel.get_combined_minimum_size()
+	var viewport_size := get_viewport_rect().size
+	var target_pos := target.global_position
+	var target_size := target.size
+	var panel_size := intro_panel.size
+	var desired := _get_intro_callout_position(target_pos, target_size, panel_size, viewport_size)
+	intro_panel.global_position = desired
+
+
+func _get_intro_callout_position(target_pos: Vector2, target_size: Vector2, panel_size: Vector2, viewport_size: Vector2) -> Vector2:
+	var right_pos := Vector2(target_pos.x + target_size.x + INTRO_TOUR_MARGIN, target_pos.y)
+	var left_pos := Vector2(target_pos.x - panel_size.x - INTRO_TOUR_MARGIN, target_pos.y)
+	var below_pos := Vector2(target_pos.x, target_pos.y + target_size.y + INTRO_TOUR_MARGIN)
+	var above_pos := Vector2(target_pos.x, target_pos.y - panel_size.y - INTRO_TOUR_MARGIN)
+	var candidates := [right_pos, left_pos, below_pos, above_pos]
+	for candidate in candidates:
+		if candidate.x >= INTRO_TOUR_MARGIN \
+				and candidate.y >= INTRO_TOUR_MARGIN \
+				and candidate.x + panel_size.x <= viewport_size.x - INTRO_TOUR_MARGIN \
+				and candidate.y + panel_size.y <= viewport_size.y - INTRO_TOUR_MARGIN:
+			return candidate
+	var clamped_x := clampf(right_pos.x, INTRO_TOUR_MARGIN, maxf(INTRO_TOUR_MARGIN, viewport_size.x - panel_size.x - INTRO_TOUR_MARGIN))
+	var clamped_y := clampf(right_pos.y, INTRO_TOUR_MARGIN, maxf(INTRO_TOUR_MARGIN, viewport_size.y - panel_size.y - INTRO_TOUR_MARGIN))
+	return Vector2(clamped_x, clamped_y)
+
+
+func _update_intro_tour_highlights(delta: float) -> void:
+	if not _is_intro_tour_step(intro_step):
+		return
+	intro_tour_highlight_time += delta
+	for target in intro_highlight_targets:
+		if target == null:
+			continue
+		target.scale = Vector2.ONE
+		target.modulate = Color(1, 1, 1, 1)
+		_apply_highlight_border(target)
+
+
 func _refresh_intro_guidance() -> void:
 	if not intro_guidance_active:
 		main_map_hint_label.self_modulate = Color(1, 1, 1, 1)
+		main_objective_hint_label.self_modulate = Color(1, 1, 1, 1)
 		return
 	if current_view != CampView.MAIN:
 		return
-	main_map_label.text = _selected_map_summary_text()
-	main_map_hint_label.self_modulate = Color(1, 0.96, 0.84, 1)
+	_refresh_objective_summary()
+	main_objective_hint_label.self_modulate = Color(1, 0.96, 0.84, 1)
 
 
 func _stop_venture_highlight() -> void:
@@ -608,23 +866,52 @@ func _stop_venture_highlight() -> void:
 	venture_highlight_time = 0.0
 	_set_objective_highlight(venture_btn, false)
 	main_map_hint_label.self_modulate = Color(1, 1, 1, 1)
+	main_objective_hint_label.self_modulate = Color(1, 1, 1, 1)
 
 
 func _advance_intro_flow() -> void:
 	match intro_step:
 		IntroStep.REALM:
-			intro_step = IntroStep.CAMP_BRIEFING
+			GameState.mark_camp_realm_intro_shown()
+			intro_step = IntroStep.CAMP_TEAM
 			_show_intro_step()
-		IntroStep.CAMP_BRIEFING:
+		IntroStep.CAMP_TEAM:
+			intro_step = IntroStep.CAMP_OBJECTIVE
+			_show_intro_step()
+		IntroStep.CAMP_COLLECTION:
+			GameState.mark_camp_collection_intro_shown()
+			intro_step = IntroStep.NONE
+			intro_overlay.visible = false
+			call_deferred("_maybe_show_crafting_unlock_popup")
+		IntroStep.CAMP_SELECTED_MAP:
+			intro_step = IntroStep.CAMP_OBJECTIVE
+			_show_intro_step()
+		IntroStep.CAMP_MAPS:
+			GameState.mark_camp_maps_intro_shown()
+			intro_step = IntroStep.NONE
+			intro_overlay.visible = false
+			call_deferred("_maybe_show_crafting_unlock_popup")
+		IntroStep.CAMP_CRAFTING:
+			GameState.mark_camp_crafting_intro_shown()
+			intro_step = IntroStep.NONE
+			intro_overlay.visible = false
+		IntroStep.CAMP_OBJECTIVE:
 			GameState.intro_popup_seen_this_session = true
 			intro_step = IntroStep.NONE
-			_minimize_intro_to_objectives()
+			intro_overlay.visible = false
+			intro_dim.modulate = Color(1, 1, 1, 1)
+			_clear_intro_tour_highlights()
+			intro_guidance_active = true
+			_refresh_intro_guidance()
+			call_deferred("_maybe_show_crafting_unlock_popup")
 		IntroStep.FIRST_DEFEAT:
 			intro_step = IntroStep.NONE
 			intro_overlay.visible = false
+			call_deferred("_maybe_show_crafting_unlock_popup")
 		IntroStep.EMBER_UNLOCK:
 			intro_step = IntroStep.NONE
 			intro_overlay.visible = false
+			call_deferred("_maybe_show_crafting_unlock_popup")
 		_:
 			intro_overlay.visible = false
 
@@ -633,6 +920,7 @@ func _maybe_show_first_defeat_popup() -> void:
 	if not GameState.consume_first_defeat_popup():
 		return
 	intro_guidance_active = false
+	_clear_intro_tour_highlights()
 	intro_step = IntroStep.FIRST_DEFEAT
 	_show_intro_step()
 
@@ -641,8 +929,48 @@ func _maybe_show_ember_unlock_popup() -> void:
 	if not GameState.consume_ember_unlock_notification():
 		return
 	intro_guidance_active = false
+	_clear_intro_tour_highlights()
 	intro_step = IntroStep.EMBER_UNLOCK
 	_show_intro_step()
+
+
+func _maybe_show_crafting_unlock_popup() -> void:
+	if intro_step != IntroStep.NONE or current_view != CampView.MAIN:
+		return
+	if not GameState.consume_crafting_unlock_notification():
+		return
+	intro_guidance_active = false
+	_clear_intro_tour_highlights()
+	intro_step = IntroStep.CAMP_CRAFTING
+	_show_intro_step()
+
+
+func _maybe_show_launch_intro() -> void:
+	if intro_step != IntroStep.NONE:
+		return
+	if not GameState.should_show_camp_realm_intro():
+		return
+	intro_guidance_active = false
+	_clear_intro_tour_highlights()
+	intro_step = IntroStep.REALM
+	_show_intro_step()
+
+
+func _maybe_show_main_camp_system_intro() -> void:
+	if intro_step != IntroStep.NONE or current_view != CampView.MAIN:
+		return
+	if collection_nav_button.visible and GameState.should_show_camp_collection_intro():
+		intro_guidance_active = false
+		_clear_intro_tour_highlights()
+		intro_step = IntroStep.CAMP_COLLECTION
+		_show_intro_step()
+		return
+	if maps_nav_button.visible and GameState.should_show_camp_maps_intro():
+		intro_guidance_active = false
+		_clear_intro_tour_highlights()
+		intro_step = IntroStep.CAMP_MAPS
+		_show_intro_step()
+		return
 
 
 func _unhandled_input(event: InputEvent) -> void:
@@ -655,6 +983,9 @@ func _unhandled_input(event: InputEvent) -> void:
 
 func _process(delta: float) -> void:
 	tutorial_highlight_time += delta
+	if _is_intro_tour_step(intro_step):
+		_update_intro_tour_highlights(delta)
+		return
 	if not _should_highlight_venture_button():
 		_set_objective_highlight(venture_btn, false)
 	else:
@@ -687,20 +1018,33 @@ func _refresh() -> void:
 	venture_btn.disabled = GameState.party.is_empty()
 	_refresh_intro_guidance()
 	_refresh_crafting_tutorial_state()
+	call_deferred("_maybe_show_crafting_unlock_popup")
+	call_deferred("_maybe_show_main_camp_system_intro")
 
 
 func refresh_main_camp_summary() -> void:
 	_rebuild_party_chips(main_team_chips)
 	main_party_label.text = _party_text()
 	main_party_label.visible = GameState.party.is_empty()
+	crafting_nav_button.visible = GameState.crafting_unlocked
+	maps_nav_button.visible = GameState.maps_menu_unlocked
+	main_map_summary_card.visible = GameState.maps_menu_unlocked
+	collection_nav_button.visible = GameState.collection_unlocked
+	navigation_card.visible = crafting_nav_button.visible or maps_nav_button.visible or collection_nav_button.visible
 	_refresh_selected_creature_card(
 		main_selected_name_label,
-		main_selected_stats_label,
+		main_stats_container,
 		main_selected_portrait,
-		"Choose a creature to inspect."
+		"Choose a creature to inspect.",
+		null,
+		null,
+		main_held_item_box
 	)
-	main_map_label.text = _selected_map_summary_text()
-	WorldUI.populate_resource_chips(main_resources_chips, GameState.get_item_count(SEAL_ITEM_ID), GameState.materials, "wood")
+	main_map_label.text = _selected_map_display_name()
+	main_map_hint_label.text = "Next venture destination."
+	_update_main_map_icon()
+	_refresh_objective_summary()
+
 	_refresh_intro_guidance()
 
 
@@ -713,11 +1057,12 @@ func _refresh_collection_menu() -> void:
 	collection_party_label.visible = GameState.party.is_empty()
 	_refresh_selected_creature_card(
 		collection_selected_name_label,
-		collection_selected_stats_label,
+		collection_stats_container,
 		collection_selected_portrait,
 			"Bind a creature to start building held-item loadouts.",
 		collection_selected_abilities_container,
-		collection_held_item_label
+		collection_held_item_label,
+		collection_held_item_box
 	)
 	var selected_creature := get_selected_creature()
 	_refresh_collection_transfer_button(selected_creature)
@@ -738,6 +1083,16 @@ func _refresh_maps_menu() -> void:
 			child.set_selected(child.text == _selected_map_display_name())
 
 
+func _refresh_objective_summary() -> void:
+	var objective := GameState.get_active_or_next_primary_objective()
+	if objective.is_empty():
+		main_objective_label.text = "NO ACTIVE OBJECTIVE"
+		main_objective_hint_label.text = "Venture when ready."
+		return
+	main_objective_label.text = GameState.get_objective_display_text(objective)
+	main_objective_hint_label.text = "Use camp systems to prepare, then venture out."
+
+
 func _refresh_crafting_menu() -> void:
 	WorldUI.populate_resource_chips(crafting_mats_chips, GameState.get_item_count(SEAL_ITEM_ID), GameState.materials, "wood")
 	crafting_status_label.visible = true
@@ -753,8 +1108,8 @@ func _refresh_crafting_browser() -> void:
 	for category in crafting_browser["category_buttons"].keys():
 		var button: Button = crafting_browser["category_buttons"][category]
 		button.disabled = category == crafting_category
-	crafting_browser["owned_toggle"].text = "Owned Only: %s" % ("On" if crafting_owned_only else "Off")
-	crafting_browser["craftable_toggle"].text = "Craftable Only: %s" % ("On" if crafting_craftable_only else "Off")
+	crafting_browser["owned_toggle"].text = "OWNED ONLY: %s" % ("On" if crafting_owned_only else "Off")
+	crafting_browser["craftable_toggle"].text = "CRAFTABLE ONLY: %s" % ("On" if crafting_craftable_only else "Off")
 
 	var item_ids := _get_crafting_browser_item_ids()
 	_rebuild_crafting_grid(crafting_recipe_list, item_ids)
@@ -789,6 +1144,9 @@ func _refresh_collection_browser() -> void:
 func _get_crafting_browser_item_ids() -> Array[String]:
 	var item_ids: Array[String] = []
 	for item_id in GameData.get_item_ids_by_category(crafting_category):
+		var _item_data := GameData.get_item_data(item_id)
+		if bool(_item_data.get("requires_recipe", false)) and not GameState.has_recipe(item_id):
+			continue
 		if crafting_owned_only and GameState.get_item_count(item_id) <= 0:
 			continue
 		if crafting_craftable_only and not GameState.can_craft(item_id):
@@ -876,12 +1234,15 @@ func _rebuild_crafting_grid(container: GridContainer, item_ids: Array[String]) -
 	for child in container.get_children():
 		child.queue_free()
 	if item_ids.is_empty():
+		container.columns = 1
 		var empty_label := Label.new()
 		empty_label.text = "No items match the current filters."
 		empty_label.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
+		empty_label.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 		WorldUI.apply_label(empty_label, "subtitle", "verdant")
 		container.add_child(empty_label)
 		return
+	container.columns = 3
 	for item_id in item_ids:
 		var card := _create_crafting_card(item_id)
 		crafting_card_nodes[item_id] = card
@@ -893,8 +1254,10 @@ func _create_crafting_card(item_id: String) -> Button:
 	var variant := GameData.get_item_variant(item_id)
 	var recipe := GameData.get_item_recipe(item_id)
 	var can_craft := GameState.can_craft(item_id)
+	var rarity_color := GameData.get_item_rarity_color(item_id)
+
 	var button := Button.new()
-	button.custom_minimum_size = Vector2(210, 164)
+	button.custom_minimum_size = Vector2(210, 120)
 	button.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 	button.text = ""
 	button.tooltip_text = GameData.get_item_detail_text(item_id)
@@ -903,10 +1266,10 @@ func _create_crafting_card(item_id: String) -> Button:
 
 	var padding := MarginContainer.new()
 	padding.set_anchors_preset(Control.PRESET_FULL_RECT)
-	padding.add_theme_constant_override("margin_left", 12)
-	padding.add_theme_constant_override("margin_top", 12)
-	padding.add_theme_constant_override("margin_right", 12)
-	padding.add_theme_constant_override("margin_bottom", 12)
+	padding.add_theme_constant_override("margin_left", 10)
+	padding.add_theme_constant_override("margin_top", 10)
+	padding.add_theme_constant_override("margin_right", 10)
+	padding.add_theme_constant_override("margin_bottom", 10)
 	padding.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	button.add_child(padding)
 
@@ -916,6 +1279,7 @@ func _create_crafting_card(item_id: String) -> Button:
 	content.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	padding.add_child(content)
 
+	# Name at top
 	var title := Label.new()
 	title.text = str(item_data.get("name", item_id))
 	title.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
@@ -925,20 +1289,31 @@ func _create_crafting_card(item_id: String) -> Button:
 	WorldUI.apply_label(title, "title", variant)
 	content.add_child(title)
 
-	var icon_holder := PanelContainer.new()
-	icon_holder.custom_minimum_size = Vector2(0, 60)
-	icon_holder.mouse_filter = Control.MOUSE_FILTER_IGNORE
-	WorldUI.apply_panel(icon_holder, "parchment")
-	content.add_child(icon_holder)
+	# Body row: icon left, recipe right
+	var body_row := HBoxContainer.new()
+	body_row.size_flags_vertical = Control.SIZE_EXPAND_FILL
+	body_row.add_theme_constant_override("separation", 8)
+	body_row.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	content.add_child(body_row)
 
-	var icon_padding := MarginContainer.new()
-	icon_padding.set_anchors_preset(Control.PRESET_FULL_RECT)
-	icon_padding.add_theme_constant_override("margin_left", 10)
-	icon_padding.add_theme_constant_override("margin_top", 10)
-	icon_padding.add_theme_constant_override("margin_right", 10)
-	icon_padding.add_theme_constant_override("margin_bottom", 10)
-	icon_padding.mouse_filter = Control.MOUSE_FILTER_IGNORE
-	icon_holder.add_child(icon_padding)
+	# Item icon with rarity-colored border
+	var icon_holder := PanelContainer.new()
+	icon_holder.custom_minimum_size = Vector2(64, 64)
+	icon_holder.size_flags_vertical = Control.SIZE_SHRINK_CENTER
+	icon_holder.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	var icon_style := StyleBoxFlat.new()
+	icon_style.bg_color = WorldUI.get_variant_colors("parchment")["fill"]
+	icon_style.border_color = rarity_color
+	icon_style.border_width_left = 3
+	icon_style.border_width_top = 3
+	icon_style.border_width_right = 3
+	icon_style.border_width_bottom = 3
+	icon_style.content_margin_left = 6.0
+	icon_style.content_margin_top = 6.0
+	icon_style.content_margin_right = 6.0
+	icon_style.content_margin_bottom = 6.0
+	icon_holder.add_theme_stylebox_override("panel", icon_style)
+	body_row.add_child(icon_holder)
 
 	var icon_path := GameData.get_item_icon_path(item_id)
 	if not icon_path.is_empty():
@@ -947,10 +1322,9 @@ func _create_crafting_card(item_id: String) -> Button:
 		icon.expand_mode = TextureRect.EXPAND_IGNORE_SIZE
 		icon.stretch_mode = TextureRect.STRETCH_KEEP_ASPECT_CENTERED
 		icon.texture_filter = CanvasItem.TEXTURE_FILTER_NEAREST
-		icon.size_flags_horizontal = Control.SIZE_EXPAND_FILL
-		icon.size_flags_vertical = Control.SIZE_EXPAND_FILL
+		icon.custom_minimum_size = Vector2(48, 48)
 		icon.mouse_filter = Control.MOUSE_FILTER_IGNORE
-		icon_padding.add_child(icon)
+		icon_holder.add_child(icon)
 	else:
 		var fallback := Label.new()
 		fallback.text = "?"
@@ -959,18 +1333,50 @@ func _create_crafting_card(item_id: String) -> Button:
 		fallback.add_theme_font_size_override("font_size", 28)
 		fallback.mouse_filter = Control.MOUSE_FILTER_IGNORE
 		WorldUI.apply_label(fallback, "dark", "parchment")
-		icon_padding.add_child(fallback)
+		icon_holder.add_child(fallback)
 
-	var recipe_label := Label.new()
-	recipe_label.text = GameData.format_material_cost(recipe) if not recipe.is_empty() else "No recipe"
-	recipe_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
-	recipe_label.vertical_alignment = VERTICAL_ALIGNMENT_CENTER
-	recipe_label.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
-	recipe_label.size_flags_vertical = Control.SIZE_EXPAND_FILL
-	recipe_label.mouse_filter = Control.MOUSE_FILTER_IGNORE
-	recipe_label.add_theme_font_size_override("font_size", 11)
-	WorldUI.apply_label(recipe_label, "body", variant)
-	content.add_child(recipe_label)
+	# Recipe icons on the right
+	var recipe_col := HFlowContainer.new()
+	recipe_col.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	recipe_col.size_flags_vertical = Control.SIZE_SHRINK_CENTER
+	recipe_col.add_theme_constant_override("h_separation", 6)
+	recipe_col.add_theme_constant_override("v_separation", 4)
+	recipe_col.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	body_row.add_child(recipe_col)
+
+	if recipe.is_empty():
+		var no_recipe := Label.new()
+		no_recipe.text = "No recipe"
+		no_recipe.add_theme_font_size_override("font_size", 11)
+		no_recipe.mouse_filter = Control.MOUSE_FILTER_IGNORE
+		WorldUI.apply_label(no_recipe, "subtitle", variant)
+		recipe_col.add_child(no_recipe)
+	else:
+		for mat_key in recipe:
+			var amount: int = int(recipe[mat_key])
+			var mat_meta: Dictionary = WorldUI.RESOURCE_META.get(str(mat_key), {})
+			var mat_row := HBoxContainer.new()
+			mat_row.add_theme_constant_override("separation", 4)
+			mat_row.mouse_filter = Control.MOUSE_FILTER_IGNORE
+			recipe_col.add_child(mat_row)
+
+			var mat_icon_path := str(mat_meta.get("icon_path", ""))
+			if not mat_icon_path.is_empty():
+				var mat_icon := TextureRect.new()
+				mat_icon.texture = load(mat_icon_path)
+				mat_icon.custom_minimum_size = Vector2(38, 38)
+				mat_icon.expand_mode = TextureRect.EXPAND_IGNORE_SIZE
+				mat_icon.stretch_mode = TextureRect.STRETCH_KEEP_ASPECT_CENTERED
+				mat_icon.texture_filter = CanvasItem.TEXTURE_FILTER_NEAREST
+				mat_icon.mouse_filter = Control.MOUSE_FILTER_IGNORE
+				mat_row.add_child(mat_icon)
+
+			var qty_label := Label.new()
+			qty_label.text = "×%d" % amount
+			qty_label.add_theme_font_size_override("font_size", 18)
+			qty_label.mouse_filter = Control.MOUSE_FILTER_IGNORE
+			WorldUI.apply_label(qty_label, "title", variant)
+			mat_row.add_child(qty_label)
 
 	return button
 
@@ -1112,46 +1518,60 @@ func _update_collection_tutorial_highlights(delta: float) -> void:
 func _set_objective_highlight(button: Button, enabled: bool, pulse: float = 1.0) -> void:
 	if enabled:
 		button.scale = Vector2.ONE * pulse
-		button.modulate = Color(1.0, 1.0, 1.0, 1.0).lerp(OBJECTIVE_HIGHLIGHT_COLOR, 0.28)
-		_apply_objective_border(button)
+		button.modulate = Color(1, 1, 1, 1)
+		_apply_highlight_border(button)
 	else:
 		button.scale = Vector2.ONE
 		button.modulate = Color(1, 1, 1, 1)
-		_restore_objective_border(button)
+		_restore_highlight_border(button)
 
 
-func _apply_objective_border(button: Button) -> void:
-	if bool(button.get_meta("_objective_border_active", false)):
+func _apply_highlight_border(target: Control) -> void:
+	if bool(target.get_meta("_objective_border_active", false)):
 		return
 	var original_styles := {}
-	for style_name in ["normal", "hover", "pressed", "focus", "disabled"]:
-		var style_box := button.get_theme_stylebox(style_name)
+	for style_name in _get_highlight_style_names(target):
+		var style_box := target.get_theme_stylebox(style_name)
 		if style_box == null:
 			continue
 		original_styles[style_name] = style_box
 		if style_box is StyleBoxFlat:
 			var highlighted_style: StyleBoxFlat = (style_box as StyleBoxFlat).duplicate()
-			highlighted_style.border_width_left = 3
-			highlighted_style.border_width_top = 3
-			highlighted_style.border_width_right = 3
-			highlighted_style.border_width_bottom = 3
+			highlighted_style.border_width_left = 4
+			highlighted_style.border_width_top = 4
+			highlighted_style.border_width_right = 4
+			highlighted_style.border_width_bottom = 4
 			highlighted_style.border_color = OBJECTIVE_HIGHLIGHT_BORDER_COLOR
-			button.add_theme_stylebox_override(style_name, highlighted_style)
-	button.set_meta("_objective_original_styles", original_styles)
-	button.set_meta("_objective_border_active", true)
+			target.add_theme_stylebox_override(style_name, highlighted_style)
+	target.set_meta("_objective_original_styles", original_styles)
+	target.set_meta("_objective_border_active", true)
+
+
+func _restore_highlight_border(target: Control) -> void:
+	if not bool(target.get_meta("_objective_border_active", false)):
+		return
+	var original_styles: Dictionary = target.get_meta("_objective_original_styles", {})
+	for style_name in _get_highlight_style_names(target):
+		if original_styles.has(style_name):
+			target.add_theme_stylebox_override(style_name, original_styles[style_name])
+		else:
+			target.remove_theme_stylebox_override(style_name)
+	target.set_meta("_objective_original_styles", {})
+	target.set_meta("_objective_border_active", false)
+
+
+func _get_highlight_style_names(target: Control) -> Array[String]:
+	if target is Button:
+		return ["normal", "hover", "pressed", "focus", "disabled"]
+	return ["panel"]
+
+
+func _apply_objective_border(button: Button) -> void:
+	_apply_highlight_border(button)
 
 
 func _restore_objective_border(button: Button) -> void:
-	if not bool(button.get_meta("_objective_border_active", false)):
-		return
-	var original_styles: Dictionary = button.get_meta("_objective_original_styles", {})
-	for style_name in ["normal", "hover", "pressed", "focus", "disabled"]:
-		if original_styles.has(style_name):
-			button.add_theme_stylebox_override(style_name, original_styles[style_name])
-		else:
-			button.remove_theme_stylebox_override(style_name)
-	button.set_meta("_objective_original_styles", {})
-	button.set_meta("_objective_border_active", false)
+	_restore_highlight_border(button)
 
 
 func _format_collection_browser_row(item_id: String, selected: bool) -> String:
@@ -1173,14 +1593,15 @@ func _refresh_collection_detail() -> void:
 
 func _refresh_item_detail_panel(detail: Dictionary, item_id: String, context: String) -> void:
 	if item_id.is_empty():
-		detail["title"].text = "No Item Selected"
+		detail["title"].text = "NO ITEM SELECTED"
 		detail["meta"].text = ""
 		detail["description"].text = "Select an item from the list."
 		detail["owned"].text = ""
 		detail["effect"].text = ""
 		detail["recipe"].text = ""
-		detail["action_button"].text = "Unavailable"
+		detail["action_button"].text = "UNAVAILABLE"
 		detail["action_button"].disabled = true
+		detail["action_button"].set_meta("sfx_click_enabled", false)
 		return
 	var item_data := GameData.get_item_data(item_id)
 	detail["title"].text = str(item_data.get("name", item_id))
@@ -1198,19 +1619,23 @@ func _refresh_item_detail_panel(detail: Dictionary, item_id: String, context: St
 	detail["recipe"].text = "Recipe: %s" % (GameData.format_material_cost(recipe) if not recipe.is_empty() else "None")
 	match context:
 		"craft":
-			detail["action_button"].text = "Craft"
+			detail["action_button"].text = "CRAFT"
 			detail["action_button"].disabled = not GameState.can_craft(item_id)
+			detail["action_button"].set_meta("sfx_click_enabled", false)
 		GameData.ITEM_CATEGORY_HELD:
 			var creature := get_selected_creature()
 			var equipped := str(creature.get("held_item_id", "")) == item_id
-			detail["action_button"].text = "Equipped" if equipped else "Equip"
+			detail["action_button"].text = "EQUIPPED" if equipped else "EQUIP"
 			detail["action_button"].disabled = creature.is_empty() or equipped or GameState.get_item_count(item_id) <= 0
+			detail["action_button"].set_meta("sfx_click_enabled", not detail["action_button"].disabled)
 		GameData.ITEM_CATEGORY_CONSUMABLE:
-			detail["action_button"].text = "Use"
+			detail["action_button"].text = "USE"
 			detail["action_button"].disabled = get_selected_creature().is_empty() or GameState.get_item_count(item_id) <= 0
+			detail["action_button"].set_meta("sfx_click_enabled", false)
 		_:
-			detail["action_button"].text = "View"
+			detail["action_button"].text = "VIEW"
 			detail["action_button"].disabled = true
+			detail["action_button"].set_meta("sfx_click_enabled", false)
 
 
 func _rebuild_party_chips(container: Node) -> void:
@@ -1250,16 +1675,17 @@ func _rebuild_storage_chips() -> void:
 
 func _refresh_selected_creature_card(
 	name_label: Label,
-	stats_label: Label,
+	stats_container: Control,
 	portrait: TextureRect,
 	empty_text: String,
 	abilities_container: VBoxContainer = null,
-	held_item_label: Label = null
+	held_item_label: Label = null,
+	held_item_box: Control = null
 ) -> void:
 	var mon := get_selected_creature()
 	if mon.is_empty():
 		name_label.text = "No creatures available"
-		stats_label.text = empty_text
+		_build_empty_stats(stats_container, empty_text)
 		if abilities_container != null:
 			_populate_creature_abilities(abilities_container, {}, empty_text)
 		if held_item_label != null:
@@ -1273,41 +1699,251 @@ func _refresh_selected_creature_card(
 		str(mon.get("name", "Creature")),
 		int(mon.get("level", GameData.DEFAULT_LEVEL)),
 	]
-	stats_label.text = "HP %d / %d   MP %d / %d\nATK %d   DEF %d   SPD %d\nACC %d   EVA %d   CRIT %d%%\nEXP %d / %d" % [
-		int(mon.get("hp", 0)),
-		int(stats.get("hp_max", 0)),
-		int(mon.get("mp", 0)),
-		int(stats.get("mp_max", GameData.get_default_mp())),
-		int(stats.get("atk", 0)),
-		int(stats.get("def", 0)),
-		int(stats.get("spd", 0)),
-		int(stats.get("acc", GameData.get_default_acc())),
-		int(stats.get("eva", GameData.get_default_eva())),
-		int(stats.get("crit", GameData.get_default_crit())),
-		int(mon.get("exp", 0)),
-		GameData.get_total_exp_for_level(min(int(mon.get("level", GameData.DEFAULT_LEVEL)) + 1, GameData.MAX_LEVEL)),
-	]
+	_build_visual_stats(stats_container, mon, stats)
 	if abilities_container != null:
 		_populate_creature_abilities(abilities_container, mon, empty_text)
 	if held_item_label != null:
 		var held_item := GameState.get_creature_held_item(mon)
 		held_item_label.text = "Held Item: %s" % str(held_item.get("name", "None"))
 		held_item_label.tooltip_text = str(held_item.get("description", "No held item equipped."))
+	if held_item_box != null:
+		_update_held_item_box(held_item_box, mon)
 	var texture := _load_creature_portrait(mon)
 	portrait.texture = texture
 	portrait.visible = texture != null
 
 
+func _create_item_box_next_to_name(name_label: Label) -> Control:
+	var parent := name_label.get_parent()
+	var idx := name_label.get_index()
+
+	var row := HBoxContainer.new()
+	row.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	row.add_theme_constant_override("separation", 8)
+	parent.remove_child(name_label)
+	parent.add_child(row)
+	parent.move_child(row, idx)
+	row.add_child(name_label)
+	name_label.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+
+	var box := PanelContainer.new()
+	box.custom_minimum_size = Vector2(36, 36)
+	box.size_flags_vertical = Control.SIZE_SHRINK_CENTER
+	box.mouse_filter = Control.MOUSE_FILTER_STOP
+	WorldUI.apply_panel(box, "stone", true)
+	row.add_child(box)
+
+	var margin := MarginContainer.new()
+	margin.add_theme_constant_override("margin_left", 4)
+	margin.add_theme_constant_override("margin_top", 4)
+	margin.add_theme_constant_override("margin_right", 4)
+	margin.add_theme_constant_override("margin_bottom", 4)
+	box.add_child(margin)
+
+	var icon := TextureRect.new()
+	icon.custom_minimum_size = Vector2(32, 32)
+	icon.stretch_mode = TextureRect.STRETCH_KEEP_ASPECT_CENTERED
+	icon.expand_mode = TextureRect.EXPAND_IGNORE_SIZE
+	icon.texture_filter = CanvasItem.TEXTURE_FILTER_NEAREST
+	margin.add_child(icon)
+	box.set_meta("icon_rect", icon)
+
+	return box
+
+
+func _update_held_item_box(box: Control, mon: Dictionary) -> void:
+	var icon_rect: TextureRect = box.get_meta("icon_rect")
+	var held_item := GameState.get_creature_held_item(mon)
+	if held_item.is_empty() or str(held_item.get("icon_path", "")).is_empty():
+		icon_rect.texture = null
+		box.tooltip_text = ""
+		return
+	icon_rect.texture = load(str(held_item.get("icon_path", "")))
+	box.tooltip_text = "%s\n%s" % [
+		str(held_item.get("name", "")),
+		str(held_item.get("description", "")),
+	]
+
+
+func _replace_label_with_stats_container(label: Label) -> Control:
+	var parent := label.get_parent()
+	var idx := label.get_index()
+	var container := VBoxContainer.new()
+	container.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	container.add_theme_constant_override("separation", 4)
+	parent.add_child(container)
+	parent.move_child(container, idx)
+	label.queue_free()
+	return container
+
+
+func _build_empty_stats(container: Control, empty_text: String) -> void:
+	for child in container.get_children():
+		child.queue_free()
+	var lbl := Label.new()
+	lbl.text = empty_text
+	lbl.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
+	WorldUI.apply_label(lbl, "subtitle", "battle")
+	lbl.add_theme_font_size_override("font_size", 13)
+	container.add_child(lbl)
+
+
+func _build_visual_stats(container: Control, mon: Dictionary, stats: Dictionary) -> void:
+	for child in container.get_children():
+		child.queue_free()
+
+	var hp_cur := int(mon.get("hp", 0))
+	var hp_max := int(stats.get("hp_max", 1))
+	var mp_cur := int(mon.get("mp", 0))
+	var mp_max := int(stats.get("mp_max", GameData.get_default_mp()))
+	var exp_cur := int(mon.get("exp", 0))
+	var level := int(mon.get("level", GameData.DEFAULT_LEVEL))
+	var exp_at_level := GameData.get_total_exp_for_level(level)
+	var exp_at_next := GameData.get_total_exp_for_level(min(level + 1, GameData.MAX_LEVEL))
+	var exp_gained := exp_cur - exp_at_level
+	var exp_needed := exp_at_next - exp_at_level
+
+	container.add_child(_build_bar_row(HP_ICON_PATH, hp_cur, hp_max, HP_FILL_COLOR, HP_BG_COLOR))
+	container.add_child(_build_bar_row(MP_ICON_PATH, mp_cur, mp_max, MP_FILL_COLOR, MP_BG_COLOR))
+
+	var gap := Control.new()
+	gap.custom_minimum_size = Vector2(0, 6)
+	container.add_child(gap)
+
+	# Unified dark block: toggle header + expanded stats inside the same panel
+	var stats_block := PanelContainer.new()
+	WorldUI.apply_panel(stats_block, "battle", true)
+	container.add_child(stats_block)
+
+	var stats_vbox := VBoxContainer.new()
+	stats_vbox.add_theme_constant_override("separation", 6)
+	stats_block.add_child(stats_vbox)
+
+	var toggle_btn := Button.new()
+	toggle_btn.text = "STATS ▼"
+	toggle_btn.flat = true
+	toggle_btn.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	toggle_btn.add_theme_font_size_override("font_size", 12)
+	toggle_btn.add_theme_color_override("font_color", Color(0.78, 0.72, 0.60))
+	toggle_btn.add_theme_color_override("font_hover_color", Color(0.95, 0.90, 0.78))
+	toggle_btn.add_theme_color_override("font_pressed_color", Color(0.95, 0.90, 0.78))
+	toggle_btn.add_theme_color_override("font_focus_color", Color(0.78, 0.72, 0.60))
+	stats_vbox.add_child(toggle_btn)
+
+	var expanded_section := VBoxContainer.new()
+	expanded_section.add_theme_constant_override("separation", 6)
+	expanded_section.visible = false
+	stats_vbox.add_child(expanded_section)
+
+	var grid := GridContainer.new()
+	grid.columns = 3
+	grid.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	grid.add_theme_constant_override("h_separation", 6)
+	grid.add_theme_constant_override("v_separation", 4)
+	expanded_section.add_child(grid)
+
+	var stat_order: Array = [
+		["atk", int(stats.get("atk", 0)), ""],
+		["def", int(stats.get("def", 0)), ""],
+		["spd", int(stats.get("spd", 0)), ""],
+		["acc", int(stats.get("acc", GameData.get_default_acc())), ""],
+		["eva", int(stats.get("eva", GameData.get_default_eva())), ""],
+		["crit", int(stats.get("crit", GameData.get_default_crit())), "%"],
+	]
+	for entry in stat_order:
+		grid.add_child(_build_stat_chip(str(entry[0]), int(entry[1]), str(entry[2])))
+
+	expanded_section.add_child(_build_bar_row(EXP_ICON_PATH, exp_gained, exp_needed, EXP_FILL_COLOR, EXP_BG_COLOR))
+
+	toggle_btn.pressed.connect(func() -> void:
+		expanded_section.visible = not expanded_section.visible
+		toggle_btn.text = "STATS ▲" if expanded_section.visible else "STATS ▼"
+	)
+
+
+func _build_bar_row(icon_path: String, current: int, maximum: int, fill_color: Color, bg_color: Color) -> Control:
+	var col := VBoxContainer.new()
+	col.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	col.add_theme_constant_override("separation", 2)
+
+	var header := HBoxContainer.new()
+	header.add_theme_constant_override("separation", 5)
+	col.add_child(header)
+
+	var icon := TextureRect.new()
+	icon.texture = load(icon_path)
+	icon.custom_minimum_size = Vector2(20, 20)
+	icon.stretch_mode = TextureRect.STRETCH_KEEP_ASPECT_CENTERED
+	icon.expand_mode = TextureRect.EXPAND_IGNORE_SIZE
+	icon.texture_filter = CanvasItem.TEXTURE_FILTER_NEAREST
+	header.add_child(icon)
+
+	var val_label := Label.new()
+	val_label.text = "%d / %d" % [current, maximum]
+	val_label.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	WorldUI.apply_label(val_label, "subtitle", "battle")
+	val_label.add_theme_font_size_override("font_size", 12)
+	header.add_child(val_label)
+
+	var bar := ProgressBar.new()
+	bar.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	bar.custom_minimum_size = Vector2(0, 8)
+	bar.max_value = max(maximum, 1)
+	bar.value = current
+	bar.show_percentage = false
+
+	var fill_style := StyleBoxFlat.new()
+	fill_style.bg_color = fill_color
+
+	var bg_style := StyleBoxFlat.new()
+	bg_style.bg_color = bg_color
+	bg_style.border_color = bg_color.darkened(0.4)
+	bg_style.border_width_left = 1
+	bg_style.border_width_top = 1
+	bg_style.border_width_right = 1
+	bg_style.border_width_bottom = 1
+
+	bar.add_theme_stylebox_override("fill", fill_style)
+	bar.add_theme_stylebox_override("background", bg_style)
+	col.add_child(bar)
+
+	return col
+
+
+func _build_stat_chip(stat_key: String, value: int, suffix: String) -> Control:
+	var row := HBoxContainer.new()
+	row.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	row.add_theme_constant_override("separation", 4)
+
+	var icon_path: String = STAT_ICONS.get(stat_key, "")
+	if not icon_path.is_empty():
+		var icon := TextureRect.new()
+		icon.texture = load(icon_path)
+		icon.custom_minimum_size = Vector2(20, 20)
+		icon.stretch_mode = TextureRect.STRETCH_KEEP_ASPECT_CENTERED
+		icon.expand_mode = TextureRect.EXPAND_IGNORE_SIZE
+		icon.texture_filter = CanvasItem.TEXTURE_FILTER_NEAREST
+		row.add_child(icon)
+
+	var val_label := Label.new()
+	val_label.text = "%d%s" % [value, suffix]
+	WorldUI.apply_label(val_label, "title", "battle")
+	val_label.add_theme_font_size_override("font_size", 13)
+	row.add_child(val_label)
+
+	return row
+
+
 func _refresh_collection_transfer_button(mon: Dictionary) -> void:
 	if mon.is_empty():
-		collection_transfer_button.text = "Move"
+		collection_transfer_button.text = "MOVE"
 		collection_transfer_button.disabled = true
 		return
 	if selected_creature_source == "party":
-		collection_transfer_button.text = "Move to Storage"
+		collection_transfer_button.text = "MOVE TO STORAGE"
 		collection_transfer_button.disabled = false
 		return
-	collection_transfer_button.text = "Add to Team"
+	collection_transfer_button.text = "ADD TO TEAM"
 	collection_transfer_button.disabled = GameState.party.size() >= GameState.get_party_limit()
 
 
@@ -1480,6 +2116,8 @@ func _craft_item(item_id: String) -> void:
 		crafting_status_label.visible = true
 		return
 	var item_data := GameData.get_item_data(item_id)
+	var craft_sound := "craft_consumable" if str(item_data.get("category", "")) == GameData.ITEM_CATEGORY_CONSUMABLE else "craft_item"
+	_play_sfx(craft_sound)
 	crafting_status_label.text = "Crafted %s." % str(item_data.get("name", item_id))
 	crafting_status_label.visible = true
 	main_status_label.text = "%s added to your supplies." % str(item_data.get("name", item_id))
@@ -1594,21 +2232,6 @@ func _selected_map_display_name() -> String:
 	return str(GameData.maps.get(map_id, {}).get("display_name", map_id))
 
 
-func _selected_map_summary_text() -> String:
-	if intro_guidance_active:
-		return "%s\n%s" % [
-			"Global venture objectives",
-			INTRO_DOCKED_OBJECTIVE,
-		]
-	var next_objective := GameState.get_next_global_objective()
-	if next_objective.is_empty():
-		return "%s is ready for the next venture." % _selected_map_display_name()
-	return "%s\nNext objective: %s" % [
-		"Global venture objectives",
-		GameState.get_objective_display_text(next_objective),
-	]
-
-
 func _creature_chip_text(mon: Dictionary) -> String:
 	return "%s Lv.%d" % [
 		str(mon.get("name", "Creature")),
@@ -1657,3 +2280,9 @@ func _item_name_list(item_ids: Array[String]) -> Array[String]:
 	for item_id in item_ids:
 		names.append(str(GameData.get_item_data(item_id).get("name", item_id)))
 	return names
+
+
+func _play_sfx(effect_id: String, volume_db: float = 0.0) -> void:
+	var sfx := get_node_or_null("/root/Sfx")
+	if sfx != null:
+		sfx.call("play", effect_id, volume_db)

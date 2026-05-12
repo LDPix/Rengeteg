@@ -20,6 +20,8 @@ texture_filter = 1
 position = Vector2(0, -40)
 
 [node name="HintPanel" type="PanelContainer" parent="."]
+z_index = 4096
+z_as_relative = false
 offset_left = -82.0
 offset_top = -44.0
 offset_right = 82.0
@@ -37,6 +39,8 @@ text = "E  EXPLORE"
 
 [node name="ResultPanel" type="PanelContainer" parent="."]
 visible = false
+z_index = 4096
+z_as_relative = false
 offset_left = -112.0
 offset_top = -84.0
 offset_right = 112.0

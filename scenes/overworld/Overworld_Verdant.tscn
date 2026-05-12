@@ -10,18 +10,25 @@
 [ext_resource type="Script" path="res://scripts/poi_spawn_point.gd" id="9_poi_point"]
 [ext_resource type="Script" path="res://scripts/path_blocker.gd" id="10_path_blocker"]
 
-[sub_resource type="RectangleShape2D" id="2_encounter_shape_small"]
+[sub_resource type="RectangleShape2D" id="enc_small"]
 size = Vector2(128, 96)
 
-[sub_resource type="RectangleShape2D" id="1_encounter_shape"]
-size = Vector2(224, 128)
+[sub_resource type="RectangleShape2D" id="enc_medium"]
+size = Vector2(192, 128)
 
-[sub_resource type="RectangleShape2D" id="3_encounter_shape_deep"]
-size = Vector2(160, 128)
+[sub_resource type="RectangleShape2D" id="enc_tall"]
+size = Vector2(96, 192)
+
+[sub_resource type="RectangleShape2D" id="enc_large"]
+size = Vector2(224, 160)
+
+[sub_resource type="RectangleShape2D" id="enc_square_4x4"]
+size = Vector2(128, 128)
 
 [node name="Overworld" type="Node2D" unique_id=750787014]
 script = ExtResource("1_overworld")
 encounter_chance = 0.1
+object_tiles_block_movement = true
 
 [node name="BackgroundRoot" type="CanvasLayer" parent="." unique_id=1659316288]
 layer = -1
@@ -32,56 +39,74 @@ anchor_right = 1.0
 anchor_bottom = 1.0
 grow_horizontal = 2
 grow_vertical = 2
-color = Color(0.47, 0.49, 0.52, 1)
+color = Color(0.345098, 0.564706, 0.254902, 1)
 
 
 [node name="TileMap_Background" type="TileMapLayer" parent="." unique_id=1998287860]
 texture_filter = 1
-position = Vector2(-320, -224)
+z_index = -3000
+position = Vector2(-928, -768)
 script = ExtResource("2_tile_layer")
-layout_rows = PackedStringArray("gggggggggggggggggggggggg", "gggggggggggggggggggggggg", "gggggggggggggggggggggggg", "gggggggggggggggggggggggg", "gggggggggggggggggggggggg", "gggggggggggggggggggggggg", "gggggggggggggggggggggggg", "gggggggggggggggggggggggg", "gggggggggggggggggggggggg", "gggggggggggggggggggggggg", "gggggggggggggggggggggggg", "gggggggggggggggggggggggg", "gggggggggggggggggggggggg", "gggggggggggggggggggggggg", "gggggggggggggggggggggggg", "gggggggggggggggggggggggg", "gggggggggggggggggggggggg", "gggggggggggggggggggggggg")
+layout_rows = PackedStringArray("gggggggggggggggggggggggggggggggggggggggggggggggggggggggggg", "gggggggggggggggggggggggggggggggggggggggggggggggggggggggggg", "gggggggggggggggggggggggggggggggggggggggggggggggggggggggggg", "gggggggggggggggggggggggggggggggggggggggggggggggggggggggggg", "gggggggggggggggggggggggggggggggggggggggggggggggggggggggggg", "gggggggggggggggggggggggggggggggggggggggggggggggggggggggggg", "gggggggggggggggggggggggggggggggggggggggggggggggggggggggggg", "gggggggggggggggggggggggggggggggggggggggggggggggggggggggggg", "gggggggggggggggggggggggggggggggggggggggggggggggggggggggggg", "gggggggggggggggggggggggggggggggggggggggggggggggggggggggggg", "gggggggggggggggggggggggggggggggggggggggggggggggggggggggggg", "gggggggggggggggggggggggggggggggggggggggggggggggggggggggggg", "gggggggggggggggggggggggggggggggggggggggggggggggggggggggggg", "gggggggggggggggggggggggggggggggggggggggggggggggggggggggggg", "gggggggggggggggggggggggggggggggggggggggggggggggggggggggggg", "gggggggggggggggggggggggggggggggggggggggggggggggggggggggggg", "gggggggggggggggggggggggggggggggggggggggggggggggggggggggggg", "gggggggggggggggggggggggggggggggggggggggggggggggggggggggggg", "gggggggggggggggggggggggggggggggggggggggggggggggggggggggggg", "gggggggggggggggggggggggggggggggggggggggggggggggggggggggggg", "gggggggggggggggggggggggggggggggggggggggggggggggggggggggggg", "gggggggggggggggggggggggggggggggggggggggggggggggggggggggggg", "gggggggggggggggggggggggggggggggggggggggggggggggggggggggggg", "gggggggggggggggggggggggggggggggggggggggggggggggggggggggggg", "gggggggggggggggggggggggggggggggggggggggggggggggggggggggggg", "gggggggggggggggggggggggggggggggggggggggggggggggggggggggggg", "gggggggggggggggggggggggggggggggggggggggggggggggggggggggggg", "gggggggggggggggggggggggggggggggggggggggggggggggggggggggggg", "gggggggggggggggggggggggggggggggggggggggggggggggggggggggggg", "gggggggggggggggggggggggggggggggggggggggggggggggggggggggggg", "gggggggggggggggggggggggggggggggggggggggggggggggggggggggggg", "gggggggggggggggggggggggggggggggggggggggggggggggggggggggggg", "gggggggggggggggggggggggggggggggggggggggggggggggggggggggggg", "gggggggggggggggggggggggggggggggggggggggggggggggggggggggggg", "gggggggggggggggggggggggggggggggggggggggggggggggggggggggggg", "gggggggggggggggggggggggggggggggggggggggggggggggggggggggggg", "gggggggggggggggggggggggggggggggggggggggggggggggggggggggggg", "gggggggggggggggggggggggggggggggggggggggggggggggggggggggggg", "gggggggggggggggggggggggggggggggggggggggggggggggggggggggggg", "gggggggggggggggggggggggggggggggggggggggggggggggggggggggggg", "gggggggggggggggggggggggggggggggggggggggggggggggggggggggggg", "gggggggggggggggggggggggggggggggggggggggggggggggggggggggggg", "gggggggggggggggggggggggggggggggggggggggggggggggggggggggggg", "gggggggggggggggggggggggggggggggggggggggggggggggggggggggggg", "gggggggggggggggggggggggggggggggggggggggggggggggggggggggggg", "gggggggggggggggggggggggggggggggggggggggggggggggggggggggggg", "gggggggggggggggggggggggggggggggggggggggggggggggggggggggggg", "gggggggggggggggggggggggggggggggggggggggggggggggggggggggggg")
 tile_paths = {
 "g": "res://assets/tiles/grass.png"
 }
 
 [node name="TileMap_Ground" type="TileMapLayer" parent="." unique_id=2007938369]
 texture_filter = 1
-position = Vector2(-320, -224)
+z_index = -2000
+position = Vector2(-928, -768)
 script = ExtResource("2_tile_layer")
-layout_rows = PackedStringArray("........................", "..................ddd...", "...............dddddd...", "............ddddgggddd..", ".........ddddggggggddd..", ".......ddddgggggggdddd..", "......dddgggggdd..dddd..", ".....dddggggdd....ddd...", "....dddggggdd.....ddd...", "...ddddgggddd....dddd...", "..ddddggggddd..dddddd...", ".ddddggggddd...ddddd....", ".dddgggggddd....dddd....", "..dddggggddd.....ddd....", "...ddddgddd......ddd....", "..ddddddd...............", "...ddddd................", "........................")
+layout_rows = PackedStringArray("gggggggggggggggggggggggggggggggggggggggggggggggggggggggggg", "gggggggggggggggggggggggggggggggggggggggggggggggggggggggggg", "gggggggggggggggggggggggggggggggggggggggggggggggggggggggggg", "gggggggggggggggggggggggggggggggggggggggggggggggggggggggggg", "gggggggggggggggggggggggggggggggggggggggggggggggggggggggggg", "gggggggggggggggggggggggggggggggggggggggggggggggggggggggggg", "gggggggggggggggggggggggggggggggggggggggggggggggggggggggggg", "gggggggggggggggggggggggggggggggggggggggggggggggggggggggggg", "gggggggggggggggggggggggggggggggggggggggggggggggggggggggggg", "gggggggggggggggggggggggggggggggggggggggggggggggggggggggggg", "gggggggggggggggggggggggggggggggggggggggggggggggggggggggggg", "gggggggggggggggggggggggggggggggggggggggggggggggggggggggggg", "gggggggggggggggggggggggggggggggggggggggggggggggggggggggggg", "gggggggggggggggggggggggggggggggggggggggggggggggggggggggggg", "gggggggggggggggggggggggggggggggggggggggggggggggggggggggggg", "gggggggggggggggggggggggggggggggggggggggggggggggggggggggggg", "gggggggggggggggggggggggggggggggggggggggggggggggggggggggggg", "gggggggggggggggggggggggggggggggggggggggggggggggggggggggggg", "ggggggggggggggggggggggggggggggggggggggggfffffggggggggggggg", "ggggggggggggggggggggggggggggggggggggggggfffffggggggggggggg", "ggggggggggggggggggggggggggggggggggggfffffffffggggggggggggg", "ggggggggggggggggggggggggggggggggggggfffffffggggggggggggggg", "gggggggggggggggggggggggggggggggggggggggggggggggggggggggggg", "gggggggggggggggggggggggggggggggggggggggggggggggggggggggggg", "ggggggggggggggggggggggggggggggggggggggggggggfffffggggggggg", "ggggggggggggggggggggggggggggggggggggggggggggfffffggggggggg", "ggggggggggggggggggggggggggggggggggggggggfffffffffggggggggg", "ggggggggggggggggggggggggggggggggggggggggffffgggggggggggggg", "gggggggggggggggggggggggggggggggggggggggggggggggggggggggggg", "gggggggggggggggggggggggggggggggggggggggggggggggggggggggggg", "gggggggggggggggggggggggggggggggggggggggggggggggggggggggggg", "ggggggggggggggggggggggggggggggggggggggffffffgggggggggggggg", "ggggggggggggggggggggggggggggggggggggggffffffgggggggggggggg", "gggggggggggggggggggggggggggggggggggggggggggggggggggggggggg", "gggggggggggggggggggggggggggggggggggggggggggggggggggggggggg", "gggggggggggggggggggggggggggggggggggggggggggggggggggggggggg", "gggggggggggggggggggggggggggggggggggggggggggggggggggggggggg", "gggggggggggggggggggggggggggggggggggggggggggggggggggggggggg", "gggggggggggggggggggggggggggggggggggggggggggggggggggggggggg", "gggggggggggggggggggggggggggggggggggggggggggggggggggggggggg", "gggggggggggggggggggggggggggggggggggggggggggggggggggggggggg", "gggggggggggggggggggggggggggggggggggggggggggggggggggggggggg", "gggggggggggggggggggggggggggggggggggggggggggggggggggggggggg", "gggggggggggggggggggggggggggggggggggggggggggggggggggggggggg", "gggggggggggggggggggggggggggggggggggggggggggggggggggggggggg", "gggggggggggggggggggggggggggggggggggggggggggggggggggggggggg", "gggggggggggggggggggggggggggggggggggggggggggggggggggggggggg", "gggggggggggggggggggggggggggggggggggggggggggggggggggggggggg")
 tile_paths = {
-"d": "res://assets/tiles/dirt.png",
 "f": "res://assets/tiles/flowers.png",
 "g": "res://assets/tiles/grass.png",
-"h": "res://assets/tiles/grass_encounter.svg"
+"h": "res://assets/tiles/grass.png"
+}
+tile_variant_pools = {
+"g": ["res://assets/tiles/grass_1.png", "res://assets/tiles/grass_2.png", "res://assets/tiles/grass_3.png", "res://assets/tiles/grass_4.png"],
+"h": ["res://assets/tiles/grass_1.png", "res://assets/tiles/grass_2.png", "res://assets/tiles/grass_3.png", "res://assets/tiles/grass_4.png"]
 }
 
 [node name="TileMap_Encounter" type="TileMapLayer" parent="." unique_id=206899296]
 texture_filter = 1
-position = Vector2(-320, -224)
+z_index = -1000
+position = Vector2(-928, -768)
 script = ExtResource("2_tile_layer")
-layout_rows = PackedStringArray("........................", "........................", "........................", "........................", "........................", "........................", "........................", "........................", "........................", "........................", "........................", "........................", "........................", "........................", "........................", "........................", "........................", "........................")
+y_sort_keys = Array[String](["h", "f", "e"])
+layout_rows = PackedStringArray("..........................................................", "..........................................................", "..........................................................", "..........................................................", "..........................................................", "..........................................................", "..........................................................", "..........................................................", "..........................................................", "..........................................................", "..........................................................", "..........................................................", "..........................................................", "..........................................................", ".....................hhhhhhhhhhhhhh.......................", ".....................hhhhhh.hhhhhhh.......................", ".....................hhhhhhhhhhhhhh.......................", ".........................hhh.hhh..........................", "..........................................................", "..........................................................", "...............ffffff.....................................", "...............ffffff.....................................", "..........................................................", "..........................................................", "..........................................................", "..........................................................", "...........ffff...........................................", "...........ffff...........................................", "..........................................................", "..........................................................", "..........................................................", "..........................................................", "..........................................................", "..........................................................", "..........................................................", "..........................................................", "..........................................................", "..........................................................", "..........................................................", "..........................................................", "..........................................................", "..........................................................", "..........................................................", "..........................................................", "..........................................................", "..........................................................", "..........................................................", "..........................................................")
 tile_paths = {
-"f": "res://assets/tiles/grass_encounter.svg",
-"h": "res://assets/tiles/grass_encounter.svg"
+"e": "res://assets/overworld/tall_grass.png",
+"h": "res://assets/overworld/tall_grass.png",
+"f": "res://assets/overworld/tall_grass.png"
 }
 tile_tags = {
+"e": "zone",
 "f": "forest",
 "h": "high_risk_patch"
 }
 preview_colors = {
+"e": Color(0.258824, 0.639216, 0.247059, 0.24),
 "f": Color(0.258824, 0.639216, 0.247059, 0.28),
 "h": Color(0.341176, 0.694118, 0.278431, 0.24)
 }
 
 [node name="TileMap_Objects" type="TileMapLayer" parent="." unique_id=108961277]
 texture_filter = 1
-position = Vector2(-320, -224)
+z_index = -500
+position = Vector2(-928, -768)
 script = ExtResource("2_tile_layer")
-layout_rows = PackedStringArray("ttttttttttt..ttttttttttt", "ttttttttttt...tttttttttt", "tttttttttt.....ttttttttt", "ttttttttt...........ttt.", "ttttttt.............tttt", "tttttt..............tttt", "ttttt......b........tttt", "tttt.....b..........tttt", "ttt.................tttt", "ttt.......b........tttt.", "tt................ttttt.", "tt............b...tttt..", "tt...............ttttt..", "ttt..............tttttt.", "ttt............ttttttt..", "........................", "........................", "........................")
+y_sort_keys = Array[String](["t"])
+layout_rows = PackedStringArray("tttttttttttttttttttttttttttttttttttttttttttttttttttttttttt", "tttttttttttttttttttttttttttttttttttttttttttttttttttttttttt", "tttttttttttttttttttttttttttttttttttttttttttttttttttttttttt", "tttttttttttttttttttttttttttttttttttttttttttttttttttttttttt", "tttttttttttttttttttttttttttttttttttttttttttttttttttttttttt", "tttttttttttttttttttttttttttttttttttttttttttttttttttttttttt", "tttttttttttttttttttttttttttttttttttttttttttttttttttttttttt", "tttttttttttttttttttttttttttttttttttttttttttttttttttttttttt", "tttttttttttttttttttttttttttttttttttttttttttttttttttttttttt", "tttttttttttttttttttttt..............tttttttttttttttttttttt", "tttttttttttttttttttttt..............tttttttttttttttttttttt", "tttttttttttttttttttttt..............tttttttttttttttttttttt", "tttttttttttttttttttttt..............tttttttttttttttttttttt", "tttttttttttttttttttt.................ttttttttttttttttttttt", "tttttttttttttttttttt................tttttttttttttttttttttt", "tttttttttttttttttttt................tttttttttttttttttttttt", "tttttttttttttttttttt................tttttttttttttttttttttt", "tttttttttttttttttttt................tttttttttttttttttttttt", "tttttttttttttttttttttttt.ttt.ttt.ttttttttttttttttttttttttt", "tttttttttttttt...........ttt.ttt...........ttttttttttttttt", "tttttttttttttt...........ttt.ttt............tttttttttttttt", "tttttttttttttt...........ttt.ttt............tttttttttttttt", "tttttttttttttt...........ttt.ttt............tttttttttttttt", "tttttttttttttt...........ttt.ttt............tttttttttttttt", "tttttttttt.....................................ttttttttttt", "tttttttttt...............ttttt.................ttttttttttt", "tttttttttt...............ttttt.................ttttttttttt", "tttttttttt...............ttttt.................ttttttttttt", "tttttttttt...............ttttt.................ttttttttttt", "tttttttttt...............ttttt.................ttttttttttt", "tttttttttttttt............ttt............ttttttttttttttttt", "tttttttttttttt............ttt............ttttttttttttttttt", "tttttttttttttttttttttttt..ttt..ttttttttttttttttttttttttttt", "tttttttttttttttttttttttt..ttt..ttttttttttttttttttttttttttt", "tttttttttttttttttt........ttt........ttttttttttttttttttttt", "tttttttttttttttttt...................ttttttttttttttttttttt", "tttttttttttttttttt...................ttttttttttttttttttttt", "tttttttttttttttttt...................ttttttttttttttttttttt", "tttttttttttttttttt...................ttttttttttttttttttttt", "tttttttttttttttttttttttttttttttttttttttttttttttttttttttttt", "tttttttttttttttttttttttttttttttttttttttttttttttttttttttttt", "tttttttttttttttttttttttttttttttttttttttttttttttttttttttttt", "tttttttttttttttttttttttttttttttttttttttttttttttttttttttttt", "tttttttttttttttttttttttttttttttttttttttttttttttttttttttttt", "tttttttttttttttttttttttttttttttttttttttttttttttttttttttttt", "tttttttttttttttttttttttttttttttttttttttttttttttttttttttttt", "tttttttttttttttttttttttttttttttttttttttttttttttttttttttttt", "tttttttttttttttttttttttttttttttttttttttttttttttttttttttttt")
 tile_paths = {
 "b": "res://assets/resources/bush.png",
 "t": "res://assets/resources/tree.png"
+}
+tile_variant_pools = {
+"t": ["res://assets/resources/tree.png", "res://assets/resources/tree_2.png"]
+}
+tile_scales = {
+"t": 1.5
 }
 
 [node name="GeneratedContent" type="Node2D" parent="." unique_id=616477268]
@@ -92,156 +117,117 @@ tile_paths = {
 
 [node name="POIs" type="Node2D" parent="GeneratedContent"]
 
+[node name="EncounterZones" type="Node2D" parent="."]
+
+[node name="ExitLeftEncounter" type="Area2D" parent="EncounterZones"]
+position = Vector2(-224, 416)
+script = ExtResource("7_patch")
+patch_id = "exit_left"
+encounter_tag = "forest"
+encounter_tile_key = "f"
+always_active = true
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="EncounterZones/ExitLeftEncounter"]
+shape = SubResource("enc_square_4x4")
+
+[node name="EastFlowersEncounter" type="Area2D" parent="EncounterZones"]
+position = Vector2(576, 64)
+script = ExtResource("7_patch")
+patch_id = "east_flowers"
+encounter_tag = "forest"
+encounter_tile_key = "f"
+always_active = true
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="EncounterZones/EastFlowersEncounter"]
+shape = SubResource("enc_square_4x4")
+
 [node name="ResourceSpawnPoints" type="Node2D" parent="." unique_id=1407839682]
 
-[node name="WestRoots" type="Marker2D" parent="ResourceSpawnPoints" unique_id=465674371]
-position = Vector2(-192, 224)
+[node name="SouthTrailWood" type="Marker2D" parent="ResourceSpawnPoints"]
+position = Vector2(-384, 160)
 script = ExtResource("6_resource_point")
-spawn_id = "west_roots"
+spawn_id = "south_trail_wood"
 allowed_resource_types = PackedStringArray("wood")
 visual_type_override = "stump"
-min_amount_override = 3
+min_amount_override = 4
 max_amount_override = 6
 
-[node name="NorthCanopy" type="Marker2D" parent="ResourceSpawnPoints" unique_id=1076549791]
-position = Vector2(0, -32)
-script = ExtResource("6_resource_point")
-spawn_id = "north_canopy"
-allowed_resource_types = PackedStringArray("wood", "herb")
-visual_type_override = "branch_pile"
-min_amount_override = 3
-max_amount_override = 6
-
-[node name="EastBlooms" type="Marker2D" parent="ResourceSpawnPoints" unique_id=583035472]
-position = Vector2(224, 32)
-script = ExtResource("6_resource_point")
-spawn_id = "east_blooms"
-allowed_resource_types = PackedStringArray("herb")
-visual_type_override = "flower_patch"
-min_amount_override = 2
-max_amount_override = 4
-
-[node name="SouthTrail" type="Marker2D" parent="ResourceSpawnPoints" unique_id=543092183]
-position = Vector2(-96, 256)
-script = ExtResource("6_resource_point")
-spawn_id = "south_trail"
-allowed_resource_types = PackedStringArray("wood", "herb")
-
-[node name="ClearingWest" type="Marker2D" parent="ResourceSpawnPoints" unique_id=2052955310]
-position = Vector2(-64, 128)
-script = ExtResource("6_resource_point")
-spawn_id = "clearing_west"
-allowed_resource_types = PackedStringArray("wood", "stone")
-
-[node name="ClearingEast" type="Marker2D" parent="ResourceSpawnPoints" unique_id=927492833]
-position = Vector2(192, 128)
-script = ExtResource("6_resource_point")
-spawn_id = "clearing_east"
-allowed_resource_types = PackedStringArray("herb", "wood")
-
-[node name="NorthRim" type="Marker2D" parent="ResourceSpawnPoints" unique_id=1374487586]
-position = Vector2(256, -160)
-script = ExtResource("6_resource_point")
-spawn_id = "north_rim"
-allowed_resource_types = PackedStringArray("wood", "herb")
-
-[node name="SouthPocket" type="Marker2D" parent="ResourceSpawnPoints" unique_id=262135224]
+[node name="SouthTrailHerb" type="Marker2D" parent="ResourceSpawnPoints"]
 position = Vector2(256, 160)
 script = ExtResource("6_resource_point")
-spawn_id = "south_pocket"
-allowed_resource_types = PackedStringArray("herb", "stone")
+spawn_id = "south_trail_herb"
+allowed_resource_types = PackedStringArray("herb")
+visual_type_override = "flower_patch"
+min_amount_override = 3
+max_amount_override = 5
+
+[node name="NorthCanopyHerb" type="Marker2D" parent="ResourceSpawnPoints"]
+position = Vector2(-96, 384)
+script = ExtResource("6_resource_point")
+spawn_id = "north_canopy_herb"
+allowed_resource_types = PackedStringArray("stone")
+visual_type_override = "mossy_rocks"
+min_amount_override = 2
+max_amount_override = 3
+
+[node name="WestRootsMain" type="Marker2D" parent="ResourceSpawnPoints"]
+position = Vector2(-32, 384)
+script = ExtResource("6_resource_point")
+spawn_id = "west_roots_main"
+allowed_resource_types = PackedStringArray("herb")
+visual_type_override = "leaf_cluster"
+min_amount_override = 3
+max_amount_override = 5
 
 [node name="POISpawnPoints" type="Node2D" parent="."]
 
-[node name="EntryCache" type="Marker2D" parent="POISpawnPoints"]
-position = Vector2(-160, 256)
+[node name="SouthTrailCache" type="Marker2D" parent="POISpawnPoints"]
+position = Vector2(-96, 0)
 script = ExtResource("9_poi_point")
-spawn_id = "entry_cache"
+spawn_id = "south_trail_cache"
 
-[node name="WaystoneShrine" type="Marker2D" parent="POISpawnPoints"]
-position = Vector2(0, 32)
+[node name="NorthCanopyPOI" type="Marker2D" parent="POISpawnPoints"]
+position = Vector2(-64, 352)
 script = ExtResource("9_poi_point")
-spawn_id = "waystone_shrine"
+spawn_id = "north_canopy_poi"
 
-[node name="RichGrove" type="Marker2D" parent="POISpawnPoints"]
-position = Vector2(224, -64)
+[node name="OldRootGate" type="Marker2D" parent="POISpawnPoints"]
+position = Vector2(-384, 0)
 script = ExtResource("9_poi_point")
-spawn_id = "rich_grove"
+spawn_id = "old_root_gate"
 
-[node name="PredatorNest" type="Marker2D" parent="POISpawnPoints"]
-position = Vector2(320, -128)
+[node name="EastBloomsGrove" type="Marker2D" parent="POISpawnPoints"]
+position = Vector2(320, 0)
 script = ExtResource("9_poi_point")
-spawn_id = "predator_nest"
+spawn_id = "east_blooms_grove"
 
-[node name="EncounterZones" type="Node2D" parent="." unique_id=607687104]
+[node name="PredatorTrailNest" type="Marker2D" parent="POISpawnPoints"]
+position = Vector2(32, 0)
+script = ExtResource("9_poi_point")
+spawn_id = "predator_trail_nest"
 
-[node name="CentralFork" type="Area2D" parent="EncounterZones" unique_id=1716985983]
-position = Vector2(0, 128)
-script = ExtResource("7_patch")
-patch_id = "central_fork"
-encounter_tag = "forest"
-encounter_tile_key = "f"
-patch_tags = PackedStringArray()
-active_fill_color = Color(0.258824, 0.639216, 0.247059, 0.28)
+[node name="DeepGrovePOI" type="Marker2D" parent="POISpawnPoints"]
+position = Vector2(-64, -288)
+script = ExtResource("9_poi_point")
+spawn_id = "deep_grove_poi"
 
-[node name="CollisionShape2D" type="CollisionShape2D" parent="EncounterZones/CentralFork" unique_id=1458102347]
-shape = SubResource("2_encounter_shape_small")
-
-[node name="ShrineBend" type="Area2D" parent="EncounterZones" unique_id=1285588078]
-position = Vector2(0, 32)
-script = ExtResource("7_patch")
-patch_id = "shrine_bend"
-encounter_tag = "forest"
-encounter_tile_key = "f"
-patch_tags = PackedStringArray()
-always_active = true
-active_fill_color = Color(0.258824, 0.639216, 0.247059, 0.28)
-
-[node name="CollisionShape2D" type="CollisionShape2D" parent="EncounterZones/ShrineBend" unique_id=1068916296]
-shape = SubResource("1_encounter_shape")
-
-[node name="DeepGrove" type="Area2D" parent="EncounterZones" unique_id=1566037254]
-position = Vector2(224, -64)
-script = ExtResource("7_patch")
-patch_id = "deep_grove"
-encounter_tag = "high_risk_patch"
-encounter_tile_key = "h"
-patch_tags = PackedStringArray()
-always_active = true
-active_fill_color = Color(0.341176, 0.694118, 0.278431, 0.24)
-
-[node name="CollisionShape2D" type="CollisionShape2D" parent="EncounterZones/DeepGrove" unique_id=1295429191]
-shape = SubResource("3_encounter_shape_deep")
-
-[node name="EntranceFringe" type="Area2D" parent="EncounterZones" unique_id=557906149]
-position = Vector2(-160, 256)
-script = ExtResource("7_patch")
-patch_id = "entrance_fringe"
-encounter_tag = "forest"
-encounter_tile_key = "f"
-patch_tags = PackedStringArray()
-active_fill_color = Color(0.258824, 0.639216, 0.247059, 0.28)
-
-[node name="CollisionShape2D" type="CollisionShape2D" parent="EncounterZones/EntranceFringe" unique_id=1660945541]
-shape = SubResource("2_encounter_shape_small")
+[node name="CentralForkPOI" type="Marker2D" parent="POISpawnPoints"]
+position = Vector2(-32, -32)
+script = ExtResource("9_poi_point")
+spawn_id = "central_fork_poi"
 
 [node name="BossSpawnPoints" type="Node2D" parent="." unique_id=1236172491]
 
-[node name="AncientOak" type="Marker2D" parent="BossSpawnPoints" unique_id=1824505473]
-position = Vector2(320, -192)
+[node name="MosskingGrove" type="Marker2D" parent="BossSpawnPoints" unique_id=1824505473]
+position = Vector2(-32, -448)
 script = ExtResource("8_boss_point")
-spawn_id = "ancient_oak"
-
-[node name="ClearingHeart" type="Marker2D" parent="BossSpawnPoints" unique_id=1666304663]
-position = Vector2(256, -160)
-script = ExtResource("8_boss_point")
-spawn_id = "clearing_heart"
+spawn_id = "mossking_grove"
 
 [node name="PlayerSpawn" type="Marker2D" parent="." unique_id=1786528042]
-position = Vector2(-256, 256)
+position = Vector2(-64, 416)
 
 [node name="Player" parent="." unique_id=940319227 instance=ExtResource("3_player")]
-position = Vector2(-256, 256)
+position = Vector2(-64, 416)
 
 [node name="ExitZone" parent="." unique_id=290079164 instance=ExtResource("5_exit")]
-position = Vector2(-256, 256)
+position = Vector2(-64, 448)

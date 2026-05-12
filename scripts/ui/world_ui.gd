@@ -5,6 +5,10 @@ const TEXT_LIGHT := Color("f5edd2")
 const TEXT_MUTED := Color("d4c7ac")
 const TEXT_DARK := Color("2f2418")
 const OUTLINE_DARK := Color("1a130d")
+const TITLE_FONT_SIZE_SCALE := 1.16
+const TITLE_FONT_SIZE_MIN_INCREASE := 3
+const TITLE_FONT_SIZE_BASE_META := "_world_ui_title_font_size_base"
+const TITLE_OUTLINE_SIZE := 2
 
 const MATERIAL_COLORS := {
 	"wood": {
@@ -110,7 +114,11 @@ static func apply_label(label: Label, role: String = "body", variant: String = "
 	label.add_theme_constant_override("outline_size", 1)
 	match role:
 		"title":
+			if not label.text.is_empty():
+				label.text = label.text.to_upper()
 			label.add_theme_color_override("font_color", colors["text"])
+			label.add_theme_constant_override("outline_size", TITLE_OUTLINE_SIZE)
+			_apply_title_font_size(label)
 		"subtitle":
 			label.add_theme_color_override("font_color", colors["muted"])
 		"accent":
@@ -158,36 +166,12 @@ static func format_cost_text(cost: Dictionary) -> String:
 	return ", ".join(parts)
 
 
-static func _build_resource_chip(resource_key: String, amount: int, context_variant: String) -> PanelContainer:
+static func _build_resource_chip(resource_key: String, amount: int, context_variant: String) -> HBoxContainer:
 	var meta: Dictionary = RESOURCE_META.get(resource_key, {"name": str(resource_key).capitalize(), "short": "??", "variant": context_variant, "icon_path": ""})
-	var chip := PanelContainer.new()
-	apply_panel(chip, str(meta.get("variant", context_variant)))
-	chip.custom_minimum_size = Vector2(150, 42)
-	chip.size_flags_horizontal = Control.SIZE_EXPAND_FILL
-
-	var padding := MarginContainer.new()
-	padding.add_theme_constant_override("margin_left", 8)
-	padding.add_theme_constant_override("margin_top", 6)
-	padding.add_theme_constant_override("margin_right", 8)
-	padding.add_theme_constant_override("margin_bottom", 6)
-	chip.add_child(padding)
-
-	var row := HBoxContainer.new()
-	row.alignment = BoxContainer.ALIGNMENT_BEGIN
-	row.add_theme_constant_override("separation", 8)
-	padding.add_child(row)
-
-	var icon_holder := PanelContainer.new()
-	apply_panel(icon_holder, "parchment")
-	icon_holder.custom_minimum_size = Vector2(28, 28)
-	row.add_child(icon_holder)
-
-	var icon_margin := MarginContainer.new()
-	icon_margin.add_theme_constant_override("margin_left", 4)
-	icon_margin.add_theme_constant_override("margin_top", 4)
-	icon_margin.add_theme_constant_override("margin_right", 4)
-	icon_margin.add_theme_constant_override("margin_bottom", 4)
-	icon_holder.add_child(icon_margin)
+	var chip := HBoxContainer.new()
+	chip.alignment = BoxContainer.ALIGNMENT_CENTER
+	chip.add_theme_constant_override("separation", 4)
+	chip.tooltip_text = str(meta.get("name", resource_key))
 
 	var texture_path := str(meta.get("icon_path", ""))
 	if not texture_path.is_empty():
@@ -196,31 +180,20 @@ static func _build_resource_chip(resource_key: String, amount: int, context_vari
 		icon.texture_filter = CanvasItem.TEXTURE_FILTER_NEAREST
 		icon.stretch_mode = TextureRect.STRETCH_KEEP_ASPECT_CENTERED
 		icon.expand_mode = TextureRect.EXPAND_IGNORE_SIZE
-		icon.custom_minimum_size = Vector2(20, 20)
-		icon_margin.add_child(icon)
+		icon.custom_minimum_size = Vector2(40, 40)
+		chip.add_child(icon)
 	else:
 		var fallback := Label.new()
 		fallback.text = str(meta.get("short", "??"))
-		apply_label(fallback, "dark", "parchment")
-		fallback.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
-		icon_margin.add_child(fallback)
-
-	var text_column := VBoxContainer.new()
-	text_column.size_flags_horizontal = Control.SIZE_EXPAND_FILL
-	text_column.add_theme_constant_override("separation", 0)
-	row.add_child(text_column)
-
-	var name_label := Label.new()
-	name_label.text = str(meta.get("name", resource_key))
-	apply_label(name_label, "subtitle", str(meta.get("variant", context_variant)))
-	name_label.add_theme_font_size_override("font_size", 11)
-	text_column.add_child(name_label)
+		apply_label(fallback, "subtitle", context_variant)
+		fallback.add_theme_font_size_override("font_size", 12)
+		chip.add_child(fallback)
 
 	var value_label := Label.new()
-	value_label.text = "x%d" % amount
-	apply_label(value_label, "title", str(meta.get("variant", context_variant)))
-	value_label.add_theme_font_size_override("font_size", 15)
-	text_column.add_child(value_label)
+	value_label.text = "%d" % amount
+	apply_label(value_label, "title", context_variant)
+	value_label.add_theme_font_size_override("font_size", 14)
+	chip.add_child(value_label)
 
 	return chip
 
@@ -231,6 +204,14 @@ static func _colors(variant: String) -> Dictionary:
 
 static func get_variant_colors(variant: String) -> Dictionary:
 	return _colors(variant)
+
+
+static func _apply_title_font_size(label: Label) -> void:
+	var base_size := int(label.get_meta(TITLE_FONT_SIZE_BASE_META, label.get_theme_font_size("font_size")))
+	if not label.has_meta(TITLE_FONT_SIZE_BASE_META):
+		label.set_meta(TITLE_FONT_SIZE_BASE_META, base_size)
+	var scaled_size := int(ceil(float(base_size) * TITLE_FONT_SIZE_SCALE))
+	label.add_theme_font_size_override("font_size", max(base_size + TITLE_FONT_SIZE_MIN_INCREASE, scaled_size))
 
 
 static func build_button_style(fill: Color, border: Color, shadow: Color, emphasis: bool, vertical_shift: int, alpha_mult: float = 1.0) -> StyleBoxFlat:

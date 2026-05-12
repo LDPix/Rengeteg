@@ -27,11 +27,53 @@ texture_filter = 1
 
 [node name="NameLabel" type="Label" parent="Padding/Content"]
 size_flags_horizontal = 3
-text = "Creature"
-theme_override_font_sizes/font_size = 28
-
-[node name="HPLabel" type="Label" parent="Padding/Content"]
-size_flags_horizontal = 3
-text = "HP 0 / 0"
+text = "CREATURE"
 theme_override_font_sizes/font_size = 20
-theme_override_colors/font_color = Color(0.380392, 0.380392, 0.380392, 1)
+
+[node name="HPRow" type="VBoxContainer" parent="Padding/Content"]
+size_flags_horizontal = 3
+theme_override_constants/separation = 3
+
+[node name="HPHeader" type="HBoxContainer" parent="Padding/Content/HPRow"]
+theme_override_constants/separation = 6
+
+[node name="HPIcon" type="TextureRect" parent="Padding/Content/HPRow/HPHeader"]
+custom_minimum_size = Vector2(22, 22)
+stretch_mode = 5
+texture_filter = 1
+expand_mode = 1
+
+[node name="HPValueLabel" type="Label" parent="Padding/Content/HPRow/HPHeader"]
+size_flags_horizontal = 3
+text = "0 / 0"
+theme_override_font_sizes/font_size = 18
+
+[node name="HPBar" type="ProgressBar" parent="Padding/Content/HPRow"]
+size_flags_horizontal = 3
+custom_minimum_size = Vector2(0, 10)
+show_percentage = false
+value = 100
+
+[node name="MPRow" type="VBoxContainer" parent="Padding/Content"]
+size_flags_horizontal = 3
+theme_override_constants/separation = 3
+
+[node name="MPHeader" type="HBoxContainer" parent="Padding/Content/MPRow"]
+theme_override_constants/separation = 6
+
+[node name="MPIcon" type="TextureRect" parent="Padding/Content/MPRow/MPHeader"]
+custom_minimum_size = Vector2(22, 22)
+stretch_mode = 5
+texture_filter = 1
+expand_mode = 1
+
+[node name="MPValueLabel" type="Label" parent="Padding/Content/MPRow/MPHeader"]
+size_flags_horizontal = 3
+text = "0 / 0"
+theme_override_font_sizes/font_size = 18
+
+[node name="MPBar" type="ProgressBar" parent="Padding/Content/MPRow"]
+size_flags_horizontal = 3
+custom_minimum_size = Vector2(0, 10)
+show_percentage = false
+value = 100

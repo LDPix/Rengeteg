@@ -52,7 +52,7 @@ func _on_body_exited(body: Node) -> void:
 
 
 func _apply_marker() -> void:
-	var texture_path := "res://assets/overworld/exit_portal.svg"
+	var texture_path := "res://assets/overworld/exit_portal.png"
 	if marker_style == "forest":
 		texture_path = "res://assets/overworld/exit_forest.png"
 	elif marker_style == "cave":
